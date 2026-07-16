@@ -7,7 +7,7 @@
             <div class="popup-content">
                 <slot/>
                 <div class="popup-control">
-                    <common-button
+                    <ui-button
                         icon="material-symbols:check-rounded"
                         :primary-color="submitColor"
                         type="primary"
@@ -16,8 +16,8 @@
                         <template #default>
                             {{ submitText }}
                         </template>
-                    </common-button>
-                    <common-button
+                    </ui-button>
+                    <ui-button
                         icon="material-symbols:close-rounded"
                         :primary-color="closeColor"
                         type="primary"
@@ -26,7 +26,7 @@
                         <template v-if="closeText">
                             {{ closeText }}
                         </template>
-                    </common-button>
+                    </ui-button>
                 </div>
             </div>
         </div>

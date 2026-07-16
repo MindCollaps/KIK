@@ -1,5 +1,9 @@
 <template>
-    <div class="toast">
+    <div
+        class="toast"
+        :role="toast.mode === ToastMode.Error ? 'alert' : 'status'"
+        :aria-live="toast.mode === ToastMode.Error ? 'assertive' : 'polite'"
+    >
         <div class="toast-header">
             <div
                 :class="`toast-icon toast-icon--${ toast.mode.toLowerCase() }`"
@@ -13,12 +17,12 @@
             <div class="toast-title">{{ toast.title }}</div>
 
             <button
-                aria-label="Close"
+                aria-label="Schließen"
                 class="toast-close"
                 type="button"
                 @click="emit('close')"
             >
-                <icon name="material-symbols:x-circle-outline"/>
+                <icon name="material-symbols:close-rounded"/>
             </button>
         </div>
         <div
@@ -56,8 +60,8 @@ const toastIcon = {
         display: flex;
         flex-direction: column;
 
-        min-width: 300px;
-        max-width: 400px;
+        width: min(420px, calc(100vw - 2rem));
+        max-width: 420px;
         padding: 16px 20px;
         border-radius: 8px;
 
@@ -72,9 +76,11 @@ const toastIcon = {
 
         &-title {
             flex: 1;
+
             font-size: 14px;
             font-weight: 600;
             color: $darkgray900;
+            text-wrap: pretty;
         }
 
         &-icon {
@@ -103,52 +109,44 @@ const toastIcon = {
             align-items: center;
             justify-content: center;
 
-            width: 29px;
-            height: 29px;
-            padding: 4px;
+            width: 32px;
+            height: 32px;
+            padding: 0;
             border: none;
             border-radius: 4px;
 
-            font-size: 24px;
-            font-weight: 300;
-            line-height: 1;
             color: $darkgray700;
 
             opacity: 0.7;
 
-            transition: all 0.2s ease;
+            transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
 
             &:hover {
-                color: #1a1a1a;
+                color: $darkgray900;
                 opacity: 1;
                 background: rgb(0 0 0 / 5%);
+            }
+
+            &:focus-visible {
+                outline: 2px solid $primary400;
+                outline-offset: 2px;
             }
         }
 
         &-content {
             margin-top: 8px;
             padding-left: 36px;
+
             font-size: 14px;
+            line-height: 1.45;
             color: $darkgray800;
+            text-wrap: pretty;
         }
     }
 
-    // Transition animations
-    .slide-fade-enter-active {
-        transition: all 0.3s ease-out;
-    }
-
-    .slide-fade-leave-active {
-        transition: all 0.2s ease-in;
-    }
-
-    .slide-fade-enter-from {
-        transform: translateX(-20px);
-        opacity: 0;
-    }
-
-    .slide-fade-leave-to {
-        transform: translateX(-20px);
-        opacity: 0;
+    @media (prefers-reduced-motion: reduce) {
+        .toast-close {
+            transition: none;
+        }
     }
 </style>

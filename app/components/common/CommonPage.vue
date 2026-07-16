@@ -25,11 +25,14 @@ defineSlots<{
     padding: 32px;
 
     h1 {
-        font-size: 38px;
-        font-weight: bold;
+        font-family: $displayFont;
+        font-size: 44px;
+        font-weight: 400;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
 
         @include mobile {
-            font-size: 32px;
+            font-size: 34px;
         }
     }
 

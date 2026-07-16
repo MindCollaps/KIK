@@ -3,9 +3,10 @@
 @use "./colors" as *;
 
 $defaultFont: NotoSans, Arial, sans-serif;
+$displayFont: 'Bebas Neue', $defaultFont;
 
-$typographyPrimary: $lightgray200;
-$typographyPrimaryOrig: $lightgray200Orig;
+$typographyPrimary: $lightgray150;
+$typographyPrimaryOrig: $whiteOrig;
 $typographySecondary: $darkgray900;
 
 

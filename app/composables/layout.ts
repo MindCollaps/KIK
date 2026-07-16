@@ -1,5 +1,5 @@
 import { useStore } from '~/store/index';
-import { colorsList, themesList } from '~/utils/styles';
+import { radarColors, radarThemes } from '#build/radar/colors';
 
 const store = useStore();
 
@@ -23,10 +23,10 @@ export const useLayout = () => {
         const theme = store.theme ?? 'default';
         const themeColors = theme === 'default'
             ? {}
-            : ((themesList as Record<string, Record<string, unknown>>)[theme] ?? {});
+            : ((radarThemes as Record<string, Record<string, unknown>>)[theme] ?? {});
         const css = Object
             .entries({
-                ...colorsList,
+                ...radarColors,
                 ...themeColors,
             })
             .filter(([key]) => key.endsWith('Rgb'))
@@ -35,17 +35,17 @@ export const useLayout = () => {
 
         return {
             titleTemplate(title) {
-                if (!title) return 'Swindler';
-                return `${ title } | Swindler`;
+                if (!title) return 'Kino im Kasten';
+                return `${ title } | Kino im Kasten`;
             },
             meta: [
                 {
                     name: 'description',
-                    content: '',
+                    content: 'Kino im Kasten – das studentische Programmkino der TU Dresden. Filme für alle, drinnen wie im Sommerkino.',
                 },
             ],
             htmlAttrs: {
-                lang: 'en',
+                lang: 'de',
                 class: [`theme-${ store.theme ?? 'light' }`],
             },
             style: [{

@@ -1,5 +1,3 @@
-import { useStore } from '~/store';
-
 export interface HeaderItem {
     text: string;
     active?: boolean;
@@ -14,21 +12,13 @@ export interface HeaderItem {
 
 export const useHeaderMenu = () => computed<HeaderItem[]>(() => {
     const route = useRoute();
-    const store = useStore();
+    const site = useSiteConfigState();
 
-    const menu: HeaderItem[] = [
-        {
-            text: 'Home',
-            path: '/',
-            icon: 'material-symbols:other-houses',
-        },
-        {
-            text: 'Wordlist',
-            path: '/wordlist',
-            icon: 'material-symbols:menu-book',
-            hide: !(store.me?.admin || store.me?.developer),
-        },
-    ];
+    const menu: HeaderItem[] = site.value.navigation.items.map(item => ({
+        text: item.label,
+        path: item.path,
+        icon: item.icon ?? undefined,
+    }));
 
     return menu.filter(x => !x.hide).map(x => {
         return {

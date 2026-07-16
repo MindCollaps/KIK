@@ -1,10 +1,10 @@
 <template>
     <template v-if="store.ready">
-        <common-button
+        <ui-button
             v-if="!store.me?.loggedIn"
             to="/login"
-        >Login</common-button>
-        <common-button
+        >Login</ui-button>
+        <ui-button
             v-else-if="store.me?.loggedIn"
             icon-width="45px"
             to="/profile"
@@ -15,7 +15,7 @@
                     {{ store.me?.username }}
                 </div>
             </template>
-        </common-button>
+        </ui-button>
     </template>
     <template v-else>
         <common-loader smol/>

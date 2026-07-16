@@ -1,7 +1,7 @@
 services:
-  xxx-changemeapp:
-    image: ghcr.io/mindcollaps/xxx-changeme:next
-    container_name: xxx-changemeapp
+  kikapp:
+    image: ghcr.io/mindcollaps/kik:next
+    container_name: kikapp
     environment:
       - NODE_ENV=production
       - PORT=3000
@@ -23,7 +23,7 @@ services:
       retries: 10
   db:
     image: 'postgres:18.1-alpine'
-    container_name: xxx-changemedb
+    container_name: kikdb
     volumes:
       - db_data:/var/lib/postgresql/18/docker
     healthcheck:

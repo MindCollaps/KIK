@@ -25,7 +25,7 @@ RUN npm install -g prisma
 
 RUN addgroup -S app && adduser -S app -G app
 
-RUN chown app:app /app
+RUN mkdir -p /app/uploads && chown -R app:app /app
 
 COPY --chown=app:app --from=builder /app/.output ./.output
 COPY --chown=app:app --from=builder /app/public ./public

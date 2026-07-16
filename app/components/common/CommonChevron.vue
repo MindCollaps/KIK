@@ -1,5 +1,5 @@
 <template>
-    <common-button
+    <ui-button
         :icon="right ? 'material-symbols:chevron-right' : 'material-symbols:chevron-left'"
         icon-width="30px"
         type="transparent"
@@ -8,8 +8,6 @@
 </template>
 
 <script lang="ts" setup>
-import CommonButton from './CommonButton.vue';
-
 defineProps({
     right: Boolean,
 });

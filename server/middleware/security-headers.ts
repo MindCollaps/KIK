@@ -24,14 +24,17 @@ export default defineEventHandler(event => {
     // Permissions Policy (restrict access to browser features)
     headers.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
+    // Dev-only allowance so /impeccable live's picker (localhost:8400) can load.
+    const __impeccableLiveDev = process.env.NODE_ENV === 'development' ? ' http://localhost:8400' : '';
+
     // Content Security Policy
     const cspDirectives = [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Note: unsafe-inline and unsafe-eval needed for Nuxt
+        `script-src 'self' 'unsafe-inline' 'unsafe-eval'${ __impeccableLiveDev }`, // Note: unsafe-inline and unsafe-eval needed for Nuxt
         "style-src 'self' 'unsafe-inline'", // Note: unsafe-inline needed for Vue components
         "img-src 'self' data: https:",
         "font-src 'self' data:",
-        "connect-src 'self' ws: wss:", // Allow WebSocket connections for Socket.io
+        `connect-src 'self' ws: wss:${ __impeccableLiveDev }`, // Allow WebSocket connections for Socket.io
         "frame-ancestors 'self'",
         "base-uri 'self'",
         "form-action 'self'",

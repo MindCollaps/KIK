@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kino im Kasten — Brand Kit</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --canvas: #0F0C0A;
+        --canvas-2: #161210;
+        --panel: #1D1815;
+        --panel-line: #332B25;
+        --paper: #FBF8F4;
+        --paper-2: #F0E8DC;
+        --ink: #1B1613;
+        --ink-dim: #4A3D32;
+        --cream: #EAE4DB;
+        --cream-dim: #8C7F6C;
+        --red-900: #4A0E09;
+        --red-700: #7A1B15;
+        --red-600: #9C2419;
+        --red-500: #C4301F;
+        --red-400: #DD5B45;
+        --red-300: #EE9683;
+        --red-100: #F7D9D1;
+        --gold-700: #7A5A12;
+        --gold-500: #C08F2E;
+        --gold-300: #E8CB92;
+        --info-500: #1FAA9C;
+        --success-500: #4C9E55;
+        --error: #C22569;
+        --warning: #E2941F;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: var(--canvas);
+        font-family: 'Noto Sans', -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        color: var(--cream);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .display {
+        font-family: 'Bebas Neue', 'Noto Sans', Arial, sans-serif;
+        font-weight: 400;
+        letter-spacing: 0.01em;
+        text-transform: uppercase;
+    }
+
+    .eyebrow {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--cream-dim);
+    }
+
+    a { color: inherit; }
+
+    .deck {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 40px 32px 64px;
+    }
+
+    /* ---------- top bar ---------- */
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 28px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--panel-line);
+    }
+
+    .topbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .topbar-brand svg { width: 22px; height: 22px; color: var(--red-500); }
+
+    .topbar-brand span {
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .topbar-meta {
+        display: flex;
+        gap: 28px;
+    }
+
+    .topbar-meta .eyebrow span {
+        display: block;
+        margin-top: 2px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: var(--cream);
+        text-transform: none;
+    }
+
+    /* ---------- grid ---------- */
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+
+    .panel {
+        position: relative;
+        overflow: hidden;
+        min-height: 320px;
+        border: 1px solid var(--panel-line);
+        border-radius: 14px;
+        background: var(--panel);
+    }
+
+    .panel-num {
+        position: absolute;
+        z-index: 3;
+        top: 16px;
+        left: 18px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        color: var(--cream-dim);
+    }
+
+    .panel-inner {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 40px 28px 24px;
+    }
+
+    /* ===================================================== */
+    /* 1 — logo cover */
+    .p-cover {
+        grid-column: span 2;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: radial-gradient(120% 140% at 50% 0%, #201a16 0%, var(--panel) 60%);
+    }
+
+    .p-cover .panel-inner { align-items: center; justify-content: center; gap: 22px; }
+
+    .cover-mark { width: 76px; height: 76px; color: var(--red-500); }
+
+    .cover-word {
+        font-size: 58px;
+        line-height: 1;
+        letter-spacing: 0.01em;
+    }
+
+    .cover-sub {
+        max-width: 360px;
+        font-family: 'Noto Sans', Arial, sans-serif;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--cream-dim);
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    /* ===================================================== */
+    /* 2 — construction */
+    .p-construct .panel-inner { justify-content: center; align-items: center; gap: 18px; }
+    .construct-diagram { width: 100%; max-width: 220px; }
+    .construct-caption {
+        max-width: 240px;
+        font-size: 12px;
+        line-height: 1.6;
+        text-align: center;
+        color: var(--cream-dim);
+    }
+    .construct-caption b { color: var(--cream); font-weight: 600; }
+
+    /* ===================================================== */
+    /* 3 — digital application (browser mock) */
+    .p-app { grid-column: span 1; }
+    .p-app .panel-inner { padding: 0; }
+    .browser-chrome {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--panel-line);
+    }
+    .browser-dot { width: 8px; height: 8px; border-radius: 50%; background: #453A31; }
+    .browser-url {
+        flex: 1;
+        margin-left: 8px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 10px;
+        letter-spacing: 0.02em;
+        color: var(--cream-dim);
+        background: var(--canvas-2);
+    }
+    .browser-body {
+        flex: 1;
+        padding: 18px 16px 20px;
+        background: var(--paper);
+    }
+    .app-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #E7DDCF;
+    }
+    .app-nav-brand {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--ink);
+        text-transform: uppercase;
+    }
+    .app-nav-brand svg { width: 13px; height: 13px; color: var(--red-500); }
+    .app-nav-cta {
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 9px;
+        font-weight: 700;
+        color: var(--paper);
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        background: var(--red-500);
+    }
+    .app-card {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 8px;
+        padding: 9px 10px;
+        border-radius: 8px;
+        background: var(--paper-2);
+    }
+    .app-card-thumb {
+        flex-shrink: 0;
+        width: 30px;
+        height: 40px;
+        border-radius: 4px;
+        background: linear-gradient(160deg, var(--red-600), var(--red-900));
+    }
+    .app-card-text b { display: block; font-size: 11px; font-weight: 700; color: var(--ink); }
+    .app-card-text span { font-size: 9px; color: var(--ink-dim); }
+
+    /* ===================================================== */
+    /* 4 — tagline */
+    .p-tagline {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background:
+            repeating-linear-gradient(135deg, rgb(196 48 31 / 6%) 0 2px, transparent 2px 14px),
+            var(--panel);
+    }
+    .tagline-text {
+        font-size: 30px;
+        line-height: 1.15;
+        color: var(--paper);
+    }
+    .tagline-text em {
+        font-style: normal;
+        color: var(--red-500);
+    }
+
+    /* ===================================================== */
+    /* 5 — color system */
+    .p-color .panel-inner { padding-top: 40px; gap: 12px; }
+    .color-row { display: flex; gap: 8px; }
+    .swatch {
+        display: flex;
+        flex: 1;
+        align-items: flex-end;
+        height: 54px;
+        padding: 6px;
+        border-radius: 6px;
+    }
+    .swatch span {
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: none;
+        mix-blend-mode: difference;
+        color: #fff;
+    }
+
+    /* ===================================================== */
+    /* 6 — typography */
+    .p-type .panel-inner { justify-content: center; gap: 8px; }
+    .type-sample-display {
+        font-size: 46px;
+        line-height: 1;
+        color: var(--paper);
+    }
+    .type-sample-body {
+        margin-top: 10px;
+        font-size: 12px;
+        line-height: 1.7;
+        color: var(--cream-dim);
+        text-transform: none;
+        letter-spacing: 0;
+    }
+    .type-legend {
+        display: flex;
+        gap: 18px;
+        margin-top: 14px;
+        font-family: 'Noto Sans', Arial, sans-serif;
+        font-size: 10px;
+        letter-spacing: 0.02em;
+        color: var(--cream-dim);
+        text-transform: none;
+    }
+    .type-legend b { display: block; color: var(--cream); font-size: 11px; }
+    .type-legend div { white-space: nowrap; }
+
+    /* ===================================================== */
+    /* 7 — physical application (ticket) */
+    .p-physical { display: flex; align-items: center; justify-content: center; }
+    .ticket {
+        position: relative;
+        display: flex;
+        width: 100%;
+        max-width: 260px;
+        border-radius: 10px;
+        background: var(--paper);
+        box-shadow: 0 18px 30px -14px rgb(0 0 0 / 55%);
+    }
+    .ticket-main { flex: 1; padding: 16px; }
+    .ticket-eyebrow { font-size: 8px; font-weight: 700; letter-spacing: 0.14em; color: var(--red-500); }
+    .ticket-title { margin-top: 6px; font-size: 17px; line-height: 1.05; color: var(--ink); }
+    .ticket-meta { margin-top: 10px; font-size: 9px; letter-spacing: 0.02em; color: var(--ink-dim); text-transform: none; }
+    .ticket-stub {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 54px;
+        border-left: 2px dashed #D3C4AC;
+        background: var(--paper-2);
+    }
+    .ticket-stub svg { width: 18px; height: 18px; color: var(--red-500); transform: rotate(90deg); }
+    .ticket-stub::before, .ticket-stub::after {
+        content: '';
+        position: absolute;
+        left: -7px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--panel);
+    }
+    .ticket-stub::before { top: -7px; }
+    .ticket-stub::after { bottom: -7px; }
+
+    /* ===================================================== */
+    /* 8 — image direction */
+    .p-image {
+        background:
+            radial-gradient(60% 90% at 50% 15%, rgb(196 48 31 / 45%) 0%, transparent 70%),
+            linear-gradient(180deg, #14100D 0%, #0B0908 100%);
+    }
+    .p-image .panel-inner { justify-content: flex-end; }
+    .marquee-bulbs {
+        display: flex;
+        gap: 7px;
+        margin-bottom: 14px;
+    }
+    .marquee-bulbs span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--gold-500);
+        box-shadow: 0 0 6px 1px rgb(192 143 46 / 70%);
+    }
+    .halftone {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        opacity: 0.5;
+        background-image: radial-gradient(rgb(255 255 255 / 8%) 1px, transparent 1.4px);
+        background-size: 7px 7px;
+    }
+    .image-caption {
+        position: relative;
+        z-index: 1;
+        max-width: 220px;
+        font-size: 11px;
+        line-height: 1.6;
+        color: var(--cream-dim);
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    /* ===================================================== */
+    /* 9 — system detail */
+    .p-system .panel-inner { justify-content: center; gap: 12px; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+        padding: 6px 11px;
+        border: 1px solid var(--panel-line);
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: var(--cream);
+        text-transform: none;
+    }
+    .chip.on-red { border-color: transparent; color: var(--paper); background: var(--red-500); }
+    .chip.on-gold { border-color: transparent; color: var(--ink); background: var(--gold-500); }
+    .system-btn {
+        display: inline-flex;
+        width: max-content;
+        padding: 9px 16px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: var(--paper);
+        background: var(--red-500);
+    }
+
+    /* ---------- footer ---------- */
+    .footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 24px;
+        padding-top: 18px;
+        border-top: 1px solid var(--panel-line);
+    }
+
+    @media (max-width: 880px) {
+        .grid { grid-template-columns: 1fr; }
+        .p-cover { grid-column: span 1; }
+        .topbar { flex-direction: column; align-items: flex-start; gap: 14px; }
+    }
+</style>
+</head>
+<body>
+<div class="deck">
+
+    <div class="topbar">
+        <div class="topbar-brand">
+            <svg viewBox="0 0 32 32" fill="none">
+                <rect x="2.5" y="2.5" width="27" height="27" rx="7" stroke="currentColor" stroke-width="2.4"/>
+                <path d="M13 11.5L21.5 16L13 20.5V11.5Z" fill="currentColor"/>
+            </svg>
+            <span>Kino im Kasten — Brand Kit</span>
+        </div>
+        <div class="topbar-meta">
+            <div class="eyebrow">System<span>v1.0</span></div>
+            <div class="eyebrow">Mode<span>Dark-first</span></div>
+            <div class="eyebrow">Primary<span>#C4301F</span></div>
+        </div>
+    </div>
+
+    <div class="grid">
+
+        <!-- 1: logo cover -->
+        <div class="panel p-cover">
+            <div class="panel-num">01 — MARK</div>
+            <div class="panel-inner display">
+                <svg class="cover-mark" viewBox="0 0 32 32" fill="none">
+                    <rect x="2.5" y="2.5" width="27" height="27" rx="7" stroke="currentColor" stroke-width="2.2"/>
+                    <path d="M13 11.5L21.5 16L13 20.5V11.5Z" fill="currentColor"/>
+                </svg>
+                <div class="cover-word">Kino im Kasten</div>
+                <div class="cover-sub">Das studentische Programmkino der TU Dresden — ein Kasten, aus dem Licht fällt.</div>
+            </div>
+        </div>
+
+        <!-- 2: construction -->
+        <div class="panel p-construct">
+            <div class="panel-num">02 — CONSTRUCTION</div>
+            <div class="panel-inner">
+                <svg class="construct-diagram" viewBox="0 0 200 200" fill="none">
+                    <rect x="20" y="20" width="160" height="160" rx="34" stroke="#453A31" stroke-width="1" stroke-dasharray="2 4"/>
+                    <rect x="20" y="20" width="160" height="160" rx="34" stroke="#C4301F" stroke-width="2"/>
+                    <line x1="100" y1="20" x2="100" y2="180" stroke="#453A31" stroke-width="1" stroke-dasharray="2 4"/>
+                    <line x1="20" y1="100" x2="180" y2="100" stroke="#453A31" stroke-width="1" stroke-dasharray="2 4"/>
+                    <path d="M76 66L134 100L76 134V66Z" fill="#C4301F"/>
+                </svg>
+                <div class="construct-caption">Der <b>Kasten</b> — Box und Filmrahmen zugleich. Der Schnitt öffnet sich als <b>Play-Zeichen</b>: Licht, das aus der Box fällt.</div>
+            </div>
+        </div>
+
+        <!-- 3: digital application -->
+        <div class="panel p-app">
+            <div class="panel-num">03 — WEB</div>
+            <div class="panel-inner">
+                <div class="browser-chrome">
+                    <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+                    <span class="browser-url">kino-im-kasten.de</span>
+                </div>
+                <div class="browser-body">
+                    <div class="app-nav">
+                        <div class="app-nav-brand">
+                            <svg viewBox="0 0 32 32" fill="none"><rect x="2.5" y="2.5" width="27" height="27" rx="7" stroke="currentColor" stroke-width="2.6"/><path d="M13 11.5L21.5 16L13 20.5V11.5Z" fill="currentColor"/></svg>
+                            KiK
+                        </div>
+                        <div class="app-nav-cta">Programm</div>
+                    </div>
+                    <div class="app-card"><div class="app-card-thumb"></div><div class="app-card-text"><b>Sommerkino im Hof</b><span>Mi · 21:30 · Eintritt frei</span></div></div>
+                    <div class="app-card"><div class="app-card-thumb" style="background:linear-gradient(160deg,#C08F2E,#7A5A12)"></div><div class="app-card-text"><b>Filmreihe: Neu im Kasten</b><span>Fr · 20:00 · Hörsaalzentrum</span></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4: tagline -->
+        <div class="panel p-tagline">
+            <div class="panel-num">04 — ESSENCE</div>
+            <div class="panel-inner tagline-text display" style="justify-content:center">Film <em>für</em> alle.</div>
+        </div>
+
+        <!-- 5: color system -->
+        <div class="panel p-color">
+            <div class="panel-num">05 — COLOR</div>
+            <div class="panel-inner">
+                <div class="color-row">
+                    <div class="swatch" style="background:var(--red-700)"><span>700</span></div>
+                    <div class="swatch" style="background:var(--red-600)"><span>600</span></div>
+                    <div class="swatch" style="background:var(--red-500)"><span>500 · Primary</span></div>
+                    <div class="swatch" style="background:var(--red-400)"><span>400</span></div>
+                    <div class="swatch" style="background:var(--red-300)"><span>300</span></div>
+                </div>
+                <div class="color-row">
+                    <div class="swatch" style="background:var(--gold-700)"><span>700</span></div>
+                    <div class="swatch" style="background:var(--gold-500)"><span>500 · Secondary</span></div>
+                    <div class="swatch" style="background:var(--gold-300)"><span>300</span></div>
+                    <div class="swatch" style="background:var(--ink);flex:0.6"><span>Ink</span></div>
+                    <div class="swatch" style="background:var(--paper);border:1px solid var(--panel-line);flex:0.6"><span style="mix-blend-mode:normal;color:var(--ink-dim)">Paper</span></div>
+                </div>
+                <div class="color-row" style="margin-top:2px">
+                    <div class="swatch" style="background:var(--success-500);height:36px"><span style="color:#fff">OK</span></div>
+                    <div class="swatch" style="background:var(--warning);height:36px"><span style="color:#fff">Warn</span></div>
+                    <div class="swatch" style="background:var(--error);height:36px"><span style="color:#fff">Error</span></div>
+                    <div class="swatch" style="background:var(--info-500);height:36px"><span style="color:#fff">Info</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6: typography -->
+        <div class="panel p-type">
+            <div class="panel-num">06 — TYPE</div>
+            <div class="panel-inner">
+                <div class="type-sample-display display">Aa Kk</div>
+                <div class="type-sample-body">Kino im Kasten zeigt Filme für alle Gäste — auch Uniexterne.</div>
+                <div class="type-legend">
+                    <div><b>Display</b>Bebas Neue · 400 · Caps</div>
+                    <div><b>Text</b>Noto Sans · 400–700</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7: physical application -->
+        <div class="panel p-physical">
+            <div class="panel-num">07 — TICKET</div>
+            <div class="panel-inner" style="align-items:center;justify-content:center">
+                <div class="ticket">
+                    <div class="ticket-main">
+                        <div class="ticket-eyebrow">EINTRITT FREI</div>
+                        <div class="ticket-title display">Sommerkino</div>
+                        <div class="ticket-meta">Fritz-Förster-Bau · Hof<br>Einlass 21:00</div>
+                    </div>
+                    <div class="ticket-stub">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M4 12h16M14 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8: image direction -->
+        <div class="panel p-image">
+            <div class="panel-num">08 — IMAGE</div>
+            <div class="halftone"></div>
+            <div class="panel-inner">
+                <div class="marquee-bulbs"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                <div class="image-caption">Dunkler Saal, warmes Rot, Projektorlicht im Halbton — nie glatte Stock-Fotografie.</div>
+            </div>
+        </div>
+
+        <!-- 9: system detail -->
+        <div class="panel p-system">
+            <div class="panel-num">09 — DETAIL</div>
+            <div class="panel-inner">
+                <div class="chip-row">
+                    <span class="chip on-red">Heute im Programm</span>
+                    <span class="chip">Drama</span>
+                    <span class="chip">OmU</span>
+                    <span class="chip on-gold">Sommerkino</span>
+                </div>
+                <span class="system-btn">Tickets ansehen</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer eyebrow">
+        <span>Kino im Kasten · Studentisches Programmkino, TU Dresden</span>
+        <span>Brand Kit — nicht zur Veröffentlichung</span>
+    </div>
+
+</div>
+</body>
+</html>

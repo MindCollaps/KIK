@@ -1,2 +1,10 @@
-User-Agent: *
-Disallow:
+User-agent: *
+Disallow: /frog/
+Disallow: /admin/
+Disallow: /stats/
+Disallow: /tutorials/
+Allow: /
+
+User-agent: MJ12bot
+Disallow: /programm
+Crawl-Delay: 20

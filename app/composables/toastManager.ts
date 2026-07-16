@@ -2,18 +2,25 @@ import { ToastMode } from '~~/types/toast';
 import type { Toast, ShowToastOptions } from '~~/types/toast';
 import { useStore } from '~/store';
 import { v4 } from 'uuid';
-import type { Socket } from 'socket.io-client';
 
 export function useToastManager() {
     const store = useStore();
 
+    const defaultDurationByMode: Record<ToastMode, number> = {
+        [ToastMode.Success]: 4500,
+        [ToastMode.Info]: 6500,
+        [ToastMode.Warning]: 9000,
+        [ToastMode.Error]: 10000,
+    };
+
     const showToast = (options: ShowToastOptions) => {
+        const mode = options.mode ?? ToastMode.Info;
         const toast: Toast = {
             id: v4(),
-            mode: options.mode ?? ToastMode.Info,
-            title: options.title ?? (options.mode ?? ToastMode.Info),
+            mode,
+            title: options.title ?? mode,
             message: options.message,
-            duration: options.duration ?? 8000, // 8 seconds
+            duration: options.duration ?? defaultDurationByMode[mode],
         };
 
         return store.addToast(toast);
@@ -28,36 +35,3 @@ export function useToastManager() {
         removeToast,
     };
 }
-
-export function registerToastManager(socket: Socket) {
-    const { showToast } = useToastManager();
-
-    socket.on('errorMessage', message => {
-        showToast({
-            mode: ToastMode.Error,
-            message: message,
-        });
-    });
-
-    socket.on('infoMessage', message => {
-        showToast({
-            mode: ToastMode.Info,
-            message: message,
-        });
-    });
-
-    socket.on('warningMessage', message => {
-        showToast({
-            mode: ToastMode.Warning,
-            message: message,
-        });
-    });
-
-    socket.on('successMessage', message => {
-        showToast({
-            mode: ToastMode.Success,
-            message: message,
-        });
-    });
-}
-

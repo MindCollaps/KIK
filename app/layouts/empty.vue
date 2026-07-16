@@ -3,15 +3,14 @@
         <nuxt-loading-indicator :color="colorsList.primary300"/>
         <slot/>
         <common-toast-container/>
-        <view-version/>
     </div>
 </template>
 
 <script setup lang="ts">
 import { colorsList } from '#imports';
-import ViewVersion from '~/components/views/ViewVersion.vue';
+import type { VNode } from 'vue';
 
-defineSlots<{ default: () => any }>();
+defineSlots<{ default: () => VNode[] }>();
 
 useLayout();
 </script>

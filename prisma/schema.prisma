@@ -6,3 +6,104 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum ProgramStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  HIDDEN
+}
+
+enum ProgramStyle {
+  DEFAULT
+  SPECIAL
+  HIGHLIGHTED
+  CUSTOM
+}
+
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Page {
+  id          String     @id @default(uuid())
+  slug        String     @unique
+  title       String
+  description String?
+  theme       String     @default("info")
+  status      PageStatus @default(PUBLISHED)
+  blocks      Json
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([status])
+}
+
+model SiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model AdminUser {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  name         String
+  passwordHash String
+  sessions     AdminSession[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model AdminSession {
+  id        String    @id @default(uuid())
+  tokenHash String    @unique
+  expiresAt DateTime
+  userId    String
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model SetupState {
+  key       String   @id
+  createdAt DateTime @default(now())
+}
+
+model ProgramEntry {
+  id             String        @id @default(uuid())
+  title          String
+  description    String
+  startsAt       DateTime
+  venue          String?
+  language       String?
+  runtimeMinutes Int?
+  ageRating      String?
+  director       String?
+  country        String?
+  releaseYear    Int?
+  infoUrl        String?
+  priceCents     Int?
+  isFree         Boolean       @default(false)
+  style          ProgramStyle  @default(DEFAULT)
+  highlightColor String?
+  customBadgeText String?
+  customBadgeBorder Boolean     @default(false)
+  imagePath      String?
+  imageAlt       String?
+  doesTheDogDieId Int?
+  contentWarnings Json?
+  contentWarningsUpdatedAt DateTime?
+  status         ProgramStatus @default(DRAFT)
+  visibleFrom    DateTime?
+  visibleUntil   DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([status, startsAt])
+  @@index([status, visibleFrom, visibleUntil])
+  @@index([doesTheDogDieId])
+}
+

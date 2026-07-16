@@ -1,17 +1,20 @@
 services:
-  xxx-changeme-app:
-    image: ghcr.io/mindcollaps/xxx-changeme:latest
-    container_name: xxx-changeme-app
+  kik-app:
+    image: ghcr.io/mindcollaps/kik:latest
+    container_name: kik-app
     environment:
       - NODE_ENV=production
       - PORT=3000
       - NITRO_HOST=0.0.0.0
+      - UPLOAD_DIR=/app/uploads
     depends_on:
       db:
         condition: service_healthy
     restart: unless-stopped
     env_file:
       - .env
+    volumes:
+      - uploads_data:/app/uploads
     healthcheck:
       test:
           - CMD-SHELL
@@ -21,7 +24,7 @@ services:
       retries: 10
   db:
     image: 'postgres:18.1-alpine'
-    container_name: xxx-changeme-db
+    container_name: kik-db
     volumes:
       - db_data:/var/lib/postgresql/18/docker
     healthcheck:
@@ -37,3 +40,4 @@ services:
 volumes:
   db_data:
   redis_data:
+  uploads_data:

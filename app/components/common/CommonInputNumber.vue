@@ -1,5 +1,5 @@
 <template>
-    <common-input-text
+    <ui-input-text
         v-model="inputValue"
         v-model:focused="focused"
         :height
@@ -16,12 +16,11 @@
         >
             <slot name="icon"/>
         </template>
-    </common-input-text>
+    </ui-input-text>
 </template>
 
 <script setup lang="ts">
 import type { PropType } from 'vue';
-import CommonInputText from '~/components/common/CommonInputText.vue';
 
 defineProps({
     inputAttrs: {

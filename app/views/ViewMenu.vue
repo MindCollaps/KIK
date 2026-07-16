@@ -6,7 +6,7 @@
             class="header__menu_btn-wrapper"
             :class="{ 'header__menu_btn-wrapper--has-children': button.children }"
         >
-            <common-button
+            <ui-button
                 class="header__menu_btn-container"
                 :disabled="button.disabled"
                 :icon="button.icon"
@@ -29,12 +29,12 @@
                         />
                     </div>
                 </div>
-            </common-button>
+            </ui-button>
             <div
                 v-if="button.children"
                 class="header__menu_btn_children_menu"
             >
-                <common-button
+                <ui-button
                     v-for="childrenButton in button.children"
                     :key="childrenButton.text"
                     :disabled="childrenButton.disabled"
@@ -44,7 +44,7 @@
                     @click="childrenButton.action?.()"
                 >
                     {{ childrenButton.text }}
-                </common-button>
+                </ui-button>
             </div>
         </div>
     </div>

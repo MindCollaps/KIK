@@ -12,8 +12,8 @@ generate_secret() {
 
 echo "Generating new .env file with random secrets..."
 
-POSTGRES_USER="xxx-changeme"
-POSTGRES_DB="xxx-changemedb"
+POSTGRES_USER="kik"
+POSTGRES_DB="kikdb"
 POSTGRES_PASSWORD=$(generate_secret)
 
 cat > .env <<EOF

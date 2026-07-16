@@ -23,8 +23,10 @@ const { toasts } = storeToRefs(store);
 
 <style scoped lang="scss">
 .toast-container {
+    pointer-events: none;
+
     position: fixed;
-    z-index: 9999;
+    z-index: var(--z-toast, 60);
     right: 32px;
     bottom: 0;
 
@@ -34,9 +36,10 @@ const { toasts } = storeToRefs(store);
 }
 
 .toast-item {
+    pointer-events: auto;
     position: fixed;
     right: 32px;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity 0.25s ease-out, transform 0.25s ease-out;
 }
 
 .toast-list-enter-from {
@@ -45,7 +48,21 @@ const { toasts } = storeToRefs(store);
 }
 
 .toast-list-leave-to {
-    transform: translateX(300px);
+    transform: translateX(120%);
     opacity: 0;
+}
+
+@include mobileOnly {
+    .toast-container,
+    .toast-item {
+        right: 12px;
+        left: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toast-item {
+        transition: none;
+    }
 }
 </style>
