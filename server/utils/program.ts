@@ -4,7 +4,7 @@ import type { ProgramEntry } from '../../types/program';
 const optionalText = (max: number) => z.string().trim().max(max).nullable();
 const optionalDate = z.string().datetime({ offset: true }).nullable();
 
-export const programEntrySchema = z.object({
+const programEntryBaseSchema = z.object({
     title: z.string().trim().min(1).max(160),
     description: z.string().trim().min(1).max(4000),
     startsAt: z.string().datetime({ offset: true }),
@@ -30,7 +30,9 @@ export const programEntrySchema = z.object({
     status: z.enum(['DRAFT', 'SCHEDULED', 'PUBLISHED', 'HIDDEN']),
     visibleFrom: optionalDate,
     visibleUntil: optionalDate,
-}).superRefine((entry, context) => {
+});
+
+function programEntryChecks(entry: z.infer<typeof programEntryBaseSchema>, context: z.RefinementCtx) {
     if (entry.status === 'SCHEDULED' && !entry.visibleFrom) {
         context.addIssue({
             code: 'custom',
@@ -54,6 +56,17 @@ export const programEntrySchema = z.object({
             message: 'Bitte gib einen Text fuer den Custom-Badge an.',
         });
     }
+}
+
+export const programEntrySchema = programEntryBaseSchema.superRefine(programEntryChecks);
+
+export const programExportSchema = z.object({
+    kind: z.literal('kik-program'),
+    version: z.literal(1),
+    exportedAt: z.string().optional(),
+    entries: z.array(
+        programEntryBaseSchema.extend({ id: z.string().uuid().optional() }).superRefine(programEntryChecks),
+    ).max(1000),
 });
 
 export function programVisibilityWhere(now: Date) {

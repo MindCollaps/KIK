@@ -12,6 +12,18 @@
                 </button>
             </div>
 
+            <div class="transfer-row">
+                <button type="button" class="ghost-button" @click="exportProgram">
+                    <Icon name="material-symbols:download-rounded" aria-hidden="true" />
+                    Exportieren
+                </button>
+                <label class="ghost-button">
+                    <Icon name="material-symbols:upload-rounded" aria-hidden="true" />
+                    Importieren
+                    <input type="file" accept="application/json,.json" @change="importProgram">
+                </label>
+            </div>
+
             <div class="filter-row" aria-label="Programm filtern">
                 <button
                     v-for="filter in filters"
@@ -81,6 +93,7 @@
 import type { ProgramEntry, ProgramEntryInput, ProgramStatus } from '~~/types/program';
 import { ToastMode } from '~~/types/toast';
 import { useToastManager } from '~/composables/toastManager';
+import { downloadJson } from '~/utils/content-blocks';
 
 interface ApiError {
     data?: { statusMessage?: string };
@@ -193,6 +206,48 @@ async function deleteEntry(entry: ProgramEntry) {
     }
 }
 
+async function exportProgram() {
+    try {
+        const payload = await $fetch('/api/admin/program-export');
+        downloadJson(payload, `kik-programm-${new Date().toISOString().slice(0, 10)}.json`);
+    }
+    catch (error: unknown) {
+        showToast({
+            mode: ToastMode.Error,
+            title: 'Export fehlgeschlagen',
+            message: apiErrorMessage(error, 'Der Export ist fehlgeschlagen.'),
+        });
+    }
+}
+
+async function importProgram(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    if (!confirm('Der Import überschreibt Programmeinträge mit gleicher ID. Fortfahren?')) return;
+
+    try {
+        const parsed = JSON.parse(await file.text());
+        const result = await $fetch<{ importedEntries: number }>('/api/admin/program-import', { method: 'POST', body: parsed });
+        closeEditor();
+        await loadEntries();
+        showToast({
+            mode: ToastMode.Success,
+            title: 'Import abgeschlossen',
+            message: `${result.importedEntries} Einträge übernommen.`,
+        });
+    }
+    catch (error: unknown) {
+        showToast({
+            mode: ToastMode.Error,
+            title: 'Import fehlgeschlagen',
+            message: apiErrorMessage(error, 'Der Import ist fehlgeschlagen. Ist die Datei ein gültiger Programm-Export?'),
+        });
+    }
+}
+
 function formatCompactDate(value: string) {
     return new Intl.DateTimeFormat('de-DE', {
         day: '2-digit',
@@ -272,6 +327,51 @@ function formatCompactDate(value: string) {
     &:focus-visible {
         outline: 2px solid $primary300;
         outline-offset: 3px;
+    }
+}
+
+.transfer-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.ghost-button {
+    cursor: pointer;
+
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+
+    min-height: 40px;
+    padding: 0 0.8rem;
+    border: 1px solid $darkgray700;
+    border-radius: 8px;
+
+    font: inherit;
+    font-size: 0.8rem;
+    color: $lightgray150;
+
+    background: transparent;
+
+    input {
+        display: none;
+    }
+
+    svg {
+        width: 1.05rem;
+        height: 1.05rem;
+        color: $secondary300;
+    }
+
+    &:hover {
+        border-color: $secondary600;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $primary400;
+        outline-offset: 2px;
     }
 }
 

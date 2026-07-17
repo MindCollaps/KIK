@@ -27,6 +27,7 @@
             <admin-pages-panel v-else-if="activeTab === 'pages'" />
             <admin-site-panel v-else-if="activeTab === 'site'" />
             <admin-users-panel v-else :current-user-id="currentUser?.id ?? ''" />
+            <views-view-version/>
         </template>
     </main>
 </template>

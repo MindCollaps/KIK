@@ -8,7 +8,7 @@
             `button--orientation-${ orientation }`,
             {
                 'button--disabled': disabled,
-                'button--icon': !!$slots.icon && !$slots.default,
+                'button--icon': (!!$slots.icon || !!icon) && !$slots.default,
             },
         ]"
         :style="{
@@ -24,10 +24,12 @@
         @click="!disabled && $emit('click', $event)"
     >
         <div
-            v-if="$slots.icon"
+            v-if="$slots.icon || icon"
             class="button_icon"
         >
-            <slot name="icon"/>
+            <slot name="icon">
+                <Icon :name="icon" aria-hidden="true" />
+            </slot>
         </div>
         <span
             v-if="$slots.default"
@@ -52,6 +54,10 @@ import type { ColorsList } from '~/utils/styles';
 import { colorsList } from '~/utils/styles';
 
 const props = defineProps({
+    icon: {
+        type: String,
+        default: null,
+    },
     tag: {
         type: String,
         default: null,

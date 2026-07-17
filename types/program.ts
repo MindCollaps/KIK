@@ -91,3 +91,10 @@ export interface ProgramEntryInput {
     visibleFrom: string | null;
     visibleUntil: string | null;
 }
+
+export interface ProgramExport {
+    kind: 'kik-program';
+    version: 1;
+    exportedAt?: string;
+    entries: (ProgramEntryInput & { id?: string })[];
+}
