@@ -31,7 +31,6 @@ COPY --chown=app:app --from=builder /app/.output ./.output
 COPY --chown=app:app --from=builder /app/public ./public
 COPY --chown=app:app prisma ./prisma
 COPY --chown=app:app prisma.config.js ./prisma.config.js
-COPY --chown=app:app .config/wordlists ./.config/wordlists
 
 COPY --chown=app:app .config/entrypoint.sh ./entrypoint.sh
 
