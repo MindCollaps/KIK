@@ -3,6 +3,10 @@ dist
 .git
 .gitignore
 data
+db
+uploads
+.output
+.nuxt
 *.md
 .env
 .DS_Store

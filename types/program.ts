@@ -4,15 +4,17 @@ export const programStyles = ['DEFAULT', 'SPECIAL', 'HIGHLIGHTED', 'CUSTOM'] as 
 export type ProgramStatus = typeof programStatuses[number];
 export type ProgramStyle = typeof programStyles[number];
 
-export interface ContentWarningStat {
+// Type-Aliase statt Interfaces: Aliase besitzen implizite Index-Signaturen
+// und sind dadurch direkt an Prismas InputJsonValue (Json-Spalten) zuweisbar.
+export type ContentWarningStat = {
     topicId: number;
     topicName: string;
     yesSum: number;
     noSum: number;
     numComments: number;
-}
+};
 
-export interface ContentWarningSnapshot {
+export type ContentWarningSnapshot = {
     itemId: number;
     name: string;
     releaseYear: number | null;
@@ -20,7 +22,7 @@ export interface ContentWarningSnapshot {
     posterImage: string | null;
     fetchedAt: string;
     stats: ContentWarningStat[];
-}
+};
 
 export interface DoesTheDogDieSearchResult {
     id: number;

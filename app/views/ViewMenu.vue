@@ -11,7 +11,7 @@
                 :disabled="button.disabled"
                 :icon="button.icon"
                 :to="button.path"
-                :type="button.active ? 'secondary-875' : 'secondary'"
+                :type="button.active ? 'secondary-black' : 'secondary'"
                 :width="button.width"
                 @click="button.action?.()"
             >

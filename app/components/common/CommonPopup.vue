@@ -35,7 +35,7 @@
 
 
 <script setup lang="ts">
-import type { PropType } from 'vue';
+import type { PropType, VNode } from 'vue';
 
 defineProps({
     type: {
@@ -63,9 +63,11 @@ defineProps({
     },
     submitIcon: {
         type: String,
+        default: null,
     },
     closeIcon: {
         type: String,
+        default: null,
     },
 });
 
@@ -79,7 +81,7 @@ const emit = defineEmits({
 });
 
 defineSlots<{
-    default(): any;
+    default(): VNode[];
 }>();
 </script>
 

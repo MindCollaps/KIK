@@ -36,6 +36,7 @@ defineProps<{
 
         h3 {
             margin: 0;
+
             font-size: 1.2rem;
             font-weight: 600;
             line-height: 1.3;
@@ -51,16 +52,16 @@ defineProps<{
     }
 
     &_meta {
-        font-weight: 600;
         font-size: 13px;
+        font-weight: 600;
         color: $secondary400;
     }
 
     @include hover {
         &_card {
-            transition: border-color 200ms ease-out, box-shadow 200ms ease-out;
             border-color: $darkgray700;
             box-shadow: 0 4px 12px rgba($blackOrig, 0.3);
+            transition: border-color 200ms ease-out, box-shadow 200ms ease-out;
         }
     }
 

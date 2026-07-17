@@ -36,9 +36,10 @@ defineSlots<{
     &_description {
         max-width: 65ch;
         margin-top: 14px;
+
+        font-size: 15px;
         line-height: 1.75;
         color: $lightgray200;
-        font-size: 15px;
     }
 
     @include mobileOnly {

@@ -22,11 +22,11 @@ withDefaults(defineProps<{
 
     font-family: $displayFont;
     font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    text-wrap: balance;
-    overflow-wrap: anywhere;
     hyphens: auto;
+    text-transform: uppercase;
+    text-wrap: balance;
+    letter-spacing: 0.02em;
+    overflow-wrap: anywhere;
 
     &--hero {
         font-size: clamp(46px, 8vw, 90px);

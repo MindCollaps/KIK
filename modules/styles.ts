@@ -11,16 +11,17 @@ function colorToRgb(hex: string): [r: number, g: number, b: number] | null {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i, function(m, r, g, b) {
         return r + r + g + g + b + b;
     }));
-    if (!result) throw new Error(`Failed to convert color ${ hex } from hex to rgb`);
+    const [, red, green, blue] = result ?? [];
+    if (!red || !green || !blue) throw new Error(`Failed to convert color ${ hex } from hex to rgb`);
 
     return [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16),
+        parseInt(red, 16),
+        parseInt(green, 16),
+        parseInt(blue, 16),
     ];
 }
 
-export default defineNuxtModule((_, nuxt) => {
+export default defineNuxtModule(() => {
     let scss = `@use 'sass:color';@use 'sass:map';@use 'sass:string';@function toRawRGB($color) {
     @return string.unquote(color.channel($color, "red") + ', ' + color.channel($color, "green") + ', ' + color.channel($color, "blue"));
 }`;

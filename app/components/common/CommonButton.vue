@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import type { PropType } from 'vue';
+import type { PropType, VNode } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 import { NuxtLink } from '#components';
 import type { ColorsList } from '~/utils/styles';
@@ -55,9 +55,11 @@ import { colorsList } from '~/utils/styles';
 const props = defineProps({
     tag: {
         type: String,
+        default: null,
     },
     width: {
         type: String,
+        default: null,
     },
     iconWidth: {
         type: String,
@@ -114,15 +116,13 @@ const props = defineProps({
 });
 
 defineEmits({
-    click(e: MouseEvent) {
-        return true;
-    },
+    click: (_e: MouseEvent) => true,
 });
 
 defineSlots<{
-    default?(): any;
-    icon?(): any;
-    append?(): any;
+    default?(): VNode[];
+    icon?(): VNode[];
+    append?(): VNode[];
 }>();
 
 const getTag = computed(() => {
@@ -133,7 +133,7 @@ const getTag = computed(() => {
 });
 
 const getAttrs = computed(() => {
-    const attrs: Record<string, any> = {};
+    const attrs: { to?: RouteLocationRaw | string; noPrefetch?: boolean; href?: string } = {};
     if (props.to) {
         attrs.to = props.to;
         attrs.noPrefetch = true;

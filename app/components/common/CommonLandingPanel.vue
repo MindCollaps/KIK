@@ -8,6 +8,8 @@
 </template>
 
 <script setup lang="ts">
+import type { VNode } from 'vue';
+
 withDefaults(defineProps<{
     title: string;
     split?: boolean;
@@ -16,7 +18,7 @@ withDefaults(defineProps<{
 });
 
 defineSlots<{
-    default: () => any;
+    default: () => VNode[];
 }>();
 </script>
 

@@ -8,7 +8,7 @@
             v-else-if="store.me?.loggedIn"
             icon-width="45px"
             to="/profile"
-            type="transparent"
+            type="link"
         >
             <template #default>
                 <div class="loggedin-view">

@@ -47,7 +47,7 @@
 <script setup lang="ts">
     const props = defineProps({
     inputAttrs: {
-        type: Object as PropType<Record<string, any>>,
+        type: Object as PropType<Record<string, unknown>>,
         default: () => {},
     },
     inputType: {
@@ -56,15 +56,18 @@
     },
     height: {
         type: String,
+        default: null,
     },
     placeholder: {
         type: String,
+        default: null,
     },
     disabled: {
         type: Boolean,
     },
     icon: {
         type: String,
+        default: null,
     },
     maxInputLength: {
         type: Number,
@@ -77,12 +80,8 @@
 });
 
 defineEmits({
-    input(event: Event) {
-        return true;
-    },
-    change(event: Event) {
-        return true;
-    },
+    input: (_event: Event) => true,
+    change: (_event: Event) => true,
 });
 
 defineSlots<{ default?: () => string }>();
@@ -92,7 +91,7 @@ const model = defineModel({ type: String, default: null });
 
 const inputRef = ref<HTMLInputElement | null>(null);
 
-const currentLength = computed(() => model.value?.length);
+const currentLength = computed(() => model.value?.length ?? 0);
 const isLengthExceeded = computed(() => currentLength.value > props.maxInputLength);
 
 defineExpose({

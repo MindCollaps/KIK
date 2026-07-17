@@ -20,32 +20,30 @@
 </template>
 
 <script setup lang="ts">
-import type { PropType } from 'vue';
+import type { PropType, VNode } from 'vue';
 import UiInputText from '~/components/ui/UiInputText.vue';
 
 defineProps({
     inputAttrs: {
-        type: Object as PropType<Record<string, any>>,
+        type: Object as PropType<Record<string, unknown>>,
         default: () => {},
     },
     height: {
         type: String,
+        default: null,
     },
     placeholder: {
         type: String,
+        default: null,
     },
 });
 
 defineEmits({
-    input(event: Event) {
-        return true;
-    },
-    change(event: Event) {
-        return true;
-    },
+    input: (_event: Event) => true,
+    change: (_event: Event) => true,
 });
 
-defineSlots<{ default?: () => string; icon?: () => any }>();
+defineSlots<{ default?: () => string; icon?: () => VNode[] }>();
 
 const focused = defineModel('focused', { type: Boolean });
 const model = defineModel({ type: Number as PropType<null | number>, default: null });

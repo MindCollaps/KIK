@@ -2,7 +2,7 @@
     <ui-button
         :icon="right ? 'material-symbols:chevron-right' : 'material-symbols:chevron-left'"
         icon-width="30px"
-        type="transparent"
+        type="link"
         @click="$emit('click', $event)"
     />
 </template>
@@ -13,9 +13,7 @@ defineProps({
 });
 
 defineEmits({
-    click(e: MouseEvent) {
-        return true;
-    },
+    click: (_e: MouseEvent) => true,
 });
 </script>
 
