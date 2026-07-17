@@ -4,8 +4,6 @@ export const programStyles = ['DEFAULT', 'SPECIAL', 'HIGHLIGHTED', 'CUSTOM'] as 
 export type ProgramStatus = typeof programStatuses[number];
 export type ProgramStyle = typeof programStyles[number];
 
-// Type-Aliase statt Interfaces: Aliase besitzen implizite Index-Signaturen
-// und sind dadurch direkt an Prismas InputJsonValue (Json-Spalten) zuweisbar.
 export type ContentWarningStat = {
     topicId: number;
     topicName: string;
