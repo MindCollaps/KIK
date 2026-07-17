@@ -39,5 +39,4 @@ services:
 
 volumes:
   db_data:
-  redis_data:
   uploads_data:
