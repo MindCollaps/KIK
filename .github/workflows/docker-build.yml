@@ -33,8 +33,42 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
+      # docker/metadata-action calls the GitHub REST API (repos.getCommit) to
+      # resolve the image-created label and occasionally hits a transient
+      # GitHub API error (e.g. a 5xx HTML page). Retry a couple of times
+      # before giving up, since the step is cheap and idempotent.
+      - name: Extract metadata (attempt 1)
+        id: meta1
+        continue-on-error: true
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=sha
+
+      - name: Wait before metadata retry
+        if: steps.meta1.outcome == 'failure'
+        run: sleep 15
+
+      - name: Extract metadata (attempt 2)
+        id: meta2
+        if: steps.meta1.outcome == 'failure'
+        continue-on-error: true
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=sha
+
+      - name: Extract metadata (attempt 3)
+        id: meta3
+        if: steps.meta2.outcome == 'failure'
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
@@ -50,7 +84,7 @@ jobs:
           context: .
           file: .config/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta1.outputs.tags || steps.meta2.outputs.tags || steps.meta3.outputs.tags }}
+          labels: ${{ steps.meta1.outputs.labels || steps.meta2.outputs.labels || steps.meta3.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

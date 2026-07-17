@@ -74,6 +74,8 @@
 import type { ContentWarningSnapshot, ContentWarningStat, ProgramEntry } from '~~/types/program';
 import { formatProgramDate } from '~/composables/program';
 import ThemePageSwitcher from '~/components/theme/ThemePageSwitcher.vue';
+import { usePageSeo } from '~/composables/seo';
+import { truncateForMeta } from '~/utils/seo';
 
 definePageMeta({ layout: 'default' });
 
@@ -89,7 +91,14 @@ const confirmedWarnings = computed(() => (warningSnapshot.value?.stats ?? [])
     .filter(warning => warning.yesSum > warning.noSum)
     .sort((left, right) => right.yesSum - left.yesSum));
 
-useHead(() => ({ title: entry.value?.title ?? 'Programm' }));
+usePageSeo(() => ({
+    title: entry.value?.title ?? 'Vorstellung',
+    description: entry.value
+        ? `${ formatProgramDate(entry.value.startsAt) } – ${ truncateForMeta(entry.value.description, 130) }`
+        : null,
+    image: entry.value?.imagePath,
+    type: 'article',
+}));
 
 function warningConfidence(warning: ContentWarningStat) {
     const votes = warning.yesSum + warning.noSum;

@@ -54,6 +54,9 @@ const message = computed(() => isNotFound.value
 
 useHead(() => ({
     title: `${props.error.statusCode} · Kino im Kasten`,
+    meta: [
+        { key: 'robots', name: 'robots', content: 'noindex, nofollow' },
+    ],
 }));
 
 function goHome() {

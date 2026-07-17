@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ProgramEntry } from '../../types/program';
 
 const optionalText = (max: number) => z.string().trim().max(max).nullable();
 const optionalDate = z.string().datetime({ offset: true }).nullable();
@@ -21,6 +22,8 @@ export const programEntrySchema = z.object({
     highlightColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable(),
     customBadgeText: optionalText(48),
     customBadgeBorder: z.boolean(),
+    customBadgeIcon: optionalText(80),
+    customCardBorder: z.boolean(),
     imagePath: z.string().regex(/^\/media\/[a-zA-Z0-9._-]+$/).nullable(),
     imageAlt: optionalText(240),
     doesTheDogDieId: z.number().int().positive().nullable(),
@@ -53,6 +56,41 @@ export const programEntrySchema = z.object({
     }
 });
 
+export function programVisibilityWhere(now: Date) {
+    return {
+        startsAt: { gte: new Date(now.getTime() - 6 * 60 * 60 * 1000) },
+        OR: [
+            { status: 'PUBLISHED' as const },
+            {
+                status: 'SCHEDULED' as const,
+                visibleFrom: { lte: now },
+                AND: [
+                    { OR: [{ visibleUntil: null }, { visibleUntil: { gt: now } }] },
+                ],
+            },
+        ],
+    };
+}
+
+const feedCurrencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+
+export function formatFeedPrice(entry: Pick<ProgramEntry, 'isFree' | 'priceCents'>) {
+    if (entry.isFree) return 'Eintritt frei';
+    if (entry.priceCents === null) return 'Preis vor Ort';
+    return feedCurrencyFormatter.format(entry.priceCents / 100);
+}
+
+export function buildFeedDescription(entry: Pick<ProgramEntry, 'description' | 'venue' | 'language' | 'runtimeMinutes' | 'director' | 'releaseYear' | 'isFree' | 'priceCents'>) {
+    const meta: string[] = [];
+    if (entry.venue) meta.push(`Ort: ${entry.venue}`);
+    if (entry.runtimeMinutes) meta.push(`Laufzeit: ${entry.runtimeMinutes} Min.`);
+    if (entry.language) meta.push(`Sprache: ${entry.language}`);
+    if (entry.director) meta.push(`Regie: ${entry.director}`);
+    if (entry.releaseYear) meta.push(`Jahr: ${entry.releaseYear}`);
+    meta.push(`Eintritt: ${formatFeedPrice(entry)}`);
+    return [entry.description.trim(), meta.join(' · ')].filter(Boolean).join('\n\n');
+}
+
 export function toProgramData(input: z.infer<typeof programEntrySchema>) {
     return {
         ...input,
@@ -60,8 +98,10 @@ export function toProgramData(input: z.infer<typeof programEntrySchema>) {
         visibleFrom: input.visibleFrom ? new Date(input.visibleFrom) : null,
         visibleUntil: input.visibleUntil ? new Date(input.visibleUntil) : null,
         priceCents: input.isFree ? null : input.priceCents,
-        highlightColor: input.style === 'HIGHLIGHTED' ? (input.highlightColor ?? '#D7AC5C') : null,
+        highlightColor: input.style === 'HIGHLIGHTED' || input.style === 'CUSTOM' ? (input.highlightColor ?? '#D7AC5C') : null,
         customBadgeText: input.style === 'CUSTOM' ? input.customBadgeText : null,
         customBadgeBorder: input.style === 'CUSTOM' ? input.customBadgeBorder : false,
+        customBadgeIcon: input.style === 'CUSTOM' ? input.customBadgeIcon : null,
+        customCardBorder: input.style === 'CUSTOM' ? input.customCardBorder : false,
     };
 }

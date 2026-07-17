@@ -38,6 +38,7 @@ import { resolvePageTheme } from '~~/types/content';
 import type { PageBlock, PageRecord, PageThemeChoice } from '~~/types/content';
 import type { ProgramEntry } from '~~/types/program';
 import ThemePageSwitcher from '~/components/theme/ThemePageSwitcher.vue';
+import { usePageSeo } from '~/composables/seo';
 
 definePageMeta({
     layout: 'default',
@@ -96,11 +97,11 @@ const {
 
 const programEntries = computed(() => programData.value?.entries ?? []);
 
-useHead(() => ({
-    title: page.value.title,
-    meta: page.value.description
-        ? [{ name: 'description', content: page.value.description }]
-        : [],
+usePageSeo(() => ({
+    // On the homepage the CMS title equals the site name itself; passing it
+    // through would duplicate the brand in the templated <title> ("X | X").
+    title: slug.value === '' ? undefined : page.value.title,
+    description: page.value.description,
 }));
 </script>
 

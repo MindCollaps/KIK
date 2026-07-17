@@ -13,19 +13,21 @@ defineProps<{
 </script>
 
 <style lang="scss">
+@use '~/scss/variables' as *;
+
 .content-page--theme-glow {
     background:
-        linear-gradient(180deg, rgb(15 12 10) 0%, rgb(22 18 16) 28%, rgb(15 12 10) 100%);
+        linear-gradient(180deg, $darkgray1000Orig 0%, $darkgray950Orig 28%, $darkgray1000Orig 100%);
 
     &::before {
         background:
-            radial-gradient(circle at 92% 88%, rgb(215 172 92 / 34%) 0%, rgb(215 172 92 / 0%) 44%),
-            radial-gradient(circle at 10% 6%, rgb(196 48 31 / 26%) 0%, rgb(196 48 31 / 0%) 38%);
+            radial-gradient(circle at 92% 88%, rgba($secondary400Orig, 0.34) 0%, rgba($secondary400Orig, 0) 44%),
+            radial-gradient(circle at 10% 6%, rgba($primary500Orig, 0.26) 0%, rgba($primary500Orig, 0) 38%);
     }
 
     &::after {
         background:
-            radial-gradient(circle at 80% 100%, rgb(215 172 92 / 18%) 0%, transparent 40%);
+            radial-gradient(circle at 80% 100%, rgba($secondary400Orig, 0.18) 0%, transparent 40%);
     }
 }
 </style>

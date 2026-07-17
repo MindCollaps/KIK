@@ -4,6 +4,7 @@ export default defineNuxtConfig({
     runtimeConfig: {
         public: {
             version: pkg.version,
+            siteUrl: process.env.NUXT_PUBLIC_SITE_URL,
         },
     },
     app: {

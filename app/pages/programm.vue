@@ -3,7 +3,7 @@
         <common-info-hero
             eyebrow="Kino im Kasten"
             title="Programm"
-            description="Das aktuelle Programm mit Uhrzeit, Ort und Sprache. Du musst nicht an der TU studieren, um vorbeizukommen."
+            :description="pageDescription"
         >
             <div class="hero-actions">
                 <common-button to="/sommerkino" type="secondary-black">Sommerkino ansehen</common-button>
@@ -76,13 +76,21 @@
 import type { ProgramEntry } from '~~/types/program';
 import { formatProgramMonth } from '~/composables/program';
 import ThemePageSwitcher from '~/components/theme/ThemePageSwitcher.vue';
+import { usePageSeo } from '~/composables/seo';
 
 definePageMeta({
     layout: 'default',
 });
 
+const pageDescription = 'Das aktuelle Programm mit Uhrzeit, Ort und Sprache. Du musst nicht an der TU studieren, um vorbeizukommen.';
+
 const route = useRoute();
 const { data, status, error, refresh } = await useFetch<{ entries: ProgramEntry[] }>('/api/program');
+
+usePageSeo(() => ({
+    title: 'Programm',
+    description: pageDescription,
+}));
 
 const programGroups = computed(() => {
     const groups = new Map<string, ProgramEntry[]>();

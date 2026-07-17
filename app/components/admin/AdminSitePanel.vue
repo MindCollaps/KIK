@@ -36,7 +36,7 @@
                 <div class="item-row_fields">
                     <input v-model.trim="item.label" maxlength="60" placeholder="Bezeichnung">
                     <input v-model.trim="item.path" maxlength="1000" placeholder="/pfad">
-                    <input v-model="item.icon" maxlength="120" placeholder="Icon (optional)">
+                    <ui-icon-picker v-model="item.icon" />
                 </div>
                 <div class="item-row_tools">
                     <button type="button" class="icon-button" :disabled="index === 0" aria-label="Nach oben" @click="moveItem(navigation.items, index, -1)">
@@ -104,7 +104,7 @@
                     <div class="item-row_fields">
                         <input v-model.trim="link.label" maxlength="80" placeholder="Bezeichnung">
                         <input v-model.trim="link.to" maxlength="1000" placeholder="/pfad oder https://…">
-                        <input v-model="link.icon" maxlength="120" placeholder="Icon (optional)">
+                        <ui-icon-picker v-model="link.icon" />
                     </div>
                     <div class="item-row_tools">
                         <button type="button" class="icon-button icon-button--danger" aria-label="Link entfernen" @click="group.links.splice(linkIndex, 1)">

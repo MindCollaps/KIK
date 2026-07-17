@@ -91,6 +91,8 @@ model ProgramEntry {
   highlightColor String?
   customBadgeText String?
   customBadgeBorder Boolean     @default(false)
+  customBadgeIcon String?
+  customCardBorder Boolean     @default(false)
   imagePath      String?
   imageAlt       String?
   doesTheDogDieId Int?

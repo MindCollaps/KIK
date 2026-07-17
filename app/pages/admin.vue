@@ -33,9 +33,10 @@
 
 <script setup lang="ts">
 import type { AdminUser } from '~~/types/user';
+import { usePageSeo } from '~/composables/seo';
 
 definePageMeta({ layout: 'empty' });
-useHead({ title: 'Programmverwaltung' });
+usePageSeo(() => ({ title: 'Programmverwaltung', noindex: true }));
 
 const requestFetch = useRequestFetch();
 const [setupResponse, meResponse] = await Promise.all([

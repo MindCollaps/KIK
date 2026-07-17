@@ -1,4 +1,5 @@
 import { prisma } from '../../../utils/prisma';
+import { programVisibilityWhere } from '../../../utils/program';
 
 export default defineEventHandler(async event => {
     const id = getRouterParam(event, 'id');
@@ -6,20 +7,7 @@ export default defineEventHandler(async event => {
 
     const now = new Date();
     const entry = await prisma.programEntry.findFirst({
-        where: {
-            id,
-            startsAt: { gte: new Date(now.getTime() - 6 * 60 * 60 * 1000) },
-            OR: [
-                { status: 'PUBLISHED' },
-                {
-                    status: 'SCHEDULED',
-                    visibleFrom: { lte: now },
-                    AND: [
-                        { OR: [{ visibleUntil: null }, { visibleUntil: { gt: now } }] },
-                    ],
-                },
-            ],
-        },
+        where: { id, ...programVisibilityWhere(now) },
     });
 
     if (!entry) throw createError({ statusCode: 404, statusMessage: 'Diese Vorstellung wurde nicht gefunden.' });

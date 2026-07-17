@@ -180,7 +180,7 @@
                     <div class="item-row_fields">
                         <input v-model.trim="link.label" maxlength="120" placeholder="Bezeichnung">
                         <input v-model.trim="link.url" maxlength="1000" placeholder="https://…">
-                        <input v-model="link.icon" maxlength="120" placeholder="Icon (optional)">
+                        <ui-icon-picker v-model="link.icon" />
                     </div>
                     <button type="button" class="icon-button" aria-label="Link entfernen" @click="network.socialLinks.splice(index, 1)">
                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
@@ -198,7 +198,7 @@
                         <input v-model.trim="supporter.label" maxlength="120" placeholder="Name">
                         <input v-model.trim="supporter.url" maxlength="1000" placeholder="https://…">
                         <input v-model="supporter.image" maxlength="1000" placeholder="Logo-Pfad (optional)">
-                        <input v-model="supporter.icon" maxlength="120" placeholder="Icon (optional)">
+                        <ui-icon-picker v-model="supporter.icon" />
                         <input v-model="supporter.role" maxlength="80" placeholder="Rolle (optional)">
                     </div>
                     <button type="button" class="icon-button" aria-label="Unterstützer entfernen" @click="network.supporters.splice(index, 1)">

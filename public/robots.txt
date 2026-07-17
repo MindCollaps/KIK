@@ -1,10 +1,9 @@
 User-agent: *
-Disallow: /frog/
 Disallow: /admin/
-Disallow: /stats/
-Disallow: /tutorials/
 Allow: /
 
 User-agent: MJ12bot
 Disallow: /programm
 Crawl-Delay: 20
+
+Sitemap: https://www.kino-im-kasten.de/sitemap.xml

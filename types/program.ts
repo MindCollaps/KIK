@@ -50,6 +50,8 @@ export interface ProgramEntry {
     highlightColor: string | null;
     customBadgeText: string | null;
     customBadgeBorder: boolean;
+    customBadgeIcon: string | null;
+    customCardBorder: boolean;
     imagePath: string | null;
     imageAlt: string | null;
     doesTheDogDieId: number | null;
@@ -80,6 +82,8 @@ export interface ProgramEntryInput {
     highlightColor: string | null;
     customBadgeText: string | null;
     customBadgeBorder: boolean;
+    customBadgeIcon: string | null;
+    customCardBorder: boolean;
     imagePath: string | null;
     imageAlt: string | null;
     doesTheDogDieId: number | null;

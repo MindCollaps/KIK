@@ -1,5 +1,6 @@
 import { useStore } from '~/store/index';
 import { radarColors, radarThemes } from '#build/radar/colors';
+import { SITE_DEFAULT_DESCRIPTION, SITE_NAME } from '~/utils/seo';
 
 const store = useStore();
 
@@ -35,13 +36,24 @@ export const useLayout = () => {
 
         return {
             titleTemplate(title) {
-                if (!title) return 'Kino im Kasten';
-                return `${ title } | Kino im Kasten`;
+                if (!title) return SITE_NAME;
+                return `${ title } | ${ SITE_NAME }`;
             },
             meta: [
                 {
+                    key: 'description',
                     name: 'description',
-                    content: 'Kino im Kasten – das studentische Programmkino der TU Dresden. Filme für alle, drinnen wie im Sommerkino.',
+                    content: SITE_DEFAULT_DESCRIPTION,
+                },
+                {
+                    key: 'og:site_name',
+                    property: 'og:site_name',
+                    content: SITE_NAME,
+                },
+                {
+                    key: 'og:locale',
+                    property: 'og:locale',
+                    content: 'de_DE',
                 },
             ],
             htmlAttrs: {

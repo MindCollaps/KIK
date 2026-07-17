@@ -114,8 +114,8 @@
                 </label>
             </div>
 
-            <label v-if="form.style === 'HIGHLIGHTED'" class="color-field">
-                <span>Highlight-Farbe</span>
+            <label v-if="form.style === 'HIGHLIGHTED' || form.style === 'CUSTOM'" class="color-field">
+                <span>{{ form.style === 'CUSTOM' ? 'Badge- und Rahmenfarbe' : 'Highlight-Farbe' }}</span>
                 <input v-model="form.highlightColor" type="color">
                 <code>{{ form.highlightColor }}</code>
             </label>
@@ -125,9 +125,17 @@
                     <span>Badge-Text</span>
                     <input v-model.trim="form.customBadgeText" maxlength="48" placeholder="z. B. Ausverkauft" required>
                 </label>
+                <label class="field field--wide">
+                    <span>Badge-Icon <small>optional</small></span>
+                    <ui-icon-picker v-model="form.customBadgeIcon" />
+                </label>
                 <label class="check-field">
                     <input v-model="form.customBadgeBorder" type="checkbox">
                     <span><Icon name="material-symbols:check-rounded" aria-hidden="true" /> Rahmen um Badge</span>
+                </label>
+                <label class="check-field">
+                    <input v-model="form.customCardBorder" type="checkbox">
+                    <span><Icon name="material-symbols:check-rounded" aria-hidden="true" /> Rahmen um ganze Karte</span>
                 </label>
             </div>
 
@@ -293,6 +301,8 @@ function emptyForm() {
         highlightColor: '#D7AC5C',
         customBadgeText: '',
         customBadgeBorder: false,
+        customBadgeIcon: '',
+        customCardBorder: false,
         imagePath: '',
         imageAlt: '',
         doesTheDogDieId: null as number | null,
@@ -323,6 +333,8 @@ watch(() => props.entry, entry => {
         highlightColor: entry.highlightColor ?? '#D7AC5C',
         customBadgeText: entry.customBadgeText ?? '',
         customBadgeBorder: entry.customBadgeBorder ?? false,
+        customBadgeIcon: entry.customBadgeIcon ?? '',
+        customCardBorder: entry.customCardBorder ?? false,
         imagePath: entry.imagePath ?? '',
         imageAlt: entry.imageAlt ?? '',
         doesTheDogDieId: entry.doesTheDogDieId,
@@ -374,9 +386,11 @@ function submit() {
         priceCents: form.isFree || form.price === '' ? null : Math.round(Number(form.price) * 100),
         isFree: form.isFree,
         style: form.style,
-        highlightColor: form.style === 'HIGHLIGHTED' ? form.highlightColor : null,
+        highlightColor: form.style === 'HIGHLIGHTED' || form.style === 'CUSTOM' ? form.highlightColor : null,
         customBadgeText: form.style === 'CUSTOM' ? nullableText(form.customBadgeText) : null,
         customBadgeBorder: form.style === 'CUSTOM' ? form.customBadgeBorder : false,
+        customBadgeIcon: form.style === 'CUSTOM' ? nullableText(form.customBadgeIcon) : null,
+        customCardBorder: form.style === 'CUSTOM' ? form.customCardBorder : false,
         imagePath: nullableText(form.imagePath),
         imageAlt: nullableText(form.imageAlt),
         doesTheDogDieId: form.doesTheDogDieId,

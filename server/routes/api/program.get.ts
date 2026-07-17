@@ -1,4 +1,5 @@
 import { prisma } from '../../utils/prisma';
+import { programVisibilityWhere } from '../../utils/program';
 
 export default defineEventHandler(async event => {
     const query = getQuery(event);
@@ -7,19 +8,7 @@ export default defineEventHandler(async event => {
     const now = new Date();
 
     const entries = await prisma.programEntry.findMany({
-        where: {
-            startsAt: { gte: new Date(now.getTime() - 6 * 60 * 60 * 1000) },
-            OR: [
-                { status: 'PUBLISHED' },
-                {
-                    status: 'SCHEDULED',
-                    visibleFrom: { lte: now },
-                    AND: [
-                        { OR: [{ visibleUntil: null }, { visibleUntil: { gt: now } }] },
-                    ],
-                },
-            ],
-        },
+        where: programVisibilityWhere(now),
         orderBy: { startsAt: 'asc' },
         take: limit,
     });

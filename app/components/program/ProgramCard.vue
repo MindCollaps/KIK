@@ -4,7 +4,10 @@
         :class="[
             `program-card--${ variant }`,
             `program-card--style-${ entry.style.toLowerCase() }`,
-            { 'program-card--with-image': entry.imagePath },
+            {
+                'program-card--with-image': entry.imagePath,
+                'program-card--framed': entry.style === 'CUSTOM' && entry.customCardBorder,
+            },
         ]"
         :style="cardStyle"
         role="link"
@@ -13,6 +16,15 @@
         @click="openDetails"
         @keydown.enter="openDetails"
     >
+        <span
+            v-if="badgeMeta"
+            class="program-card_badge"
+            :class="{ 'program-card_badge--borderless': !badgeMeta.withBorder }"
+        >
+            <Icon :name="badgeMeta.icon" aria-hidden="true" />
+            {{ badgeMeta.label }}
+        </span>
+
         <div v-if="entry.imagePath" class="program-card_media">
             <img
                 :src="entry.imagePath"
@@ -23,20 +35,10 @@
         </div>
 
         <div class="program-card_body">
-            <div class="program-card_topline">
-                <p class="program-card_date">
-                    <Icon name="material-symbols:calendar-month-rounded" aria-hidden="true" />
-                    {{ formatProgramDate(entry.startsAt) }}
-                </p>
-                <span
-                    v-if="badgeMeta"
-                    class="program-card_badge"
-                    :class="{ 'program-card_badge--borderless': !badgeMeta.withBorder }"
-                >
-                    <Icon :name="badgeMeta.icon" aria-hidden="true" />
-                    {{ badgeMeta.label }}
-                </span>
-            </div>
+            <p class="program-card_date">
+                <Icon name="material-symbols:calendar-month-rounded" aria-hidden="true" />
+                {{ formatProgramDate(entry.startsAt) }}
+            </p>
 
             <h2 v-if="variant === 'feature'" class="program-card_title">{{ entry.title }}</h2>
             <h3 v-else class="program-card_title">{{ entry.title }}</h3>
@@ -133,7 +135,7 @@ const badgeMeta = computed<null | { icon: string; label: string; withBorder: boo
         };
     }
     return {
-        icon: 'material-symbols:label-rounded',
+        icon: props.entry.customBadgeIcon || 'material-symbols:label-rounded',
         label: props.entry.customBadgeText || 'Custom',
         withBorder: props.entry.customBadgeBorder,
     };
@@ -195,14 +197,6 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
         padding: clamp(1rem, 2.4vw, 1.5rem);
     }
 
-    &_topline {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.65rem 1rem;
-        align-items: center;
-        justify-content: space-between;
-    }
-
     &_date {
         display: inline-flex;
         gap: 0.4rem;
@@ -224,6 +218,11 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
     }
 
     &_badge {
+        position: absolute;
+        z-index: 2;
+        top: 0.75rem;
+        right: 0.75rem;
+
         display: inline-flex;
         gap: 0.3rem;
         align-items: center;
@@ -238,15 +237,17 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
         text-transform: uppercase;
         letter-spacing: 0.07em;
 
+        background: color-mix(in srgb, $darkgray900 82%, transparent);
+        backdrop-filter: blur(6px);
+
         svg {
             width: 0.85rem;
             height: 0.85rem;
         }
 
         &--borderless {
-            padding-inline: 0;
+            padding-inline: 0.55rem;
             border-color: transparent;
-            background: transparent;
         }
     }
 
@@ -265,6 +266,11 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
     }
 
     &_description {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+
         max-width: 68ch;
         margin: 0.9rem 0 0;
 
@@ -397,6 +403,10 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
         .program-card_title {
             font-size: clamp(2.5rem, 5vw, 4rem);
         }
+
+        .program-card_description {
+            -webkit-line-clamp: 5;
+        }
     }
 
     &--list {
@@ -460,6 +470,10 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
         .program-card_price {
             color: var(--program-highlight);
         }
+    }
+
+    &--framed {
+        border-color: color-mix(in srgb, var(--program-highlight) 60%, $darkgray800);
     }
 }
 
