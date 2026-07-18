@@ -178,6 +178,44 @@ export async function buildXlsx(abschluss: AbschlussWithBons) {
         row.getCell(5).alignment = { wrapText: true, vertical: 'top' };
     }
 
+    const bonItemsSheet = workbook.addWorksheet('Bon-Positionen');
+    bonItemsSheet.columns = [
+        { width: 10 },
+        { width: 18 },
+        { width: 12 },
+        { width: 14 },
+        { width: 32 },
+        { width: 16 },
+        { width: 10 },
+        { width: 16 },
+    ];
+    bonItemsSheet.addRow([
+        'Bon-Nr.',
+        'Zeitpunkt',
+        'Zahlungsart',
+        'Status',
+        'Artikel',
+        'Einzelpreis',
+        'Menge',
+        'Summe',
+    ]).font = { bold: true };
+    for (const bon of abschluss.bons) {
+        for (const item of bon.items) {
+            const row = bonItemsSheet.addRow([
+                bon.number,
+                formatDateTimeBerlin(bon.createdAt),
+                paymentMethodLabels[bon.paymentMethod],
+                bon.status === 'CANCELLED' ? 'Storniert' : 'Abgeschlossen',
+                item.name,
+                item.unitPriceCents / 100,
+                item.quantity,
+                item.unitPriceCents * item.quantity / 100,
+            ]);
+            row.getCell(6).numFmt = euroFormat;
+            row.getCell(8).numFmt = euroFormat;
+        }
+    }
+
     return Buffer.from(await workbook.xlsx.writeBuffer());
 }
 
