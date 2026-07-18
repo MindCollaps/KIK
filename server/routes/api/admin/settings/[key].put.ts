@@ -1,12 +1,13 @@
 import type { Prisma } from '@prisma/client';
-import { assertSameOrigin, requireAdmin } from '../../../../utils/auth';
+import { assertSameOrigin, requireAuth } from '../../../../utils/auth';
+import { Permission } from '~~/types/permissions';
 import { prisma } from '../../../../utils/prisma';
 import { firstIssueMessage, settingKeys, settingSchemas } from '../../../../utils/content';
 import type { SettingKey } from '../../../../utils/content';
 
 export default defineEventHandler(async event => {
     assertSameOrigin(event);
-    await requireAdmin(event);
+    await requireAuth(event, Permission.Settings);
 
     const key = getRouterParam(event, 'key') as SettingKey | undefined;
     if (!key || !settingKeys.includes(key)) {

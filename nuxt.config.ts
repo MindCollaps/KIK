@@ -2,6 +2,16 @@ import pkg from './package.json';
 
 export default defineNuxtConfig({
     runtimeConfig: {
+        // Überschreibbar via NUXT_SMTP_HOST, NUXT_SMTP_PORT, NUXT_SMTP_SECURE,
+        // NUXT_SMTP_USER, NUXT_SMTP_PASS und NUXT_SMTP_FROM
+        smtp: {
+            host: '',
+            port: '587',
+            secure: '',
+            user: '',
+            pass: '',
+            from: 'Kino im Kasten <noreply@kino-im-kasten.de>',
+        },
         public: {
             version: pkg.version,
             siteUrl: process.env.NUXT_PUBLIC_SITE_URL,

@@ -1,9 +1,10 @@
-import { assertSameOrigin, requireAdmin } from '../../../../utils/auth';
+import { assertSameOrigin, requireAuth } from '../../../../utils/auth';
+import { Permission } from '~~/types/permissions';
 import { prisma } from '../../../../utils/prisma';
 
 export default defineEventHandler(async event => {
     assertSameOrigin(event);
-    const currentUser = await requireAdmin(event);
+    const currentUser = await requireAuth(event, Permission.Users);
 
     const id = getRouterParam(event, 'id');
     if (!id) throw createError({ statusCode: 400, statusMessage: 'Ungültige Nutzer-ID.' });
@@ -12,9 +13,11 @@ export default defineEventHandler(async event => {
         throw createError({ statusCode: 400, statusMessage: 'Du kannst dein eigenes Konto nicht löschen.' });
     }
 
-    const totalUsers = await prisma.adminUser.count();
-    if (totalUsers <= 1) {
-        throw createError({ statusCode: 400, statusMessage: 'Es muss mindestens ein Administrationskonto bestehen bleiben.' });
+    const remainingManagers = await prisma.adminUser.count({
+        where: { id: { not: id }, permissions: { has: Permission.Users } },
+    });
+    if (remainingManagers < 1) {
+        throw createError({ statusCode: 400, statusMessage: 'Es muss mindestens ein Konto mit Nutzerverwaltung bestehen bleiben.' });
     }
 
     try {

@@ -1,6 +1,7 @@
 import materialSymbols from '@iconify-json/material-symbols/icons.json';
 import mdi from '@iconify-json/mdi/icons.json';
-import { requireAdmin } from '../../../utils/auth';
+import { requireAuthAny } from '../../../utils/auth';
+import { Permission } from '~~/types/permissions';
 
 const iconSets = [
     { prefix: 'material-symbols', names: Object.keys(materialSymbols.icons) },
@@ -8,7 +9,7 @@ const iconSets = [
 ];
 
 export default defineEventHandler(async event => {
-    await requireAdmin(event);
+    await requireAuthAny(event, Permission.Pages, Permission.Program, Permission.Settings);
 
     const { q } = getQuery(event);
     const query = typeof q === 'string' ? q.trim().toLowerCase() : '';

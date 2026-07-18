@@ -1,6 +1,10 @@
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import type { H3Event } from 'h3';
+import type { AdminUser as DbAdminUser } from '@prisma/client';
+import type { Permission } from '~~/types/permissions';
+import { hasAllPermissions, hasAnyPermission } from '~~/types/permissions';
+import type { AdminUser } from '~~/types/user';
 import { prisma } from './prisma';
 
 const scrypt = promisify(scryptCallback);
@@ -42,13 +46,19 @@ export async function createAdminSession(event: H3Event, userId: string) {
     const token = randomBytes(32).toString('base64url');
     const expiresAt = new Date(Date.now() + sessionDurationMs);
 
-    await prisma.adminSession.create({
-        data: {
-            tokenHash: hashSessionToken(token),
-            expiresAt,
-            userId,
-        },
-    });
+    await prisma.$transaction([
+        prisma.adminSession.create({
+            data: {
+                tokenHash: hashSessionToken(token),
+                expiresAt,
+                userId,
+            },
+        }),
+        prisma.adminUser.update({
+            where: { id: userId },
+            data: { lastLoginAt: new Date() },
+        }),
+    ]);
 
     setCookie(event, sessionCookie, token, {
         httpOnly: true,
@@ -77,9 +87,36 @@ export async function getAdminUser(event: H3Event) {
     return session.user;
 }
 
-export async function requireAdmin(event: H3Event) {
+// Die cast-freie Zuweisung von user.permissions stellt zur Compile-Zeit sicher,
+// dass das geteilte Permission-Union und das Prisma-Enum deckungsgleich bleiben.
+export function toPublicUser(user: DbAdminUser): AdminUser {
+    return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        permissions: user.permissions,
+    };
+}
+
+async function requireUser(event: H3Event): Promise<DbAdminUser> {
     const user = await getAdminUser(event);
     if (!user) throw createError({ statusCode: 401, statusMessage: 'Bitte melde dich an.' });
+    return user;
+}
+
+function permissionDenied() {
+    return createError({ statusCode: 403, statusMessage: 'Dir fehlt die Berechtigung für diese Aktion.' });
+}
+
+export async function requireAuth(event: H3Event, ...permissions: Permission[]): Promise<DbAdminUser> {
+    const user = await requireUser(event);
+    if (!hasAllPermissions(user.permissions, permissions)) throw permissionDenied();
+    return user;
+}
+
+export async function requireAuthAny(event: H3Event, ...permissions: Permission[]): Promise<DbAdminUser> {
+    const user = await requireUser(event);
+    if (permissions.length > 0 && !hasAnyPermission(user.permissions, permissions)) throw permissionDenied();
     return user;
 }
 

@@ -1,12 +1,13 @@
 import type { Toast } from '~~/types/toast';
 import { defineStore } from 'pinia';
-import type { WebUser } from '~~/types/user';
+import type { AdminUser, WebUser } from '~~/types/user';
 
 export const useStore = defineStore('index', {
     state: () => ({
         version: '',
         theme: 'default' as ThemesList,
         me: undefined as WebUser | undefined,
+        adminUser: null as AdminUser | null,
         ready: true, // Set to true, since there is no secondary connection mechanism that would require waiting for the connection to be established
         isMobile: false,
         isMobileOrTablet: false,

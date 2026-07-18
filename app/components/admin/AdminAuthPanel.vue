@@ -2,12 +2,8 @@
     <section class="auth-view">
         <div class="auth-copy">
             <p class="auth-kicker">Programmverwaltung</p>
-            <h1>{{ registrationOpen ? 'Den Vorführraum einrichten' : 'Willkommen zurück' }}</h1>
-            <p>
-                {{ registrationOpen
-                    ? 'Lege das erste Administrationskonto an. Danach wird die Registrierung dauerhaft geschlossen.'
-                    : 'Melde dich an, um Vorstellungen zu planen, zu gestalten und zu veröffentlichen.' }}
-            </p>
+            <h1>{{ copy.title }}</h1>
+            <p>{{ copy.description }}</p>
             <div class="auth-reel" aria-hidden="true">
                 <span v-for="index in 7" :key="index" />
             </div>
@@ -15,10 +11,10 @@
 
         <form class="auth-form" @submit.prevent="submitAuth">
             <div class="auth-form_heading">
-                <Icon :name="registrationOpen ? 'material-symbols:shield-person-rounded' : 'material-symbols:key-rounded'" aria-hidden="true" />
+                <Icon :name="copy.icon" aria-hidden="true" />
                 <div>
-                    <h2>{{ registrationOpen ? 'Erstes Konto' : 'Anmeldung' }}</h2>
-                    <p>{{ registrationOpen ? 'Nur einmal möglich' : 'Geschützter Bereich' }}</p>
+                    <h2>{{ copy.formTitle }}</h2>
+                    <p>{{ copy.formSubtitle }}</p>
                 </div>
             </div>
 
@@ -26,29 +22,43 @@
                 <span>Name</span>
                 <input v-model.trim="authForm.name" required minlength="2" maxlength="80" autocomplete="name">
             </label>
-            <label class="auth-field">
+            <label v-if="mode !== 'set-password'" class="auth-field">
                 <span>E-Mail-Adresse</span>
                 <input v-model.trim="authForm.email" required type="email" maxlength="254" autocomplete="email">
             </label>
-            <label class="auth-field">
-                <span>Passwort</span>
+            <label v-if="mode !== 'forgot'" class="auth-field">
+                <span>{{ mode === 'set-password' ? 'Neues Passwort' : 'Passwort' }}</span>
                 <input
                     v-model="authForm.password"
                     required
                     type="password"
-                    :minlength="registrationOpen ? 12 : 1"
+                    :minlength="needsStrongPassword ? 12 : 1"
                     maxlength="128"
-                    :autocomplete="registrationOpen ? 'new-password' : 'current-password'"
+                    :autocomplete="needsStrongPassword ? 'new-password' : 'current-password'"
                 >
-                <small v-if="registrationOpen">Mindestens 12 Zeichen. Verwende ein einzigartiges Passwort.</small>
+                <small v-if="needsStrongPassword">Mindestens 12 Zeichen. Verwende ein einzigartiges Passwort.</small>
+            </label>
+            <label v-if="mode === 'set-password'" class="auth-field">
+                <span>Neues Passwort wiederholen</span>
+                <input v-model="authForm.passwordRepeat" required type="password" minlength="12" maxlength="128" autocomplete="new-password">
             </label>
 
+            <p v-if="infoMessage" class="auth-info" role="status">{{ infoMessage }}</p>
             <p v-if="authError" class="auth-error" role="alert">{{ authError }}</p>
 
             <button class="auth-submit" type="submit" :disabled="authPending">
                 <Icon :name="authPending ? 'material-symbols:progress-activity' : 'material-symbols:arrow-forward-rounded'" aria-hidden="true" />
-                {{ authPending ? 'Bitte warten …' : registrationOpen ? 'Administration einrichten' : 'Anmelden' }}
+                {{ authPending ? 'Bitte warten …' : copy.submitLabel }}
             </button>
+
+            <div v-if="!registrationOpen" class="auth-links">
+                <button v-if="mode === 'login'" type="button" class="auth-link" @click="switchMode('forgot')">
+                    Passwort vergessen?
+                </button>
+                <button v-else type="button" class="auth-link" @click="switchMode('login')">
+                    Zurück zur Anmeldung
+                </button>
+            </div>
         </form>
     </section>
 </template>
@@ -58,6 +68,7 @@ import type { AdminUser } from '~~/types/user';
 
 const props = defineProps<{
     registrationOpen: boolean;
+    setPasswordToken?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -68,24 +79,113 @@ interface ApiError {
     data?: { statusMessage?: string };
 }
 
+type AuthMode = 'login' | 'forgot' | 'set-password';
+
+const mode = ref<AuthMode>(props.setPasswordToken ? 'set-password' : 'login');
 const authPending = ref(false);
 const authError = ref('');
-const authForm = reactive({ name: '', email: '', password: '' });
+const infoMessage = ref('');
+const authForm = reactive({ name: '', email: '', password: '', passwordRepeat: '' });
+
+watch(() => props.setPasswordToken, token => {
+    if (token) switchMode('set-password');
+});
+
+const needsStrongPassword = computed(() => props.registrationOpen || mode.value === 'set-password');
+
+const copy = computed(() => {
+    if (props.registrationOpen) {
+        return {
+            title: 'Den Vorführraum einrichten',
+            description: 'Lege das erste Administrationskonto an. Danach wird die Registrierung dauerhaft geschlossen.',
+            icon: 'material-symbols:shield-person-rounded',
+            formTitle: 'Erstes Konto',
+            formSubtitle: 'Nur einmal möglich',
+            submitLabel: 'Administration einrichten',
+        };
+    }
+    if (mode.value === 'set-password') {
+        return {
+            title: 'Lege dein Passwort fest',
+            description: 'Mit deinem neuen Passwort bestätigst du dein Konto und wirst direkt angemeldet.',
+            icon: 'material-symbols:lock-reset-rounded',
+            formTitle: 'Passwort festlegen',
+            formSubtitle: 'Konto bestätigen',
+            submitLabel: 'Passwort speichern',
+        };
+    }
+    if (mode.value === 'forgot') {
+        return {
+            title: 'Zugang wiederherstellen',
+            description: 'Gib deine E-Mail-Adresse an und wir senden dir einen Link, mit dem du ein neues Passwort festlegen kannst.',
+            icon: 'material-symbols:mail-lock-rounded',
+            formTitle: 'Passwort vergessen',
+            formSubtitle: 'Wir senden dir einen Link',
+            submitLabel: 'Link anfordern',
+        };
+    }
+    return {
+        title: 'Willkommen zurück',
+        description: 'Melde dich an, um Vorstellungen zu planen, zu gestalten und zu veröffentlichen.',
+        icon: 'material-symbols:key-rounded',
+        formTitle: 'Anmeldung',
+        formSubtitle: 'Geschützter Bereich',
+        submitLabel: 'Anmelden',
+    };
+});
+
+function switchMode(next: AuthMode) {
+    mode.value = next;
+    authError.value = '';
+    infoMessage.value = '';
+    authForm.password = '';
+    authForm.passwordRepeat = '';
+}
 
 async function submitAuth() {
     authPending.value = true;
     authError.value = '';
+    infoMessage.value = '';
     try {
-        const endpoint = props.registrationOpen ? '/api/auth/register' : '/api/auth/login';
-        const response = await $fetch<{ user: AdminUser }>(endpoint, {
-            method: 'POST',
-            body: props.registrationOpen ? authForm : { email: authForm.email, password: authForm.password },
-        });
-        authForm.password = '';
-        emit('authenticated', response.user);
+        if (props.registrationOpen) {
+            const response = await $fetch<{ user: AdminUser }>('/api/auth/register', {
+                method: 'POST',
+                body: { name: authForm.name, email: authForm.email, password: authForm.password },
+            });
+            authForm.password = '';
+            emit('authenticated', response.user);
+        }
+        else if (mode.value === 'forgot') {
+            await $fetch('/api/auth/password-reset-request', {
+                method: 'POST',
+                body: { email: authForm.email },
+            });
+            infoMessage.value = 'Falls ein Konto mit dieser E-Mail-Adresse existiert, haben wir dir einen Link geschickt.';
+        }
+        else if (mode.value === 'set-password') {
+            if (authForm.password !== authForm.passwordRepeat) {
+                authError.value = 'Die Passwörter stimmen nicht überein.';
+                return;
+            }
+            const response = await $fetch<{ user: AdminUser }>('/api/auth/set-password', {
+                method: 'POST',
+                body: { token: props.setPasswordToken, password: authForm.password },
+            });
+            authForm.password = '';
+            authForm.passwordRepeat = '';
+            emit('authenticated', response.user);
+        }
+        else {
+            const response = await $fetch<{ user: AdminUser }>('/api/auth/login', {
+                method: 'POST',
+                body: { email: authForm.email, password: authForm.password },
+            });
+            authForm.password = '';
+            emit('authenticated', response.user);
+        }
     }
     catch (error: unknown) {
-        authError.value = (error as ApiError).data?.statusMessage ?? 'Die Anmeldung ist fehlgeschlagen.';
+        authError.value = (error as ApiError).data?.statusMessage ?? 'Die Anfrage ist fehlgeschlagen.';
     }
     finally {
         authPending.value = false;
@@ -233,6 +333,41 @@ async function submitAuth() {
     color: $error300;
 
     background: rgb(194 37 105 / 8%);
+}
+
+.auth-info {
+    margin: 1rem 0 0;
+    padding: 0.75rem;
+    border: 1px solid $success400;
+    border-radius: 8px;
+
+    color: $success400;
+
+    background: rgb(74 222 128 / 6%);
+}
+
+.auth-links {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.auth-link {
+    cursor: pointer;
+
+    padding: 0.25rem;
+    border: 0;
+
+    font: inherit;
+    font-size: 0.82rem;
+    color: $secondary300;
+    text-decoration: underline;
+
+    background: transparent;
+
+    &:focus-visible {
+        outline: 2px solid $primary400;
+        outline-offset: 2px;
+    }
 }
 
 .auth-submit {

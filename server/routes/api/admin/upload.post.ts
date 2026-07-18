@@ -1,7 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { assertSameOrigin, requireAdmin } from '../../../utils/auth';
+import { assertSameOrigin, requireAuthAny } from '../../../utils/auth';
+import { Permission } from '~~/types/permissions';
 
 const maxUploadSize = 8 * 1024 * 1024;
 const uploadDirectory = process.env.UPLOAD_DIR ?? join(process.cwd(), 'uploads');
@@ -15,7 +16,7 @@ function detectExtension(data: Buffer) {
 
 export default defineEventHandler(async event => {
     assertSameOrigin(event);
-    await requireAdmin(event);
+    await requireAuthAny(event, Permission.Pages, Permission.Program, Permission.Settings);
 
     const parts = await readMultipartFormData(event);
     const file = parts?.find(part => part.name === 'image' && part.filename);

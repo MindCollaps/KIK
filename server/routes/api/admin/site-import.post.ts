@@ -1,11 +1,12 @@
 import type { Prisma } from '@prisma/client';
-import { assertSameOrigin, requireAdmin } from '../../../utils/auth';
+import { assertSameOrigin, requireAuth } from '../../../utils/auth';
+import { Permission } from '~~/types/permissions';
 import { prisma } from '../../../utils/prisma';
 import { ensureUniqueBlockIds, firstIssueMessage, siteExportSchema } from '../../../utils/content';
 
 export default defineEventHandler(async event => {
     assertSameOrigin(event);
-    await requireAdmin(event);
+    await requireAuth(event, Permission.Pages, Permission.Settings);
 
     const parsed = siteExportSchema.safeParse(await readBody(event));
     if (!parsed.success) {

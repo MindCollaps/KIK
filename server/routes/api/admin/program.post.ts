@@ -1,11 +1,12 @@
-import { assertSameOrigin, requireAdmin } from '../../../utils/auth';
+import { assertSameOrigin, requireAuth } from '../../../utils/auth';
+import { Permission } from '~~/types/permissions';
 import { getDoesTheDogDieSnapshot } from '../../../utils/does-the-dog-die';
 import { prisma } from '../../../utils/prisma';
 import { programEntrySchema, toProgramData } from '../../../utils/program';
 
 export default defineEventHandler(async event => {
     assertSameOrigin(event);
-    await requireAdmin(event);
+    await requireAuth(event, Permission.Program);
 
     const parsed = programEntrySchema.safeParse(await readBody(event));
     if (!parsed.success) {

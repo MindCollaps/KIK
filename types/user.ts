@@ -1,10 +1,15 @@
+import type { Permission } from './permissions';
+
 export interface AdminUser {
     id: string;
     name: string;
     email: string;
+    permissions: Permission[];
 }
 
 export interface AdminUserRecord extends AdminUser {
+    lastLoginAt: string | null;
+    emailConfirmedAt: string | null;
     createdAt: string;
 }
 

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { assertSameOrigin, createAdminSession, verifyPassword } from '../../../utils/auth';
+import { assertSameOrigin, createAdminSession, toPublicUser, verifyPassword } from '../../../utils/auth';
 import { clearRateLimit, enforceRateLimit } from '../../../utils/rate-limit';
 import { prisma } from '../../../utils/prisma';
 
@@ -21,7 +21,11 @@ export default defineEventHandler(async event => {
         throw createError({ statusCode: 401, statusMessage: 'E-Mail-Adresse oder Passwort ist falsch.' });
     }
 
+    if (!user.emailConfirmedAt) {
+        throw createError({ statusCode: 403, statusMessage: 'Bitte bestätige zuerst dein Konto über den Link in deiner E-Mail.' });
+    }
+
     clearRateLimit(rateLimitKey);
     await createAdminSession(event, user.id);
-    return { user: { id: user.id, name: user.name, email: user.email } };
+    return { user: toPublicUser(user) };
 });

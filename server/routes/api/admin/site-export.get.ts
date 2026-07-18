@@ -1,10 +1,11 @@
-import { requireAdmin } from '../../../utils/auth';
+import { requireAuth } from '../../../utils/auth';
+import { Permission } from '~~/types/permissions';
 import { prisma } from '../../../utils/prisma';
 import { defaultFooter, defaultNavigation } from '../../../utils/default-content';
 import type { PageContent, SiteExport } from '~~/types/content';
 
 export default defineEventHandler(async event => {
-    await requireAdmin(event);
+    await requireAuth(event, Permission.Pages, Permission.Settings);
 
     const [pages, settings] = await Promise.all([
         prisma.page.findMany({ orderBy: { slug: 'asc' } }),

@@ -30,9 +30,8 @@ export const defaultFooter: FooterConfig = {
             title: 'Kontakt',
             links: [
                 { label: 'E-Mail', to: 'mailto:info@kino-im-kasten.de', icon: 'material-symbols:mail-rounded' },
-                { label: 'Instagram', to: 'https://www.instagram.com/kinoimkasten/', icon: 'material-symbols:photo-camera-rounded' },
-                { label: 'Mastodon', to: 'https://mastodon.social/@kinoimkasten', icon: 'material-symbols:forum-rounded' },
-                { label: 'Verwaltung', to: '/admin', icon: 'material-symbols:shield-person-rounded' },
+                { label: 'Instagram', to: 'https://www.instagram.com/kinoimkasten/', icon: 'midi:instagram' },
+                { label: 'Mastodon', to: 'https://mastodon.social/@kinoimkasten', icon: 'midi:mastodon' },
                 { label: 'Impressum & Datenschutz', to: '/impressum', icon: 'material-symbols:gavel-rounded' },
             ],
         },
@@ -99,7 +98,7 @@ export const defaultPages: PageContent[] = [
                 supportTitle: 'Trägerverein und Unterstützung',
                 supportText: 'Trägerverein des KiK ist der Objektiv e.V. mit Unterstützung von Partnern in Dresden.',
                 supporters: [
-                    { label: 'Objektiv e.V.', url: 'https://www.objektiv-dresden.de/', image: null, icon: 'material-symbols:camera-roll-rounded', role: 'Trägerverein' },
+                    { label: 'Objektiv e.V.', url: 'https://www.objektiv-dresden.de/', image: '/assets/img/objektiv.png', icon: 'material-symbols:camera-roll-rounded', role: 'Trägerverein' },
                     { label: 'TU Dresden', url: 'https://tu-dresden.de/', image: '/assets/img/TUD.png', icon: null, role: null },
                     { label: 'Studentenwerk Dresden', url: 'https://www.studentenwerk-dresden.de/', image: '/assets/img/stw.svg', icon: null, role: null },
                     { label: 'Bunte Medien', url: 'https://www.kino-im-kasten.de/', image: '/assets/img/buntemedien.png', icon: null, role: null },

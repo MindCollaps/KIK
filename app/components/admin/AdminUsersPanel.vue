@@ -13,15 +13,50 @@
 
         <div class="users-panel_section">
             <h2>Administrationskonten</h2>
+
+            <div class="users-toolbar">
+                <div class="users-toolbar_search">
+                    <Icon name="material-symbols:search-rounded" aria-hidden="true" />
+                    <input
+                        v-model.trim="searchQuery"
+                        type="search"
+                        placeholder="Nach Name oder E-Mail suchen …"
+                        aria-label="Nutzer durchsuchen"
+                    >
+                </div>
+                <div class="users-toolbar_sort" role="group" aria-label="Sortierung">
+                    <button
+                        v-for="option in sortOptions"
+                        :key="option.value"
+                        type="button"
+                        class="users-toolbar_sort-button"
+                        :class="{ 'users-toolbar_sort-button--active': sortField === option.value }"
+                        @click="setSort(option.value)"
+                    >
+                        {{ option.label }}
+                        <Icon
+                            v-if="sortField === option.value"
+                            :name="sortDirection === 'asc' ? 'material-symbols:arrow-upward-rounded' : 'material-symbols:arrow-downward-rounded'"
+                            aria-hidden="true"
+                        />
+                    </button>
+                </div>
+            </div>
+
             <div v-if="pending" class="users-panel_state">Nutzer werden geladen …</div>
+            <div v-else-if="!filteredUsers.length" class="users-panel_state">
+                {{ searchQuery ? 'Keine Nutzer gefunden.' : 'Noch keine Nutzer vorhanden.' }}
+            </div>
             <div v-else class="user-list">
-                <article v-for="user in users" :key="user.id" class="user-row">
+                <article v-for="user in filteredUsers" :key="user.id" class="user-row">
                     <div class="user-row_main">
                         <strong>{{ user.name }}</strong>
                         <span class="user-row_email">{{ user.email }}</span>
                         <span class="user-row_meta">
                             Seit {{ formatDate(user.createdAt) }}
+                            · {{ user.lastLoginAt ? `Zuletzt angemeldet ${formatDateTime(user.lastLoginAt)}` : 'Noch nie angemeldet' }}
                             <template v-if="user.id === currentUserId"> · Dein Konto</template>
+                            <span v-if="!user.emailConfirmedAt" class="user-row_pending">Bestätigung ausstehend</span>
                         </span>
                     </div>
                     <button
@@ -33,6 +68,23 @@
                     >
                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
                     </button>
+                    <div class="user-row_permissions">
+                        <admin-permission-select
+                            :model-value="draftPermissions[user.id] ?? []"
+                            class="user-row_permission-select"
+                            @update:model-value="draftPermissions[user.id] = $event"
+                        />
+                        <button
+                            v-if="isDirty(user)"
+                            type="button"
+                            class="save-button save-button--small"
+                            :disabled="savingId === user.id"
+                            @click="savePermissions(user)"
+                        >
+                            <Icon :name="savingId === user.id ? 'material-symbols:progress-activity' : 'material-symbols:save-rounded'" aria-hidden="true" />
+                            {{ savingId === user.id ? 'Wird gespeichert …' : 'Speichern' }}
+                        </button>
+                    </div>
                 </article>
             </div>
         </div>
@@ -48,11 +100,12 @@
                     <span>E-Mail-Adresse</span>
                     <input v-model.trim="form.email" required type="email" maxlength="254" autocomplete="off">
                 </label>
-                <label class="field">
-                    <span>Passwort</span>
-                    <input v-model="form.password" required type="password" minlength="12" maxlength="128" autocomplete="new-password">
-                    <small>Mindestens 12 Zeichen. Verwende ein einzigartiges Passwort.</small>
-                </label>
+                <admin-permission-select v-model="form.permissions">
+                    Berechtigungen
+                </admin-permission-select>
+                <small class="new-user-form_note">
+                    Die Person erhält eine E-Mail, um das Konto zu bestätigen und ihr Passwort selbst festzulegen.
+                </small>
                 <button type="submit" class="save-button" :disabled="creating">
                     <Icon :name="creating ? 'material-symbols:progress-activity' : 'material-symbols:person-add-rounded'" aria-hidden="true" />
                     {{ creating ? 'Wird angelegt …' : 'Nutzer anlegen' }}
@@ -64,6 +117,8 @@
 
 <script setup lang="ts">
 import type { AdminUserRecord } from '~~/types/user';
+import type { Permission } from '~~/types/permissions';
+import { useStore } from '~/store';
 
 const props = defineProps<{
     currentUserId: string;
@@ -73,13 +128,60 @@ interface ApiError {
     data?: { statusMessage?: string };
 }
 
+const store = useStore();
 const users = ref<AdminUserRecord[]>([]);
 const pending = ref(false);
 const creating = ref(false);
 const deletingId = ref<string | null>(null);
+const savingId = ref<string | null>(null);
+const draftPermissions = ref<Record<string, Permission[]>>({});
 const message = ref('');
 const messageIsError = ref(false);
-const form = reactive({ name: '', email: '', password: '' });
+const form = reactive({ name: '', email: '', permissions: [] as Permission[] });
+
+type SortField = 'name' | 'lastLoginAt' | 'createdAt';
+type SortDirection = 'asc' | 'desc';
+
+const searchQuery = ref('');
+const sortField = ref<SortField>('createdAt');
+const sortDirection = ref<SortDirection>('asc');
+
+const sortOptions: Array<{ value: SortField; label: string }> = [
+    { value: 'name', label: 'Name' },
+    { value: 'lastLoginAt', label: 'Letzter Login' },
+    { value: 'createdAt', label: 'Erstellt' },
+];
+
+function setSort(field: SortField) {
+    if (sortField.value === field) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+        return;
+    }
+    sortField.value = field;
+    // Bei Datumsfeldern ist "neueste zuerst" der nützlichere Einstieg
+    sortDirection.value = field === 'name' ? 'asc' : 'desc';
+}
+
+const filteredUsers = computed(() => {
+    const query = searchQuery.value.toLowerCase();
+    const matches = query
+        ? users.value.filter(user => user.name.toLowerCase().includes(query) || user.email.toLowerCase().includes(query))
+        : [...users.value];
+
+    const direction = sortDirection.value === 'asc' ? 1 : -1;
+    return matches.sort((a, b) => {
+        if (sortField.value === 'name') {
+            return direction * a.name.localeCompare(b.name, 'de', { sensitivity: 'base' });
+        }
+        const aValue = sortField.value === 'lastLoginAt' ? a.lastLoginAt : a.createdAt;
+        const bValue = sortField.value === 'lastLoginAt' ? b.lastLoginAt : b.createdAt;
+        // Konten ohne Anmeldung stehen unabhängig von der Richtung am Ende
+        if (!aValue && !bValue) return 0;
+        if (!aValue) return 1;
+        if (!bValue) return -1;
+        return direction * aValue.localeCompare(bValue);
+    });
+});
 
 loadUsers();
 
@@ -97,6 +199,7 @@ async function loadUsers() {
     try {
         const response = await $fetch<{ users: AdminUserRecord[] }>('/api/admin/users');
         users.value = response.users;
+        draftPermissions.value = Object.fromEntries(response.users.map(user => [user.id, [...user.permissions]]));
     }
     catch (error: unknown) {
         showMessage(apiErrorMessage(error, 'Die Nutzer konnten nicht geladen werden.'), true);
@@ -113,9 +216,9 @@ async function createUser() {
         await $fetch('/api/admin/users', { method: 'POST', body: form });
         form.name = '';
         form.email = '';
-        form.password = '';
+        form.permissions = [];
         await loadUsers();
-        showMessage('Das Konto wurde angelegt.');
+        showMessage('Das Konto wurde angelegt und eine Einladungs-E-Mail versendet.');
     }
     catch (error: unknown) {
         showMessage(apiErrorMessage(error, 'Das Konto konnte nicht angelegt werden.'), true);
@@ -143,11 +246,54 @@ async function deleteUser(user: AdminUserRecord) {
     }
 }
 
+function isDirty(user: AdminUserRecord) {
+    const draft = draftPermissions.value[user.id] ?? [];
+    return draft.length !== user.permissions.length || !user.permissions.every(permission => draft.includes(permission));
+}
+
+async function savePermissions(user: AdminUserRecord) {
+    savingId.value = user.id;
+    message.value = '';
+    try {
+        const response = await $fetch<{ user: AdminUserRecord }>(`/api/admin/users/${user.id}`, {
+            method: 'PUT',
+            body: { permissions: draftPermissions.value[user.id] ?? [] },
+        });
+
+        const index = users.value.findIndex(entry => entry.id === user.id);
+        if (index !== -1) users.value[index] = response.user;
+        draftPermissions.value[user.id] = [...response.user.permissions];
+
+        if (response.user.id === props.currentUserId && store.adminUser) {
+            store.adminUser = { ...store.adminUser, permissions: [...response.user.permissions] };
+        }
+
+        showMessage('Die Berechtigungen wurden gespeichert.');
+    }
+    catch (error: unknown) {
+        showMessage(apiErrorMessage(error, 'Die Berechtigungen konnten nicht gespeichert werden.'), true);
+    }
+    finally {
+        savingId.value = null;
+    }
+}
+
 function formatDate(value: string) {
     return new Intl.DateTimeFormat('de-DE', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
+        timeZone: 'Europe/Berlin',
+    }).format(new Date(value));
+}
+
+function formatDateTime(value: string) {
+    return new Intl.DateTimeFormat('de-DE', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
         timeZone: 'Europe/Berlin',
     }).format(new Date(value));
 }
@@ -262,12 +408,141 @@ function formatDate(value: string) {
         font-size: 0.72rem;
         color: $secondary300;
     }
+
+    &_permissions {
+        display: flex;
+        grid-column: 1 / -1;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+
+        padding-top: 0.55rem;
+        border-top: 1px solid $darkgray800;
+    }
+
+    &_permission-select {
+        flex: 1;
+        min-width: 15rem;
+    }
+
+    &_pending {
+        display: inline-block;
+
+        margin-left: 0.35rem;
+        padding: 0.1rem 0.45rem;
+        border: 1px solid $secondary600;
+        border-radius: 999px;
+
+        font-size: 0.68rem;
+        color: $secondary300;
+    }
+}
+
+.users-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 0.85rem;
+
+    &_search {
+        display: flex;
+        flex: 1;
+        gap: 0.5rem;
+        align-items: center;
+
+        min-width: 14rem;
+        min-height: 40px;
+        padding: 0 0.75rem;
+        border: 1px solid $darkgray700;
+        border-radius: 8px;
+
+        background: $darkgray900;
+
+        svg {
+            flex-shrink: 0;
+            width: 1.05rem;
+            height: 1.05rem;
+            color: $lightgray400;
+        }
+
+        input {
+            flex: 1;
+
+            min-width: 0;
+            border: 0;
+
+            font: inherit;
+            font-size: 0.85rem;
+            color: $lightgray50;
+
+            background: transparent;
+            outline: none;
+
+            &::placeholder {
+                color: $lightgray400;
+            }
+        }
+
+        &:focus-within {
+            border-color: $primary400;
+            outline: 2px solid rgb(221 91 69 / 22%);
+        }
+    }
+
+    &_sort {
+        display: flex;
+        gap: 0.3rem;
+    }
+
+    &_sort-button {
+        cursor: pointer;
+
+        display: inline-flex;
+        gap: 0.3rem;
+        align-items: center;
+
+        min-height: 36px;
+        padding: 0 0.7rem;
+        border: 1px solid $darkgray700;
+        border-radius: 999px;
+
+        font: inherit;
+        font-size: 0.78rem;
+        color: $lightgray200;
+
+        background: transparent;
+
+        svg {
+            width: 0.95rem;
+            height: 0.95rem;
+        }
+
+        &--active {
+            border-color: $secondary600;
+            color: $secondary300;
+            background: rgb(192 143 46 / 8%);
+        }
+
+        &:focus-visible {
+            outline: 2px solid $primary400;
+            outline-offset: 2px;
+        }
+    }
 }
 
 .new-user-form {
     display: grid;
     gap: 0.75rem;
     max-width: 26rem;
+
+    &_note {
+        font-size: 0.72rem;
+        line-height: 1.4;
+        color: $lightgray400;
+    }
 }
 
 .field {
@@ -366,6 +641,13 @@ function formatDate(value: string) {
     &:focus-visible {
         outline: 2px solid $primary300;
         outline-offset: 3px;
+    }
+
+    &--small {
+        min-height: 34px;
+        margin-top: 0;
+        padding: 0 0.75rem;
+        font-size: 0.78rem;
     }
 }
 </style>

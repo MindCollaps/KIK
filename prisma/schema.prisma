@@ -25,6 +25,16 @@ enum PageStatus {
   PUBLISHED
 }
 
+enum Permission {
+  PAGES
+  PROGRAM
+  SETTINGS
+  KASSE_USE
+  KASSE_REPORTS
+  KASSE_MANAGE
+  USERS
+}
+
 model Page {
   id          String     @id @default(uuid())
   slug        String     @unique
@@ -46,13 +56,35 @@ model SiteSetting {
 }
 
 model AdminUser {
-  id           String         @id @default(uuid())
-  email        String         @unique
-  name         String
-  passwordHash String
-  sessions     AdminSession[]
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id               String           @id @default(uuid())
+  email            String           @unique
+  name             String
+  passwordHash     String
+  permissions      Permission[]     @default([])
+  lastLoginAt      DateTime?
+  emailConfirmedAt DateTime?
+  sessions         AdminSession[]
+  tokens           AdminUserToken[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+enum AdminTokenType {
+  INVITE
+  PASSWORD_RESET
+}
+
+model AdminUserToken {
+  id        String         @id @default(uuid())
+  tokenHash String         @unique
+  type      AdminTokenType
+  expiresAt DateTime
+  userId    String
+  user      AdminUser      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model AdminSession {

@@ -1,9 +1,10 @@
-import { requireAdmin } from '../../../utils/auth';
+import { requireAuth } from '../../../utils/auth';
+import { Permission } from '~~/types/permissions';
 import { prisma } from '../../../utils/prisma';
 import type { ProgramExport } from '~~/types/program';
 
 export default defineEventHandler(async event => {
-    await requireAdmin(event);
+    await requireAuth(event, Permission.Program);
 
     const entries = await prisma.programEntry.findMany({
         orderBy: [{ startsAt: 'asc' }, { createdAt: 'desc' }],

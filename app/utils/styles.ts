@@ -81,16 +81,17 @@ export const colorsList = {
 export type ColorsList = keyof typeof colorsList;
 
 export const themesList = {
-    // light: the KiK default — warm paper surfaces, ink-brown foreground text
+    // light: the KiK default — warm paper surfaces, ink-brown foreground text.
+    // Surfaces sit around 90% lightness instead of near-white to avoid glare.
     light: {
-        darkgray1000: '#FBF8F4',
-        darkgray950: '#F5F0E9',
-        darkgray900: '#EFE8DE',
-        darkgray875: '#E7DDCF',
-        darkgray850: '#DFD3C1',
-        darkgray800: '#D3C4AC',
-        darkgray700: '#B9A788',
-        darkgray600: '#9C8A6C',
+        darkgray1000: '#F0E9DD',
+        darkgray950: '#E9E0D0',
+        darkgray900: '#E0D5C2',
+        darkgray875: '#D8CBB5',
+        darkgray850: '#CFC0A7',
+        darkgray800: '#C2B094',
+        darkgray700: '#A89477',
+        darkgray600: '#8C795D',
 
         lightgray0: '#1B1613',
         lightgray50: '#241D18',
@@ -98,8 +99,8 @@ export const themesList = {
         lightgray125: '#3E332A',
         lightgray150: '#4A3D32',
         lightgray200: '#5C4C3D',
-        lightgray300: '#786551',
-        lightgray400: '#8C7A65',
+        lightgray300: '#675541',
+        lightgray400: '#75644F',
     },
     // dark: mirrors the base palette (near-black surfaces, warm light text)
     dark: {

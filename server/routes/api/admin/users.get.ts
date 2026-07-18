@@ -1,12 +1,13 @@
-import { requireAdmin } from '../../../utils/auth';
+import { requireAuth } from '../../../utils/auth';
+import { Permission } from '~~/types/permissions';
 import { prisma } from '../../../utils/prisma';
 
 export default defineEventHandler(async event => {
-    await requireAdmin(event);
+    await requireAuth(event, Permission.Users);
 
     return {
         users: await prisma.adminUser.findMany({
-            select: { id: true, name: true, email: true, createdAt: true },
+            select: { id: true, name: true, email: true, permissions: true, lastLoginAt: true, emailConfirmedAt: true, createdAt: true },
             orderBy: { createdAt: 'asc' },
         }),
     };

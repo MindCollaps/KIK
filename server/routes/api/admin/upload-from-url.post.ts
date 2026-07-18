@@ -2,7 +2,8 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { z } from 'zod';
-import { assertSameOrigin, requireAdmin } from '../../../utils/auth';
+import { assertSameOrigin, requireAuthAny } from '../../../utils/auth';
+import { Permission } from '~~/types/permissions';
 
 const maxUploadSize = 8 * 1024 * 1024;
 const uploadDirectory = process.env.UPLOAD_DIR ?? join(process.cwd(), 'uploads');
@@ -34,7 +35,7 @@ function ensureAllowedUrl(rawUrl: string) {
 
 export default defineEventHandler(async event => {
     assertSameOrigin(event);
-    await requireAdmin(event);
+    await requireAuthAny(event, Permission.Pages, Permission.Program, Permission.Settings);
 
     const parsedBody = bodySchema.safeParse(await readBody(event));
     if (!parsedBody.success) {

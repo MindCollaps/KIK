@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
-import { assertSameOrigin, createAdminSession, hashPassword } from '../../../utils/auth';
+import { assertSameOrigin, createAdminSession, hashPassword, toPublicUser } from '../../../utils/auth';
+import { allPermissions } from '~~/types/permissions';
 import { enforceRateLimit } from '../../../utils/rate-limit';
 import { prisma } from '../../../utils/prisma';
 
@@ -29,12 +30,16 @@ export default defineEventHandler(async event => {
                     name: parsed.data.name,
                     email: parsed.data.email,
                     passwordHash,
+                    // Das erste Konto richtet die Administration ein und erhält alle Berechtigungen
+                    permissions: [...allPermissions],
+                    // Ohne Mail-Infrastruktur beim Setup gilt das Konto als bestätigt
+                    emailConfirmedAt: new Date(),
                 },
             });
         }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
         await createAdminSession(event, user.id);
-        return { user: { id: user.id, name: user.name, email: user.email } };
+        return { user: toPublicUser(user) };
     }
     catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
