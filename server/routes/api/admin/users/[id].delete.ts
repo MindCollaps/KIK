@@ -14,10 +14,10 @@ export default defineEventHandler(async event => {
     }
 
     const remainingManagers = await prisma.adminUser.count({
-        where: { id: { not: id }, permissions: { has: Permission.Users } },
+        where: { id: { not: id }, active: true, permissions: { has: Permission.Users } },
     });
     if (remainingManagers < 1) {
-        throw createError({ statusCode: 400, statusMessage: 'Es muss mindestens ein Konto mit Nutzerverwaltung bestehen bleiben.' });
+        throw createError({ statusCode: 400, statusMessage: 'Es muss mindestens ein aktives Konto mit Nutzerverwaltung bestehen bleiben.' });
     }
 
     try {

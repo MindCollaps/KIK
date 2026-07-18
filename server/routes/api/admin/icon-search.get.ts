@@ -9,7 +9,7 @@ const iconSets = [
 ];
 
 export default defineEventHandler(async event => {
-    await requireAuthAny(event, Permission.Pages, Permission.Program, Permission.Settings);
+    await requireAuthAny(event, Permission.Pages, Permission.Program, Permission.Settings, Permission.KasseManage);
 
     const { q } = getQuery(event);
     const query = typeof q === 'string' ? q.trim().toLowerCase() : '';

@@ -23,6 +23,10 @@ export default defineEventHandler(async event => {
         throw createError({ statusCode: 400, statusMessage: 'Der Link ist ungültig oder abgelaufen. Fordere über „Passwort vergessen“ einen neuen an.' });
     }
 
+    if (!record.user.active) {
+        throw createError({ statusCode: 403, statusMessage: 'Dein Konto wurde deaktiviert.' });
+    }
+
     const passwordHash = await hashPassword(parsed.data.password);
 
     const [user] = await prisma.$transaction([

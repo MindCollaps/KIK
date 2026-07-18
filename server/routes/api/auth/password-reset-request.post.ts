@@ -4,7 +4,7 @@ import { assertSameOrigin } from '../../../utils/auth';
 import { enforceRateLimit } from '../../../utils/rate-limit';
 import { prisma } from '../../../utils/prisma';
 import { createAdminUserToken } from '../../../utils/tokens';
-import { resolveBaseUrl, sendTemplateMail, siteName } from '../../../utils/mail';
+import { isMailingEnabled, resolveBaseUrl, sendTemplateMail, siteName } from '../../../utils/mail';
 
 const resetTtlMs = 60 * 60 * 1000;
 
@@ -21,11 +21,13 @@ export default defineEventHandler(async event => {
         throw createError({ statusCode: 400, statusMessage: 'Bitte prüfe die E-Mail-Adresse.' });
     }
 
-    const user = await prisma.adminUser.findUnique({ where: { email: parsed.data.email } });
+    const user = isMailingEnabled()
+        ? await prisma.adminUser.findUnique({ where: { email: parsed.data.email } })
+        : null;
 
     // Die Antwort ist immer identisch, damit keine Rückschlüsse auf
     // vorhandene Konten möglich sind – auch bei Versandfehlern.
-    if (user) {
+    if (user && user.active) {
         try {
             const token = await createAdminUserToken(user.id, AdminTokenType.PASSWORD_RESET, resetTtlMs);
             const actionUrl = `${resolveBaseUrl(event)}/admin?action=set-password&token=${token}`;

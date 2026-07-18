@@ -22,11 +22,24 @@
                     <Icon :name="tab.icon" aria-hidden="true" />
                     {{ tab.label }}
                 </button>
+                <nuxt-link
+                    v-if="storeDestination"
+                    :to="storeDestination"
+                    class="admin-tabs_button admin-tabs_button--link"
+                >
+                    <Icon name="material-symbols:point-of-sale" aria-hidden="true" />
+                    Kasse
+                </nuxt-link>
             </nav>
 
-            <p v-if="!visibleTabs.length" class="admin-empty" role="status">
-                Dein Konto hat keine Berechtigungen für die Verwaltungsbereiche. Wende dich an eine Person mit Nutzerverwaltung.
-            </p>
+            <div v-if="!visibleTabs.length" class="admin-empty" role="status">
+                <p>Dein Konto hat keine Berechtigungen für die Website-Verwaltung.</p>
+                <nuxt-link v-if="storeDestination" :to="storeDestination" class="admin-empty_store-link">
+                    <Icon name="material-symbols:point-of-sale" aria-hidden="true" />
+                    Zum Kassensystem
+                </nuxt-link>
+                <p v-else>Wende dich an eine Person mit Nutzerverwaltung.</p>
+            </div>
             <template v-else>
                 <admin-program-panel v-if="activeTab === 'program'" />
                 <admin-pages-panel v-else-if="activeTab === 'pages'" />
@@ -49,7 +62,7 @@ definePageMeta({ layout: 'empty' });
 usePageSeo(() => ({ title: 'Programmverwaltung', noindex: true }));
 
 const store = useStore();
-const { can } = usePermissions();
+const { can, canAny } = usePermissions();
 const route = useRoute();
 const router = useRouter();
 
@@ -78,6 +91,12 @@ const adminTabs: Array<{ value: AdminTab; label: string; icon: string; permissio
 ];
 
 const visibleTabs = computed(() => adminTabs.filter(tab => can(tab.permission)));
+const storeDestination = computed(() => {
+    if (can(Permission.KasseUse)) return '/store';
+    if (can(Permission.KasseManage)) return '/store/admin';
+    if (canAny(Permission.KasseReports, Permission.KasseReportsEdit)) return '/store/tagesabschluss';
+    return null;
+});
 const activeTab = ref<AdminTab | null>(visibleTabs.value[0]?.value ?? null);
 
 watch(visibleTabs, tabs => {
@@ -116,6 +135,31 @@ async function logout() {
 
     color: $lightgray300;
     text-align: center;
+
+    p {
+        margin: 0.75rem 0;
+    }
+
+    &_store-link {
+        display: inline-flex;
+        gap: 0.45rem;
+        align-items: center;
+
+        min-height: 42px;
+        padding: 0 1rem;
+        border-radius: 8px;
+
+        font-weight: 700;
+        color: $whiteOrig;
+        text-decoration: none;
+
+        background: $primary500;
+
+        &:focus-visible {
+            outline: 2px solid $primary300;
+            outline-offset: 2px;
+        }
+    }
 }
 
 .admin-tabs {
@@ -154,6 +198,10 @@ async function logout() {
             border-color: $secondary600;
             color: $secondary300;
             background: rgb(192 143 46 / 8%);
+        }
+
+        &--link {
+            text-decoration: none;
         }
 
         &:focus-visible {

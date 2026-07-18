@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "StoreLogType" ADD VALUE 'BON_UPDATED';
+ALTER TYPE "StoreLogType" ADD VALUE 'BON_DELETED';

@@ -7,7 +7,7 @@ export default defineEventHandler(async event => {
 
     return {
         users: await prisma.adminUser.findMany({
-            select: { id: true, name: true, email: true, permissions: true, lastLoginAt: true, emailConfirmedAt: true, createdAt: true },
+            select: { id: true, name: true, email: true, permissions: true, active: true, lastLoginAt: true, emailConfirmedAt: true, createdAt: true },
             orderBy: { createdAt: 'asc' },
         }),
     };

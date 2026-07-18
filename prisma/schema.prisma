@@ -31,6 +31,7 @@ enum Permission {
   SETTINGS
   KASSE_USE
   KASSE_REPORTS
+  KASSE_REPORTS_EDIT
   KASSE_MANAGE
   USERS
 }
@@ -61,10 +62,14 @@ model AdminUser {
   name             String
   passwordHash     String
   permissions      Permission[]     @default([])
+  active           Boolean          @default(true)
   lastLoginAt      DateTime?
   emailConfirmedAt DateTime?
   sessions         AdminSession[]
   tokens           AdminUserToken[]
+  bonsCreated     Bon[]           @relation("BonCreatedBy")
+  bonsCancelled   Bon[]           @relation("BonCancelledBy")
+  tagesabschluesse Tagesabschluss[]
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 }
@@ -102,6 +107,131 @@ model AdminSession {
 model SetupState {
   key       String   @id
   createdAt DateTime @default(now())
+}
+
+enum BonStatus {
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+}
+
+enum StoreLogType {
+  CATEGORY_CREATED
+  CATEGORY_UPDATED
+  CATEGORY_DELETED
+  ITEM_CREATED
+  ITEM_UPDATED
+  ITEM_DELETED
+  BON_CREATED
+  BON_UPDATED
+  BON_DELETED
+  BON_CANCELLED
+  TAGESABSCHLUSS_CREATED
+  TAGESABSCHLUSS_UPDATED
+}
+
+model StoreCategory {
+  id        String      @id @default(uuid())
+  name      String
+  color     String?
+  icon      String?
+  sortOrder Int         @default(0)
+  archived  Boolean     @default(false)
+  items     StoreItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model StoreItem {
+  id         String        @id @default(uuid())
+  categoryId String
+  category   StoreCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  name       String
+  priceCents Int           @default(0)
+  freePrice  Boolean       @default(false)
+  color      String?
+  sortOrder  Int           @default(0)
+  archived   Boolean       @default(false)
+  bonItems  BonItem[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([categoryId])
+}
+
+model Bon {
+  number           Int             @id @default(autoincrement())
+  status           BonStatus      @default(COMPLETED)
+  paymentMethod    PaymentMethod
+  totalCents       Int
+  items            BonItem[]
+  createdById      String?
+  createdBy        AdminUser?      @relation("BonCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdByName    String
+  createdAt        DateTime        @default(now())
+  cancelledAt      DateTime?
+  cancelledById    String?
+  cancelledBy      AdminUser?      @relation("BonCancelledBy", fields: [cancelledById], references: [id], onDelete: SetNull)
+  cancelledByName  String?
+  cancelReason     String?
+  tagesabschlussId Int?
+  tagesabschluss   Tagesabschluss? @relation(fields: [tagesabschlussId], references: [number], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([tagesabschlussId])
+}
+
+model BonItem {
+  id             String     @id @default(uuid())
+  bonNumber     Int
+  bon           Bon       @relation(fields: [bonNumber], references: [number], onDelete: Cascade)
+  itemId         String?
+  item           StoreItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  name           String
+  unitPriceCents Int
+  quantity       Int
+
+  @@index([bonNumber])
+  @@index([itemId])
+}
+
+model Tagesabschluss {
+  number            Int        @id @default(autoincrement())
+  periodStart       DateTime
+  periodEnd         DateTime
+  openingCashCents  Int
+  countedCashCents  Int
+  expectedCashCents Int
+  differenceCents   Int
+  revenueCents      Int
+  cashRevenueCents  Int
+  cardRevenueCents  Int
+  bonCount         Int
+  stornoCount       Int
+  stornoTotalCents  Int
+  breakdown         Json
+  bons             Bon[]
+  createdById       String?
+  createdBy         AdminUser? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdByName     String
+  createdAt         DateTime   @default(now())
+}
+
+model StoreAuditLog {
+  id         String       @id @default(uuid())
+  type       StoreLogType
+  actorId    String?
+  actorName  String
+  bonNumber Int?
+  details    Json
+  createdAt  DateTime     @default(now())
+
+  @@index([createdAt])
+  @@index([type])
 }
 
 model ProgramEntry {

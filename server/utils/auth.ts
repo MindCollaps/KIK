@@ -78,7 +78,8 @@ export async function getAdminUser(event: H3Event) {
         include: { user: true },
     });
 
-    if (!session || session.expiresAt <= new Date()) {
+    // Deaktivierte Konten verlieren ihre Sitzungen sofort
+    if (!session || session.expiresAt <= new Date() || !session.user.active) {
         if (session) await prisma.adminSession.delete({ where: { id: session.id } });
         deleteCookie(event, sessionCookie, { path: '/' });
         return null;

@@ -14,6 +14,14 @@ interface MailTemplateContexts {
 
 export type MailTemplate = keyof MailTemplateContexts;
 
+export function isMailingEnabled() {
+    return useRuntimeConfig().mail.enabled !== 'false';
+}
+
+function isMailLoggingEnabled() {
+    return useRuntimeConfig().mail.log !== 'false';
+}
+
 export function resolveBaseUrl(event: H3Event) {
     const configured = useRuntimeConfig(event).public.siteUrl;
     if (configured) return configured.replace(/\/+$/, '');
@@ -91,6 +99,11 @@ export async function sendTemplateMail<T extends MailTemplate>(options: {
     context: MailTemplateContexts[T];
     text: string;
 }) {
+    if (!isMailingEnabled()) {
+        console.info(`[mail] Mailversand deaktiviert – E-Mail an ${options.to} („${options.subject}“) wird nicht versendet.`);
+        return;
+    }
+
     const html = await renderMail(options.template, options.subject, options.context);
 
     try {
@@ -101,8 +114,11 @@ export async function sendTemplateMail<T extends MailTemplate>(options: {
             html,
             text: options.text,
         });
-        if (usingDevFallback) {
-            console.warn(`[mail] SMTP nicht konfiguriert – E-Mail an ${options.to} („${options.subject}“) wurde nicht versendet. Inhalt:\n${options.text}`);
+        if (isMailLoggingEnabled()) {
+            console.info(`[mail] E-Mail an ${options.to} („${options.subject}“)${usingDevFallback ? ' – SMTP nicht konfiguriert, NICHT versendet' : ''}. Inhalt:\n${options.text}`);
+        }
+        else if (usingDevFallback) {
+            console.warn(`[mail] SMTP nicht konfiguriert – E-Mail an ${options.to} („${options.subject}“) wurde nicht versendet.`);
         }
     }
     catch (error) {

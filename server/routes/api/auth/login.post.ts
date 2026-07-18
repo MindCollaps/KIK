@@ -21,6 +21,10 @@ export default defineEventHandler(async event => {
         throw createError({ statusCode: 401, statusMessage: 'E-Mail-Adresse oder Passwort ist falsch.' });
     }
 
+    if (!user.active) {
+        throw createError({ statusCode: 403, statusMessage: 'Dein Konto wurde deaktiviert.' });
+    }
+
     if (!user.emailConfirmedAt) {
         throw createError({ statusCode: 403, statusMessage: 'Bitte bestätige zuerst dein Konto über den Link in deiner E-Mail.' });
     }

@@ -8,6 +8,7 @@ export interface AdminUser {
 }
 
 export interface AdminUserRecord extends AdminUser {
+    active: boolean;
     lastLoginAt: string | null;
     emailConfirmedAt: string | null;
     createdAt: string;

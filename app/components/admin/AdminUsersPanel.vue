@@ -48,7 +48,7 @@
                 {{ searchQuery ? 'Keine Nutzer gefunden.' : 'Noch keine Nutzer vorhanden.' }}
             </div>
             <div v-else class="user-list">
-                <article v-for="user in filteredUsers" :key="user.id" class="user-row">
+                <article v-for="user in filteredUsers" :key="user.id" class="user-row" :class="{ 'user-row--inactive': !user.active }">
                     <div class="user-row_main">
                         <strong>{{ user.name }}</strong>
                         <span class="user-row_email">{{ user.email }}</span>
@@ -56,6 +56,7 @@
                             Seit {{ formatDate(user.createdAt) }}
                             · {{ user.lastLoginAt ? `Zuletzt angemeldet ${formatDateTime(user.lastLoginAt)}` : 'Noch nie angemeldet' }}
                             <template v-if="user.id === currentUserId"> · Dein Konto</template>
+                            <span v-if="!user.active" class="user-row_pending user-row_pending--inactive">Deaktiviert</span>
                             <span v-if="!user.emailConfirmedAt" class="user-row_pending">Bestätigung ausstehend</span>
                         </span>
                     </div>
@@ -84,6 +85,39 @@
                             <Icon :name="savingId === user.id ? 'material-symbols:progress-activity' : 'material-symbols:save-rounded'" aria-hidden="true" />
                             {{ savingId === user.id ? 'Wird gespeichert …' : 'Speichern' }}
                         </button>
+                        <button type="button" class="row-button" @click="startSetPassword(user)">
+                            Passwort setzen
+                        </button>
+                        <button
+                            v-if="user.id !== currentUserId"
+                            type="button"
+                            class="row-button"
+                            :class="{ 'row-button--danger': user.active }"
+                            :disabled="togglingId === user.id"
+                            @click="toggleActive(user)"
+                        >
+                            {{ user.active ? 'Deaktivieren' : 'Aktivieren' }}
+                        </button>
+                    </div>
+                    <div v-if="passwordUserId === user.id" class="user-row_password">
+                        <input
+                            v-model="passwordInput"
+                            type="password"
+                            minlength="12"
+                            maxlength="128"
+                            placeholder="Neues Passwort (mindestens 12 Zeichen)"
+                            autocomplete="new-password"
+                            @keyup.enter="savePassword(user)"
+                        >
+                        <button
+                            type="button"
+                            class="save-button save-button--small"
+                            :disabled="passwordSaving"
+                            @click="savePassword(user)"
+                        >
+                            {{ passwordSaving ? 'Wird gespeichert …' : 'Passwort speichern' }}
+                        </button>
+                        <button type="button" class="row-button" @click="closeSetPassword">Abbrechen</button>
                     </div>
                 </article>
             </div>
@@ -134,6 +168,10 @@ const pending = ref(false);
 const creating = ref(false);
 const deletingId = ref<string | null>(null);
 const savingId = ref<string | null>(null);
+const togglingId = ref<string | null>(null);
+const passwordUserId = ref<string | null>(null);
+const passwordInput = ref('');
+const passwordSaving = ref(false);
 const draftPermissions = ref<Record<string, Permission[]>>({});
 const message = ref('');
 const messageIsError = ref(false);
@@ -213,12 +251,14 @@ async function createUser() {
     creating.value = true;
     message.value = '';
     try {
-        await $fetch('/api/admin/users', { method: 'POST', body: form });
+        const response = await $fetch<{ user: AdminUserRecord; inviteSent: boolean }>('/api/admin/users', { method: 'POST', body: form });
         form.name = '';
         form.email = '';
         form.permissions = [];
         await loadUsers();
-        showMessage('Das Konto wurde angelegt und eine Einladungs-E-Mail versendet.');
+        showMessage(response.inviteSent
+            ? 'Das Konto wurde angelegt und eine Einladungs-E-Mail versendet.'
+            : 'Das Konto wurde angelegt. Der Mailversand ist deaktiviert – setze das Passwort über „Passwort setzen“.');
     }
     catch (error: unknown) {
         showMessage(apiErrorMessage(error, 'Das Konto konnte nicht angelegt werden.'), true);
@@ -275,6 +315,70 @@ async function savePermissions(user: AdminUserRecord) {
     }
     finally {
         savingId.value = null;
+    }
+}
+
+function applyUpdatedUser(updated: AdminUserRecord) {
+    const index = users.value.findIndex(entry => entry.id === updated.id);
+    if (index !== -1) users.value[index] = updated;
+    draftPermissions.value[updated.id] = [...updated.permissions];
+}
+
+function startSetPassword(user: AdminUserRecord) {
+    passwordUserId.value = user.id;
+    passwordInput.value = '';
+}
+
+function closeSetPassword() {
+    passwordUserId.value = null;
+    passwordInput.value = '';
+}
+
+async function savePassword(user: AdminUserRecord) {
+    if (passwordInput.value.length < 12) {
+        showMessage('Das Passwort muss mindestens 12 Zeichen lang sein.', true);
+        return;
+    }
+
+    passwordSaving.value = true;
+    message.value = '';
+    try {
+        const response = await $fetch<{ user: AdminUserRecord }>(`/api/admin/users/${user.id}`, {
+            method: 'PUT',
+            body: { password: passwordInput.value },
+        });
+        applyUpdatedUser(response.user);
+        closeSetPassword();
+        showMessage(`Das Passwort für ${user.name} wurde gesetzt.`);
+    }
+    catch (error: unknown) {
+        showMessage(apiErrorMessage(error, 'Das Passwort konnte nicht gesetzt werden.'), true);
+    }
+    finally {
+        passwordSaving.value = false;
+    }
+}
+
+async function toggleActive(user: AdminUserRecord) {
+    if (user.active && !confirm(`Das Konto von „${user.name}“ wirklich deaktivieren? Bestehende Anmeldungen werden beendet.`)) return;
+
+    togglingId.value = user.id;
+    message.value = '';
+    try {
+        const response = await $fetch<{ user: AdminUserRecord }>(`/api/admin/users/${user.id}`, {
+            method: 'PUT',
+            body: { active: !user.active },
+        });
+        applyUpdatedUser(response.user);
+        showMessage(response.user.active
+            ? `Das Konto von ${response.user.name} wurde aktiviert.`
+            : `Das Konto von ${response.user.name} wurde deaktiviert.`);
+    }
+    catch (error: unknown) {
+        showMessage(apiErrorMessage(error, 'Das Konto konnte nicht geändert werden.'), true);
+    }
+    finally {
+        togglingId.value = null;
     }
 }
 
@@ -435,6 +539,80 @@ function formatDateTime(value: string) {
 
         font-size: 0.68rem;
         color: $secondary300;
+
+        &--inactive {
+            border-color: $error500;
+            color: $error300;
+        }
+    }
+
+    &--inactive {
+        opacity: 0.6;
+    }
+
+    &_password {
+        display: flex;
+        grid-column: 1 / -1;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+
+        input {
+            flex: 1;
+
+            min-width: 14rem;
+            min-height: 38px;
+            padding: 0 0.7rem;
+            border: 1px solid $darkgray700;
+            border-radius: 8px;
+
+            font: inherit;
+            font-size: 0.82rem;
+            color: $lightgray50;
+
+            background: $darkgray950;
+            outline: none;
+
+            &:focus-visible {
+                border-color: $primary400;
+                outline: 2px solid rgb(221 91 69 / 22%);
+            }
+        }
+    }
+}
+
+.row-button {
+    cursor: pointer;
+
+    min-height: 34px;
+    padding: 0 0.7rem;
+    border: 1px solid $darkgray700;
+    border-radius: 8px;
+
+    font: inherit;
+    font-size: 0.75rem;
+    color: $lightgray200;
+
+    background: transparent;
+
+    &:hover:not(:disabled) {
+        border-color: $secondary600;
+        color: $secondary300;
+    }
+
+    &--danger:hover:not(:disabled) {
+        border-color: $error500;
+        color: $error300;
+    }
+
+    &:disabled {
+        cursor: wait;
+        opacity: 0.55;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $primary400;
+        outline-offset: 2px;
     }
 }
 

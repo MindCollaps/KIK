@@ -2,6 +2,11 @@ import pkg from './package.json';
 
 export default defineNuxtConfig({
     runtimeConfig: {
+        // Überschreibbar via NUXT_MAIL_ENABLED und NUXT_MAIL_LOG
+        mail: {
+            enabled: 'true',
+            log: 'true',
+        },
         // Überschreibbar via NUXT_SMTP_HOST, NUXT_SMTP_PORT, NUXT_SMTP_SECURE,
         // NUXT_SMTP_USER, NUXT_SMTP_PASS und NUXT_SMTP_FROM
         smtp: {

@@ -4,6 +4,7 @@ export const Permission = {
     Settings: 'SETTINGS',
     KasseUse: 'KASSE_USE',
     KasseReports: 'KASSE_REPORTS',
+    KasseReportsEdit: 'KASSE_REPORTS_EDIT',
     KasseManage: 'KASSE_MANAGE',
     Users: 'USERS',
 } as const;
@@ -18,6 +19,7 @@ export const permissionLabels: Record<Permission, string> = {
     [Permission.Settings]: 'Website-Einstellungen ändern',
     [Permission.KasseUse]: 'Kassensystem verwenden',
     [Permission.KasseReports]: 'Kassenberichte einsehen',
+    [Permission.KasseReportsEdit]: 'Kassenberichte bearbeiten',
     [Permission.KasseManage]: 'Kassensystem verwalten',
     [Permission.Users]: 'Nutzer verwalten',
 };

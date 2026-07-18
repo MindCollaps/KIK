@@ -5,7 +5,7 @@ import { Permission } from '~~/types/permissions';
 import { enforceRateLimit } from '../../../utils/rate-limit';
 import { prisma } from '../../../utils/prisma';
 import { createAdminUserToken } from '../../../utils/tokens';
-import { resolveBaseUrl, sendTemplateMail, siteName } from '../../../utils/mail';
+import { isMailingEnabled, resolveBaseUrl, sendTemplateMail, siteName } from '../../../utils/mail';
 
 const inviteTtlMs = 48 * 60 * 60 * 1000;
 
@@ -44,23 +44,31 @@ export default defineEventHandler(async event => {
         throw error;
     }
 
-    try {
-        const token = await createAdminUserToken(user.id, AdminTokenType.INVITE, inviteTtlMs);
-        const actionUrl = `${resolveBaseUrl(event)}/admin?action=set-password&token=${token}`;
+    // Bei deaktiviertem Mailversand wird das Konto ohne Einladung angelegt;
+    // das Passwort muss dann von der Verwaltung gesetzt werden.
+    const inviteSent = isMailingEnabled();
+    if (inviteSent) {
+        try {
+            const token = await createAdminUserToken(user.id, AdminTokenType.INVITE, inviteTtlMs);
+            const actionUrl = `${resolveBaseUrl(event)}/admin?action=set-password&token=${token}`;
 
-        await sendTemplateMail({
-            to: user.email,
-            subject: `Dein Konto bei ${siteName}`,
-            template: 'invite',
-            context: { name: user.name, actionUrl },
-            text: `Hallo ${user.name},\n\nfür dich wurde ein Konto in der Programmverwaltung des ${siteName} angelegt. Bestätige dein Konto und lege dein Passwort fest:\n\n${actionUrl}\n\nDer Link ist 48 Stunden gültig.`,
-        });
-    }
-    catch (error) {
-        // Ohne Einladung ist das Konto nicht nutzbar – Anlage rückgängig machen
-        await prisma.adminUser.delete({ where: { id: user.id } }).catch(() => undefined);
-        throw error;
+            await sendTemplateMail({
+                to: user.email,
+                subject: `Dein Konto bei ${siteName}`,
+                template: 'invite',
+                context: { name: user.name, actionUrl },
+                text: `Hallo ${user.name},\n\nfür dich wurde ein Konto in der Programmverwaltung des ${siteName} angelegt. Bestätige dein Konto und lege dein Passwort fest:\n\n${actionUrl}\n\nDer Link ist 48 Stunden gültig.`,
+            });
+        }
+        catch (error) {
+            // Ohne Einladung ist das Konto nicht nutzbar – Anlage rückgängig machen
+            await prisma.adminUser.delete({ where: { id: user.id } }).catch(() => undefined);
+            throw error;
+        }
     }
 
-    return { user: { id: user.id, name: user.name, email: user.email, permissions: user.permissions, lastLoginAt: user.lastLoginAt, emailConfirmedAt: user.emailConfirmedAt, createdAt: user.createdAt } };
+    return {
+        user: { id: user.id, name: user.name, email: user.email, permissions: user.permissions, active: user.active, lastLoginAt: user.lastLoginAt, emailConfirmedAt: user.emailConfirmedAt, createdAt: user.createdAt },
+        inviteSent,
+    };
 });
