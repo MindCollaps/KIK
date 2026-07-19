@@ -16,7 +16,11 @@
                 <Icon name="material-symbols:tune-rounded" aria-hidden="true" />
                 Verwaltung
             </nuxt-link>
-            <nuxt-link v-if="canAny(Permission.KasseReports, Permission.KasseReportsEdit, Permission.KasseManage)" to="/store/tagesabschluss" class="store-header_link" active-class="store-header_link--active">
+            <nuxt-link v-if="can(Permission.KasseManage)" to="/store/tagesabschluss/neu" class="store-header_link" active-class="store-header_link--active">
+                <Icon name="material-symbols:point-of-sale" aria-hidden="true" />
+                Tagesabschluss
+            </nuxt-link>
+            <nuxt-link v-if="canAny(Permission.KasseReports, Permission.KasseReportsEdit, Permission.KasseManage)" to="/store/tagesabschluss" class="store-header_link" exact-active-class="store-header_link--active">
                 <Icon name="material-symbols:receipt-long-rounded" aria-hidden="true" />
                 Tagesabschlüsse
             </nuxt-link>

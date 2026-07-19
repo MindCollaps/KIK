@@ -69,6 +69,31 @@
                 </div>
             </dl>
 
+            <p v-if="abschluss.cashDifferenceReason" class="abschluss-detail_reason">
+                <strong>Grund für die Kassendifferenz:</strong> {{ abschluss.cashDifferenceReason }}
+            </p>
+
+            <section v-if="abschluss.numberedBreakdown.length" class="abschluss-detail_section" aria-label="Nummernpools">
+                <h2>Nummernpools</h2>
+                <div class="abschluss-detail_table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Pool</th><th>Erste Nr.</th><th>Letzte Nr. (erwartet)</th><th>Letzte Nr. (gezählt)</th><th>Stückzahl</th><th>Grund</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="entry in abschluss.numberedBreakdown" :key="entry.poolId">
+                                <td>{{ entry.name }}</td>
+                                <td>{{ entry.firstNumber }}</td>
+                                <td>{{ entry.lastNumber }}</td>
+                                <td :class="{ 'abschluss-detail_diff': entry.countedLastNumber !== entry.lastNumber }">{{ entry.countedLastNumber }}</td>
+                                <td>{{ entry.quantity }}</td>
+                                <td>{{ entry.reason ?? '' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <section class="abschluss-detail_section" aria-label="Verkaufte Artikel">
                 <h2>Verkaufte Artikel</h2>
                 <p v-if="!abschluss.breakdown.length" class="abschluss-detail_empty">Keine Verkäufe in diesem Zeitraum.</p>
@@ -134,7 +159,7 @@
                                 <td>{{ paymentMethodLabels[bon.paymentMethod] }}</td>
                                 <td>{{ bon.status === 'CANCELLED' ? 'Storniert' : 'Abgeschlossen' }}</td>
                                 <td class="abschluss-detail_bon-lines">
-                                    <span v-for="line in bon.items" :key="line.id">{{ line.quantity }}× {{ line.name }}</span>
+                                    <span v-for="line in bon.items" :key="line.id">{{ bonLineLabel(line) }}</span>
                                 </td>
                                 <td>{{ formatCents(bon.totalCents) }}</td>
                                 <td>{{ bon.createdByName }}</td>
@@ -312,6 +337,14 @@ async function deleteBon(bon: BonRecord) {
     finally {
         bonPending.value = false;
     }
+}
+
+function bonLineLabel(line: BonRecord['items'][number]) {
+    const base = `${line.quantity}× ${line.name}`;
+    if (line.firstNumber === null || line.lastNumber === null) return base;
+    return line.firstNumber === line.lastNumber
+        ? `${base} (Nr. ${line.firstNumber})`
+        : `${base} (Nr. ${line.firstNumber}–${line.lastNumber})`;
 }
 
 function formatDateTime(value: string) {
@@ -525,6 +558,22 @@ function formatDateTime(value: string) {
 
     &_diff {
         color: $error300 !important;
+    }
+
+    &_reason {
+        margin: -0.75rem 0 1.5rem;
+        padding: 0.6rem 0.75rem;
+        border: 1px solid $error500;
+        border-radius: 8px;
+
+        font-size: 0.82rem;
+        color: $error300;
+
+        background: rgb(194 37 105 / 8%);
+
+        strong {
+            color: inherit;
+        }
     }
 
     &_section {

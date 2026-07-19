@@ -45,18 +45,28 @@
                     </nav>
 
                     <div class="pos-grid">
-                        <button
-                            v-for="item in activeItems"
-                            :key="item.id"
-                            type="button"
-                            class="pos-item"
-                            :class="{ 'pos-item--colored': item.color }"
-                            :style="itemStyle(item)"
-                            @click="addItem(item)"
-                        >
-                            <strong>{{ item.name }}</strong>
-                            <span>{{ item.freePrice ? 'Freier Preis' : formatCents(item.priceCents) }}</span>
-                        </button>
+                        <div v-for="item in activeItems" :key="item.id" class="pos-item-wrap">
+                            <button
+                                type="button"
+                                class="pos-item"
+                                :class="{ 'pos-item--colored': item.color }"
+                                :style="itemStyle(item)"
+                                @click="addItem(item)"
+                            >
+                                <strong>{{ item.name }}</strong>
+                                <span>{{ item.freePrice ? 'Freier Preis' : formatCents(item.priceCents) }}</span>
+                                <span v-if="item.numberPool" class="pos-item_number">{{ nextNumberLabel(item.numberPool) }}</span>
+                            </button>
+                            <button
+                                v-if="item.numberPool"
+                                type="button"
+                                class="pos-item_numedit"
+                                :aria-label="`Startnummer für Pool ${item.numberPool.name} festlegen`"
+                                @click="openNumberModal(item.numberPool)"
+                            >
+                                <Icon name="material-symbols:edit-rounded" aria-hidden="true" />
+                            </button>
+                        </div>
                     </div>
                 </template>
 
@@ -74,18 +84,28 @@
                             <h3>{{ category.name }}</h3>
                         </header>
                         <div class="pos-grid">
-                            <button
-                                v-for="item in category.items"
-                                :key="item.id"
-                                type="button"
-                                class="pos-item"
-                                :class="{ 'pos-item--colored': item.color }"
-                                :style="itemStyle(item)"
-                                @click="addItem(item)"
-                            >
-                                <strong>{{ item.name }}</strong>
-                                <span>{{ item.freePrice ? 'Freier Preis' : formatCents(item.priceCents) }}</span>
-                            </button>
+                            <div v-for="item in category.items" :key="item.id" class="pos-item-wrap">
+                                <button
+                                    type="button"
+                                    class="pos-item"
+                                    :class="{ 'pos-item--colored': item.color }"
+                                    :style="itemStyle(item)"
+                                    @click="addItem(item)"
+                                >
+                                    <strong>{{ item.name }}</strong>
+                                    <span>{{ item.freePrice ? 'Freier Preis' : formatCents(item.priceCents) }}</span>
+                                    <span v-if="item.numberPool" class="pos-item_number">{{ nextNumberLabel(item.numberPool) }}</span>
+                                </button>
+                                <button
+                                    v-if="item.numberPool"
+                                    type="button"
+                                    class="pos-item_numedit"
+                                    :aria-label="`Startnummer für Pool ${item.numberPool.name} festlegen`"
+                                    @click="openNumberModal(item.numberPool)"
+                                >
+                                    <Icon name="material-symbols:edit-rounded" aria-hidden="true" />
+                                </button>
+                            </div>
                         </div>
                     </section>
                 </template>
@@ -98,7 +118,7 @@
                             <div class="pos-recent_main">
                                 <strong>Bon #{{ bon.number }}</strong>
                                 <span>{{ formatTime(bon.createdAt) }} · {{ paymentMethodLabels[bon.paymentMethod] }} · {{ formatCents(bon.totalCents) }}</span>
-                                <span class="pos-recent_items">{{ bon.items.map(line => `${line.quantity}× ${line.name}`).join(', ') }}</span>
+                                <span class="pos-recent_items">{{ bon.items.map(bonLineLabel).join(', ') }}</span>
                                 <span v-if="bon.status === 'CANCELLED'" class="pos-recent_storno">
                                     Storniert{{ bon.cancelledByName ? ` von ${bon.cancelledByName}` : '' }}: {{ bon.cancelReason }}
                                 </span>
@@ -129,7 +149,7 @@
                     <li v-for="line in cart" :key="line.key" class="pos-cart_line">
                         <div class="pos-cart_line-info">
                             <strong>{{ line.name }}</strong>
-                            <span>{{ formatCents(line.unitPriceCents) }}</span>
+                            <span>{{ formatCents(line.unitPriceCents) }}<template v-if="cartLineNumbers(line)"> · {{ cartLineNumbers(line) }}</template></span>
                         </div>
                         <div class="pos-cart_line-controls">
                             <button type="button" :aria-label="`${line.name} verringern`" @click="changeQuantity(line, -1)">−</button>
@@ -195,6 +215,32 @@
             </div>
         </div>
 
+        <div v-if="numberPool" class="pos-modal" role="dialog" aria-modal="true" :aria-label="`Nummer für ${numberPool.name}`">
+            <div class="pos-modal_box">
+                <h3>Nächste Nummer für „{{ numberPool.name }}“</h3>
+                <p class="pos-modal_hint">
+                    Trage die Nummer der nächsten zu verkaufenden Karte ein (z. B. die erste Kartennummer des Tages).
+                </p>
+                <label class="pos-modal_field">
+                    <span>Nächste Nummer</span>
+                    <input
+                        ref="numberInputRef"
+                        v-model.trim="numberInput"
+                        inputmode="numeric"
+                        placeholder="z. B. 1001"
+                        @keyup.enter="confirmNumber"
+                    >
+                </label>
+                <p v-if="numberError" class="pos-modal_error" role="alert">{{ numberError }}</p>
+                <div class="pos-modal_actions">
+                    <button type="button" class="pos-modal_secondary" @click="closeNumberModal">Abbrechen</button>
+                    <button type="button" class="pos-modal_primary" :disabled="numberPending" @click="confirmNumber">
+                        {{ numberPending ? 'Wird gespeichert …' : 'Speichern' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div v-if="stornoTarget" class="pos-modal" role="dialog" aria-modal="true" :aria-label="`Bon ${stornoTarget.number} stornieren`">
             <div class="pos-modal_box">
                 <h3>Bon #{{ stornoTarget.number }} stornieren</h3>
@@ -219,7 +265,7 @@
 
 <script setup lang="ts">
 import { Permission } from '~~/types/permissions';
-import type { BonRecord, StoreCategoryRecord, StoreItemRecord } from '~~/types/store';
+import type { BonRecord, NumberPoolRecord, StoreCategoryRecord, StoreItemRecord } from '~~/types/store';
 import { PaymentMethod, paymentMethodLabels } from '~~/types/store';
 import { requireStorePermission } from '~/composables/storeAccess';
 import { usePageSeo } from '~/composables/seo';
@@ -247,7 +293,27 @@ interface CartLine {
 const requestFetch = useRequestFetch();
 const catalogResponse = await requestFetch<{ categories: StoreCategoryRecord[] }>('/api/store/catalog');
 
+// Artikel desselben Pools sollen dasselbe Pool-Objekt referenzieren,
+// damit eine Nummernänderung überall sofort sichtbar ist
+const rawPools = new Map<string, NumberPoolRecord>();
+for (const category of catalogResponse.categories) {
+    for (const item of category.items) {
+        if (!item.numberPool) continue;
+        const cached = rawPools.get(item.numberPool.id);
+        if (cached) item.numberPool = cached;
+        else rawPools.set(item.numberPool.id, item.numberPool);
+    }
+}
+
 const categories = ref(catalogResponse.categories.filter(category => category.items.length > 0));
+
+// Erst nach dem ref() aufsammeln, damit die Map die reaktiven Proxies enthält
+const poolInstances = new Map<string, NumberPoolRecord>();
+for (const category of categories.value) {
+    for (const item of category.items) {
+        if (item.numberPool) poolInstances.set(item.numberPool.id, item.numberPool);
+    }
+}
 const activeCategoryId = ref(categories.value[0]?.id ?? '');
 const activeItems = computed(() => categories.value.find(category => category.id === activeCategoryId.value)?.items ?? []);
 
@@ -296,6 +362,22 @@ const stornoReason = ref('');
 const stornoError = ref('');
 const stornoPending = ref(false);
 
+const numberPool = ref<NumberPoolRecord | null>(null);
+const numberInput = ref('');
+const numberError = ref('');
+const numberPending = ref(false);
+// Merkt sich den Artikel, der nach dem Setzen der Startnummer in den Bon soll
+const numberAddItem = ref<StoreItemRecord | null>(null);
+const numberInputRef = ref<HTMLInputElement | null>(null);
+
+const itemsById = computed(() => {
+    const map = new Map<string, StoreItemRecord>();
+    for (const category of categories.value) {
+        for (const item of category.items) map.set(item.id, item);
+    }
+    return map;
+});
+
 loadRecentBons();
 
 function apiErrorMessage(error: unknown, fallback: string) {
@@ -314,6 +396,11 @@ async function loadRecentBons() {
 
 function addItem(item: StoreItemRecord) {
     errorMessage.value = '';
+    if (item.numberPool && item.numberPool.nextNumber === null) {
+        numberAddItem.value = item;
+        openNumberModal(item.numberPool);
+        return;
+    }
     if (item.freePrice) {
         priceItem.value = item;
         priceInput.value = '';
@@ -355,6 +442,78 @@ function confirmPrice() {
     priceItem.value = null;
 }
 
+function nextNumberLabel(pool: NumberPoolRecord) {
+    return pool.nextNumber === null ? 'Startnummer fehlt' : `Nächste Nr. ${pool.nextNumber}`;
+}
+
+function openNumberModal(pool: NumberPoolRecord) {
+    numberPool.value = pool;
+    numberInput.value = pool.nextNumber === null ? '' : String(pool.nextNumber);
+    numberError.value = '';
+    nextTick(() => numberInputRef.value?.focus());
+}
+
+function closeNumberModal() {
+    if (numberPending.value) return;
+    numberPool.value = null;
+    numberAddItem.value = null;
+}
+
+async function confirmNumber() {
+    const pool = numberPool.value;
+    if (!pool || numberPending.value) return;
+    const parsed = Number(numberInput.value);
+    if (numberInput.value === '' || !Number.isInteger(parsed) || parsed < 0) {
+        numberError.value = 'Bitte gib eine gültige Nummer ein, z. B. 1001.';
+        return;
+    }
+
+    numberPending.value = true;
+    numberError.value = '';
+    try {
+        const response = await $fetch<{ pool: { nextNumber: number | null } }>(`/api/store/pools/${pool.id}/number`, {
+            method: 'POST',
+            body: { nextNumber: parsed },
+        });
+        pool.nextNumber = response.pool.nextNumber;
+        numberPool.value = null;
+        const pendingItem = numberAddItem.value;
+        numberAddItem.value = null;
+        if (pendingItem) addItem(pendingItem);
+    }
+    catch (error: unknown) {
+        numberError.value = apiErrorMessage(error, 'Die Nummer konnte nicht gespeichert werden.');
+    }
+    finally {
+        numberPending.value = false;
+    }
+}
+
+// Zeigt an, welche Nummern eine Bon-Zeile voraussichtlich bekommt –
+// Zeilen aus demselben Pool weiter oben im Bon zählen mit
+function cartLineNumbers(line: CartLine) {
+    const pool = itemsById.value.get(line.itemId)?.numberPool;
+    if (!pool || pool.nextNumber === null) return '';
+
+    let offset = 0;
+    for (const entry of cart.value) {
+        if (entry.key === line.key) break;
+        if (itemsById.value.get(entry.itemId)?.numberPool?.id === pool.id) offset += entry.quantity;
+    }
+
+    const first = pool.nextNumber + offset;
+    const last = first + line.quantity - 1;
+    return first === last ? `Nr. ${first}` : `Nr. ${first}–${last}`;
+}
+
+function bonLineLabel(line: BonRecord['items'][number]) {
+    const base = `${line.quantity}× ${line.name}`;
+    if (line.firstNumber === null || line.lastNumber === null) return base;
+    return line.firstNumber === line.lastNumber
+        ? `${base} (Nr. ${line.firstNumber})`
+        : `${base} (Nr. ${line.firstNumber}–${line.lastNumber})`;
+}
+
 function changeQuantity(line: CartLine, delta: number) {
     line.quantity += delta;
     if (line.quantity <= 0) {
@@ -381,6 +540,14 @@ async function checkout() {
             },
         });
         lastBon.value = response.bon;
+        // Nummernstände lokal nachziehen, damit die Anzeige ohne Neuladen stimmt
+        for (const line of response.bon.items) {
+            if (line.numberPoolId === null || line.lastNumber === null) continue;
+            const pool = poolInstances.get(line.numberPoolId);
+            if (pool && (pool.nextNumber === null || pool.nextNumber <= line.lastNumber)) {
+                pool.nextNumber = line.lastNumber + 1;
+            }
+        }
         cart.value = [];
         paymentMethod.value = PaymentMethod.Cash;
         await loadRecentBons();
@@ -579,10 +746,16 @@ function formatTime(value: string) {
     gap: 0.6rem;
 }
 
+.pos-item-wrap {
+    position: relative;
+    display: flex;
+}
+
 .pos-item {
     cursor: pointer;
 
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 0.3rem;
     align-items: flex-start;
@@ -631,6 +804,46 @@ function formatTime(value: string) {
         &:hover {
             border-color: transparent;
             filter: brightness(1.08);
+        }
+    }
+
+    &_number {
+        font-size: 0.72rem !important;
+        font-weight: 700;
+    }
+
+    &_numedit {
+        cursor: pointer;
+
+        position: absolute;
+        top: 0.35rem;
+        right: 0.35rem;
+
+        display: grid;
+        place-items: center;
+
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        border: 1px solid rgb(255 255 255 / 20%);
+        border-radius: 6px;
+
+        color: inherit;
+
+        background: rgb(0 0 0 / 25%);
+
+        svg {
+            width: 0.9rem;
+            height: 0.9rem;
+        }
+
+        &:hover {
+            border-color: $secondary600;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $primary400;
+            outline-offset: 2px;
         }
     }
 }

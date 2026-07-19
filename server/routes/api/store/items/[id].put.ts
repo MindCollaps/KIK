@@ -8,6 +8,7 @@ const updateSchema = z.object({
     name: z.string().trim().min(1).max(80).optional(),
     priceCents: z.number().int().min(0).max(1000000).optional(),
     freePrice: z.boolean().optional(),
+    numberPoolId: z.string().uuid().nullable().optional(),
     color: z.string().regex(/^#[0-9a-f]{6}$/i).nullable().optional(),
     sortOrder: z.number().int().min(0).max(9999).optional(),
     archived: z.boolean().optional(),
@@ -23,6 +24,11 @@ export default defineEventHandler(async event => {
     const parsed = updateSchema.safeParse(await readBody(event));
     if (!parsed.success) {
         throw createError({ statusCode: 400, statusMessage: parsed.error.issues[0]?.message ?? 'Ungültige Eingabe.' });
+    }
+
+    if (parsed.data.numberPoolId) {
+        const pool = await prisma.numberPool.findUnique({ where: { id: parsed.data.numberPoolId } });
+        if (!pool) throw createError({ statusCode: 404, statusMessage: 'Der Nummernpool wurde nicht gefunden.' });
     }
 
     try {

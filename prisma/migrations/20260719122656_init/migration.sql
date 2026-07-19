@@ -20,7 +20,7 @@ CREATE TYPE "BonStatus" AS ENUM ('COMPLETED', 'CANCELLED');
 CREATE TYPE "PaymentMethod" AS ENUM ('CASH', 'CARD');
 
 -- CreateEnum
-CREATE TYPE "StoreLogType" AS ENUM ('CATEGORY_CREATED', 'CATEGORY_UPDATED', 'CATEGORY_DELETED', 'ITEM_CREATED', 'ITEM_UPDATED', 'ITEM_DELETED', 'BON_CREATED', 'BON_UPDATED', 'BON_DELETED', 'BON_CANCELLED', 'TAGESABSCHLUSS_CREATED', 'TAGESABSCHLUSS_UPDATED');
+CREATE TYPE "StoreLogType" AS ENUM ('CATEGORY_CREATED', 'CATEGORY_UPDATED', 'CATEGORY_DELETED', 'ITEM_CREATED', 'ITEM_UPDATED', 'ITEM_DELETED', 'BON_CREATED', 'BON_UPDATED', 'BON_DELETED', 'BON_CANCELLED', 'TAGESABSCHLUSS_CREATED', 'TAGESABSCHLUSS_UPDATED', 'POOL_CREATED', 'POOL_UPDATED', 'POOL_DELETED');
 
 -- CreateTable
 CREATE TABLE "Page" (
@@ -94,6 +94,17 @@ CREATE TABLE "SetupState" (
 );
 
 -- CreateTable
+CREATE TABLE "NumberPool" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "nextNumber" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "NumberPool_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "StoreCategory" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -114,6 +125,7 @@ CREATE TABLE "StoreItem" (
     "name" TEXT NOT NULL,
     "priceCents" INTEGER NOT NULL DEFAULT 0,
     "freePrice" BOOLEAN NOT NULL DEFAULT false,
+    "numberPoolId" TEXT,
     "color" TEXT,
     "sortOrder" INTEGER NOT NULL DEFAULT 0,
     "archived" BOOLEAN NOT NULL DEFAULT false,
@@ -149,6 +161,9 @@ CREATE TABLE "BonItem" (
     "name" TEXT NOT NULL,
     "unitPriceCents" INTEGER NOT NULL,
     "quantity" INTEGER NOT NULL,
+    "firstNumber" INTEGER,
+    "lastNumber" INTEGER,
+    "numberPoolId" TEXT,
 
     CONSTRAINT "BonItem_pkey" PRIMARY KEY ("id")
 );
@@ -168,7 +183,9 @@ CREATE TABLE "Tagesabschluss" (
     "bonCount" INTEGER NOT NULL,
     "stornoCount" INTEGER NOT NULL,
     "stornoTotalCents" INTEGER NOT NULL,
+    "cashDifferenceReason" TEXT,
     "breakdown" JSONB NOT NULL,
+    "numberedBreakdown" JSONB,
     "createdById" TEXT,
     "createdByName" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -256,6 +273,9 @@ CREATE INDEX "AdminSession_expiresAt_idx" ON "AdminSession"("expiresAt");
 CREATE INDEX "StoreItem_categoryId_idx" ON "StoreItem"("categoryId");
 
 -- CreateIndex
+CREATE INDEX "StoreItem_numberPoolId_idx" ON "StoreItem"("numberPoolId");
+
+-- CreateIndex
 CREATE INDEX "Bon_status_createdAt_idx" ON "Bon"("status", "createdAt");
 
 -- CreateIndex
@@ -266,6 +286,9 @@ CREATE INDEX "BonItem_bonNumber_idx" ON "BonItem"("bonNumber");
 
 -- CreateIndex
 CREATE INDEX "BonItem_itemId_idx" ON "BonItem"("itemId");
+
+-- CreateIndex
+CREATE INDEX "BonItem_numberPoolId_idx" ON "BonItem"("numberPoolId");
 
 -- CreateIndex
 CREATE INDEX "StoreAuditLog_createdAt_idx" ON "StoreAuditLog"("createdAt");
@@ -292,6 +315,9 @@ ALTER TABLE "AdminSession" ADD CONSTRAINT "AdminSession_userId_fkey" FOREIGN KEY
 ALTER TABLE "StoreItem" ADD CONSTRAINT "StoreItem_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "StoreCategory"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "StoreItem" ADD CONSTRAINT "StoreItem_numberPoolId_fkey" FOREIGN KEY ("numberPoolId") REFERENCES "NumberPool"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Bon" ADD CONSTRAINT "Bon_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "AdminUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -305,6 +331,9 @@ ALTER TABLE "BonItem" ADD CONSTRAINT "BonItem_bonNumber_fkey" FOREIGN KEY ("bonN
 
 -- AddForeignKey
 ALTER TABLE "BonItem" ADD CONSTRAINT "BonItem_itemId_fkey" FOREIGN KEY ("itemId") REFERENCES "StoreItem"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "BonItem" ADD CONSTRAINT "BonItem_numberPoolId_fkey" FOREIGN KEY ("numberPoolId") REFERENCES "NumberPool"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Tagesabschluss" ADD CONSTRAINT "Tagesabschluss_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "AdminUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;

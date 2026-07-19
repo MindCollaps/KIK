@@ -17,12 +17,22 @@ export const paymentMethodLabels: Record<PaymentMethod, string> = {
     [PaymentMethod.Card]: 'Karte',
 };
 
+// Nummernpool: gemeinsamer Nummernkreis für mehrere Artikel
+// (z. B. Kinokarte normal + ermäßigt vom selben Kartenblock)
+export interface NumberPoolRecord {
+    id: string;
+    name: string;
+    nextNumber: number | null;
+}
+
 export interface StoreItemRecord {
     id: string;
     categoryId: string;
     name: string;
     priceCents: number;
     freePrice: boolean;
+    numberPoolId: string | null;
+    numberPool: NumberPoolRecord | null;
     color: string | null;
     sortOrder: number;
     archived: boolean;
@@ -44,6 +54,9 @@ export interface BonItemRecord {
     name: string;
     unitPriceCents: number;
     quantity: number;
+    firstNumber: number | null;
+    lastNumber: number | null;
+    numberPoolId: string | null;
 }
 
 export interface BonRecord {
@@ -72,6 +85,20 @@ export interface BreakdownCategory {
     items: BreakdownItem[];
 }
 
+// Nummernstand eines Nummernpools (z. B. Kinokarten) in einer Periode
+export interface NumberedPoolStat {
+    poolId: string;
+    name: string;
+    firstNumber: number;
+    lastNumber: number;
+    quantity: number;
+}
+
+export interface NumberedBreakdownEntry extends NumberedPoolStat {
+    countedLastNumber: number;
+    reason: string | null;
+}
+
 export interface PeriodStats {
     bonCount: number;
     stornoCount: number;
@@ -86,6 +113,7 @@ export interface TagesabschlussPreview {
     periodStart: string | null;
     suggestedOpeningCashCents: number;
     stats: PeriodStats;
+    numberedPools: NumberedPoolStat[];
 }
 
 export interface TagesabschlussListEntry {
@@ -107,6 +135,8 @@ export interface TagesabschlussRecord extends TagesabschlussListEntry {
     cashRevenueCents: number;
     cardRevenueCents: number;
     stornoTotalCents: number;
+    cashDifferenceReason: string | null;
     breakdown: BreakdownCategory[];
+    numberedBreakdown: NumberedBreakdownEntry[];
     bons: BonRecord[];
 }

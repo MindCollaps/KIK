@@ -30,8 +30,8 @@ export const defaultFooter: FooterConfig = {
             title: 'Kontakt',
             links: [
                 { label: 'E-Mail', to: 'mailto:info@kino-im-kasten.de', icon: 'material-symbols:mail-rounded' },
-                { label: 'Instagram', to: 'https://www.instagram.com/kinoimkasten/', icon: 'midi:instagram' },
-                { label: 'Mastodon', to: 'https://mastodon.social/@kinoimkasten', icon: 'midi:mastodon' },
+                { label: 'Instagram', to: 'https://www.instagram.com/kinoimkasten/', icon: 'mdi:instagram' },
+                { label: 'Mastodon', to: 'https://mastodon.social/@kinoimkasten', icon: 'mdi:mastodon' },
                 { label: 'Impressum & Datenschutz', to: '/impressum', icon: 'material-symbols:gavel-rounded' },
             ],
         },

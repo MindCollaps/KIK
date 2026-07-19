@@ -1,14 +1,14 @@
 import type { AdminUser, Prisma, StoreLogType } from '@prisma/client';
-import type { BreakdownCategory, PeriodStats } from '~~/types/store';
+import type { BreakdownCategory, NumberedPoolStat, PeriodStats } from '~~/types/store';
 import { BonStatus, PaymentMethod } from '~~/types/store';
 import { prisma } from './prisma';
 
 export type BonWithItems = Prisma.BonGetPayload<{
-    include: { items: { include: { item: { include: { category: true } } } } };
+    include: { items: { include: { item: { include: { category: true } }, numberPool: true } } };
 }>;
 
 export const bonInclude = {
-    items: { include: { item: { include: { category: true } } } },
+    items: { include: { item: { include: { category: true } }, numberPool: true } },
 } satisfies Prisma.BonInclude;
 
 export async function writeStoreLog(type: StoreLogType, actor: AdminUser, details: Prisma.InputJsonValue, bonNumber?: number, db: Prisma.TransactionClient = prisma) {
@@ -79,6 +79,34 @@ export function computePeriodStats(bons: BonWithItems[]): PeriodStats {
     };
 }
 
+// Nummernstände pro Nummernpool. Stornierte Bons zählen mit,
+// weil die physischen Nummern (z. B. Kartenabrisse) trotzdem verbraucht sind.
+export function computeNumberedStats(bons: BonWithItems[]): NumberedPoolStat[] {
+    const byPool = new Map<string, NumberedPoolStat>();
+
+    for (const bon of bons) {
+        for (const line of bon.items) {
+            if (line.numberPoolId === null || line.firstNumber === null || line.lastNumber === null) continue;
+            const entry = byPool.get(line.numberPoolId);
+            if (!entry) {
+                byPool.set(line.numberPoolId, {
+                    poolId: line.numberPoolId,
+                    name: line.numberPool?.name ?? 'Gelöschter Pool',
+                    firstNumber: line.firstNumber,
+                    lastNumber: line.lastNumber,
+                    quantity: line.lastNumber - line.firstNumber + 1,
+                });
+                continue;
+            }
+            entry.firstNumber = Math.min(entry.firstNumber, line.firstNumber);
+            entry.lastNumber = Math.max(entry.lastNumber, line.lastNumber);
+            entry.quantity += line.lastNumber - line.firstNumber + 1;
+        }
+    }
+
+    return [...byPool.values()].sort((a, b) => a.name.localeCompare(b.name, 'de'));
+}
+
 export async function recalculateTagesabschluss(number: number, db: Prisma.TransactionClient = prisma) {
     const abschluss = await db.tagesabschluss.findUnique({ where: { number } });
     if (!abschluss) throw createError({ statusCode: 404, statusMessage: 'Der Tagesabschluss wurde nicht gefunden.' });
@@ -119,6 +147,9 @@ export function toBonResponse(bon: BonWithItems) {
             name: line.name,
             unitPriceCents: line.unitPriceCents,
             quantity: line.quantity,
+            firstNumber: line.firstNumber,
+            lastNumber: line.lastNumber,
+            numberPoolId: line.numberPoolId,
         })),
     };
 }

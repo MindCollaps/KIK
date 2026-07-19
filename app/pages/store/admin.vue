@@ -89,6 +89,10 @@
                                         <input v-model="itemEditFreePrice" type="checkbox">
                                         <span>Freier Preis</span>
                                     </label>
+                                    <select v-model="itemEditPoolId" aria-label="Nummernpool">
+                                        <option value="">Kein Nummernpool</option>
+                                        <option v-for="pool in pools" :key="pool.id" :value="pool.id">{{ pool.name }}</option>
+                                    </select>
                                     <label class="storeadmin-color">
                                         <span>Farbe</span>
                                         <input type="color" :value="itemEditColor || '#2b2420'" @input="itemEditColor = colorFromEvent($event)">
@@ -108,6 +112,7 @@
                                     </strong>
                                     <span>
                                         {{ item.freePrice ? 'Freier Preis' : formatCents(item.priceCents) }}
+                                        <template v-if="item.numberPool"> · Pool „{{ item.numberPool.name }}“ ({{ item.numberPool.nextNumber === null ? 'keine Start-Nr.' : `nächste Nr. ${item.numberPool.nextNumber}` }})</template>
                                         <template v-if="item.archived"> · Archiviert</template>
                                     </span>
                                 </div>
@@ -149,49 +154,79 @@
                             <input v-model="newItem[category.id]!.freePrice" type="checkbox">
                             <span>Freier Preis</span>
                         </label>
+                        <select v-model="newItem[category.id]!.numberPoolId" aria-label="Nummernpool">
+                            <option value="">Kein Nummernpool</option>
+                            <option v-for="pool in pools" :key="pool.id" :value="pool.id">{{ pool.name }}</option>
+                        </select>
                         <button type="submit" :disabled="pendingAction">Hinzufügen</button>
                     </form>
                 </article>
+            </section>
+
+            <section class="storeadmin-section" aria-label="Nummernpools">
+                <header class="storeadmin-section_head">
+                    <h2>Nummernpools</h2>
+                </header>
+                <p class="storeadmin-hint">
+                    Artikel im selben Pool teilen sich einen fortlaufenden Nummernkreis –
+                    z. B. Kinokarten normal und ermäßigt vom selben Kartenblock.
+                </p>
+
+                <form class="storeadmin-inline-form" @submit.prevent="createPool">
+                    <input v-model.trim="newPoolName" required maxlength="60" placeholder="Neuer Pool, z. B. Kinokarten">
+                    <input v-model.trim="newPoolNumber" inputmode="numeric" placeholder="Startnummer (optional)">
+                    <button type="submit" :disabled="pendingAction">Pool anlegen</button>
+                </form>
+
+                <p v-if="!pools.length" class="storeadmin-hint">Noch keine Pools angelegt.</p>
+                <ul v-else class="storeadmin-items">
+                    <li v-for="pool in pools" :key="pool.id" class="storeadmin-item">
+                        <template v-if="editingPoolId === pool.id">
+                            <div class="storeadmin-item_edit">
+                                <input v-model.trim="poolEditName" maxlength="60" aria-label="Poolname">
+                                <input v-model.trim="poolEditNumber" inputmode="numeric" placeholder="Nächste Nr., z. B. 1001" aria-label="Nächste Nummer">
+                            </div>
+                            <div class="storeadmin-row-actions">
+                                <button type="button" @click="savePool(pool)">Speichern</button>
+                                <button type="button" class="storeadmin-row-actions_muted" @click="editingPoolId = null">Abbrechen</button>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class="storeadmin-item_info">
+                                <strong>{{ pool.name }}</strong>
+                                <span>
+                                    {{ pool.nextNumber === null ? 'Keine Startnummer' : `Nächste Nr. ${pool.nextNumber}` }}
+                                    · {{ pool.itemCount }} Artikel zugeordnet
+                                </span>
+                            </div>
+                            <div class="storeadmin-row-actions">
+                                <button type="button" @click="startPoolEdit(pool)">Bearbeiten</button>
+                                <button
+                                    type="button"
+                                    class="storeadmin-row-actions_danger"
+                                    :disabled="pendingAction || pool.itemCount > 0"
+                                    :title="pool.itemCount > 0 ? 'Der Pool ist noch Artikeln zugeordnet.' : undefined"
+                                    @click="deletePool(pool)"
+                                >
+                                    Löschen
+                                </button>
+                            </div>
+                        </template>
+                    </li>
+                </ul>
             </section>
 
             <section class="storeadmin-section" aria-label="Tagesabschluss">
                 <header class="storeadmin-section_head">
                     <h2>Tagesabschluss</h2>
                 </header>
-
-                <div v-if="preview" class="storeadmin-preview">
-                    <p class="storeadmin-preview_period">
-                        Offene Periode{{ preview.periodStart ? ` seit ${formatDateTime(preview.periodStart)}` : '' }}
-                    </p>
-                    <dl class="storeadmin-stats">
-                        <div><dt>Bons</dt><dd>{{ preview.stats.bonCount }}</dd></div>
-                        <div><dt>Umsatz</dt><dd>{{ formatCents(preview.stats.revenueCents) }}</dd></div>
-                        <div><dt>davon Bar</dt><dd>{{ formatCents(preview.stats.cashRevenueCents) }}</dd></div>
-                        <div><dt>davon Karte</dt><dd>{{ formatCents(preview.stats.cardRevenueCents) }}</dd></div>
-                        <div><dt>Storno</dt><dd>{{ preview.stats.stornoCount }} ({{ formatCents(preview.stats.stornoTotalCents) }})</dd></div>
-                    </dl>
-
-                    <form class="storeadmin-abschluss" @submit.prevent="createAbschluss">
-                        <label>
-                            <span>Kassenbestand zu Beginn (EUR)</span>
-                            <input v-model.trim="openingCashInput" required inputmode="decimal" placeholder="z. B. 100,00">
-                        </label>
-                        <label>
-                            <span>Gezählter Kassenbestand jetzt (EUR)</span>
-                            <input v-model.trim="countedCashInput" required inputmode="decimal" placeholder="z. B. 245,50">
-                        </label>
-                        <p v-if="expectedCashCents !== null" class="storeadmin-abschluss_expected">
-                            Erwartet: {{ formatCents(expectedCashCents) }}
-                            <template v-if="differenceCents !== null">
-                                · Differenz: <strong :class="{ 'storeadmin-abschluss_diff--bad': differenceCents !== 0 }">{{ formatCents(differenceCents) }}</strong>
-                            </template>
-                        </p>
-                        <button type="submit" :disabled="abschlussPending">
-                            <Icon :name="abschlussPending ? 'material-symbols:progress-activity' : 'material-symbols:receipt-long-rounded'" aria-hidden="true" />
-                            {{ abschlussPending ? 'Wird erstellt …' : 'Tagesabschluss durchführen' }}
-                        </button>
-                    </form>
-                </div>
+                <p class="storeadmin-abschluss-hint">
+                    Der Tagesabschluss hat jetzt eine eigene Seite.
+                </p>
+                <nuxt-link to="/store/tagesabschluss/neu" class="storeadmin-abschluss-link">
+                    <Icon name="material-symbols:receipt-long-rounded" aria-hidden="true" />
+                    Zum Tagesabschluss
+                </nuxt-link>
             </section>
         </div>
     </main>
@@ -199,7 +234,7 @@
 
 <script setup lang="ts">
 import { Permission } from '~~/types/permissions';
-import type { StoreCategoryRecord, StoreItemRecord, TagesabschlussPreview } from '~~/types/store';
+import type { NumberPoolRecord, StoreCategoryRecord, StoreItemRecord } from '~~/types/store';
 import { requireStorePermission } from '~/composables/storeAccess';
 import { usePageSeo } from '~/composables/seo';
 import { formatCents, parseEuroInput } from '~/utils/currency';
@@ -217,16 +252,21 @@ interface NewItemForm {
     name: string;
     price: string;
     freePrice: boolean;
+    numberPoolId: string;
+}
+
+interface PoolEntry extends NumberPoolRecord {
+    itemCount: number;
 }
 
 const requestFetch = useRequestFetch();
-const [catalogResponse, previewResponse] = await Promise.all([
+const [catalogResponse, poolsResponse] = await Promise.all([
     requestFetch<{ categories: StoreCategoryRecord[] }>('/api/store/catalog?all=true'),
-    requestFetch<TagesabschlussPreview>('/api/store/tagesabschluss-preview'),
+    requestFetch<{ pools: PoolEntry[] }>('/api/store/pools'),
 ]);
 
 const categories = ref(catalogResponse.categories);
-const preview = ref(previewResponse);
+const pools = ref(poolsResponse.pools);
 const showArchived = ref(false);
 const pendingAction = ref(false);
 const message = ref('');
@@ -244,35 +284,24 @@ const editingItemId = ref<string | null>(null);
 const itemEditName = ref('');
 const itemEditPrice = ref('');
 const itemEditFreePrice = ref(false);
+const itemEditPoolId = ref('');
 const itemEditColor = ref('');
+
+const newPoolName = ref('');
+const newPoolNumber = ref('');
+const editingPoolId = ref<string | null>(null);
+const poolEditName = ref('');
+const poolEditNumber = ref('');
 
 function colorFromEvent(event: Event) {
     return (event.target as HTMLInputElement).value;
 }
 
-const openingCashInput = ref('');
-const countedCashInput = ref('');
-const abschlussPending = ref(false);
-
-openingCashInput.value = (previewResponse.suggestedOpeningCashCents / 100).toFixed(2).replace('.', ',');
-
 const visibleCategories = computed(() => showArchived.value ? categories.value : categories.value.filter(category => !category.archived));
-
-const expectedCashCents = computed(() => {
-    const opening = parseEuroInput(openingCashInput.value);
-    if (opening === null || !preview.value) return null;
-    return opening + preview.value.stats.cashRevenueCents;
-});
-
-const differenceCents = computed(() => {
-    const counted = parseEuroInput(countedCashInput.value);
-    if (counted === null || expectedCashCents.value === null) return null;
-    return counted - expectedCashCents.value;
-});
 
 function ensureItemForms() {
     for (const category of categories.value) {
-        newItem.value[category.id] ??= { name: '', price: '', freePrice: false };
+        newItem.value[category.id] ??= { name: '', price: '', freePrice: false, numberPoolId: '' };
     }
 }
 
@@ -399,10 +428,10 @@ async function createItem(category: StoreCategoryRecord) {
     await runAction(async () => {
         await $fetch('/api/store/items', {
             method: 'POST',
-            body: { categoryId: category.id, name: form.name, priceCents, freePrice: form.freePrice },
+            body: { categoryId: category.id, name: form.name, priceCents, freePrice: form.freePrice, numberPoolId: form.numberPoolId || null },
         });
-        newItem.value[category.id] = { name: '', price: '', freePrice: false };
-        await reloadCatalog();
+        newItem.value[category.id] = { name: '', price: '', freePrice: false, numberPoolId: '' };
+        await Promise.all([reloadCatalog(), reloadPools()]);
     }, 'Der Artikel konnte nicht angelegt werden.');
 }
 
@@ -411,6 +440,7 @@ function startItemEdit(item: StoreItemRecord) {
     itemEditName.value = item.name;
     itemEditPrice.value = item.freePrice ? '' : (item.priceCents / 100).toFixed(2).replace('.', ',');
     itemEditFreePrice.value = item.freePrice;
+    itemEditPoolId.value = item.numberPoolId ?? '';
     itemEditColor.value = item.color ?? '';
 }
 
@@ -428,11 +458,75 @@ async function saveItem(item: StoreItemRecord) {
     await runAction(async () => {
         await $fetch(`/api/store/items/${item.id}`, {
             method: 'PUT',
-            body: { name: itemEditName.value, priceCents, freePrice: itemEditFreePrice.value, color: itemEditColor.value || null },
+            body: {
+                name: itemEditName.value,
+                priceCents,
+                freePrice: itemEditFreePrice.value,
+                numberPoolId: itemEditPoolId.value || null,
+                color: itemEditColor.value || null,
+            },
         });
         editingItemId.value = null;
-        await reloadCatalog();
+        await Promise.all([reloadCatalog(), reloadPools()]);
     }, 'Der Artikel konnte nicht gespeichert werden.');
+}
+
+async function reloadPools() {
+    const response = await $fetch<{ pools: PoolEntry[] }>('/api/store/pools');
+    pools.value = response.pools;
+}
+
+// Wandelt eine Nummerneingabe in eine Zahl um; leer = null, ungültig = undefined
+function parsePoolNumberInput(value: string): number | null | undefined {
+    if (value === '') return null;
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed >= 0 ? parsed : undefined;
+}
+
+async function createPool() {
+    const nextNumber = parsePoolNumberInput(newPoolNumber.value);
+    if (nextNumber === undefined) {
+        showMessage('Bitte gib eine gültige Startnummer ein, z. B. 1001.', true);
+        return;
+    }
+
+    await runAction(async () => {
+        await $fetch('/api/store/pools', { method: 'POST', body: { name: newPoolName.value, nextNumber } });
+        newPoolName.value = '';
+        newPoolNumber.value = '';
+        await reloadPools();
+    }, 'Der Nummernpool konnte nicht angelegt werden.');
+}
+
+function startPoolEdit(pool: PoolEntry) {
+    editingPoolId.value = pool.id;
+    poolEditName.value = pool.name;
+    poolEditNumber.value = pool.nextNumber === null ? '' : String(pool.nextNumber);
+}
+
+async function savePool(pool: PoolEntry) {
+    const nextNumber = parsePoolNumberInput(poolEditNumber.value);
+    if (nextNumber === undefined) {
+        showMessage('Bitte gib eine gültige nächste Nummer ein, z. B. 1001.', true);
+        return;
+    }
+
+    await runAction(async () => {
+        await $fetch(`/api/store/pools/${pool.id}`, {
+            method: 'PUT',
+            body: { name: poolEditName.value, nextNumber },
+        });
+        editingPoolId.value = null;
+        await Promise.all([reloadPools(), reloadCatalog()]);
+    }, 'Der Nummernpool konnte nicht gespeichert werden.');
+}
+
+async function deletePool(pool: PoolEntry) {
+    if (!confirm(`Nummernpool „${pool.name}“ endgültig löschen?`)) return;
+    await runAction(async () => {
+        await $fetch(`/api/store/pools/${pool.id}`, { method: 'DELETE' });
+        await reloadPools();
+    }, 'Der Nummernpool konnte nicht gelöscht werden.');
 }
 
 async function toggleItemArchived(item: StoreItemRecord) {
@@ -450,41 +544,6 @@ async function deleteItem(item: StoreItemRecord) {
     }, 'Der Artikel konnte nicht gelöscht werden.');
 }
 
-async function createAbschluss() {
-    if (abschlussPending.value) return;
-    const opening = parseEuroInput(openingCashInput.value);
-    const counted = parseEuroInput(countedCashInput.value);
-    if (opening === null || counted === null) {
-        showMessage('Bitte gib gültige Beträge ein, z. B. 100,00.', true);
-        return;
-    }
-
-    abschlussPending.value = true;
-    message.value = '';
-    try {
-        const response = await $fetch<{ abschluss: { number: number } }>('/api/store/tagesabschluss', {
-            method: 'POST',
-            body: { openingCashCents: opening, countedCashCents: counted },
-        });
-        await navigateTo(`/store/tagesabschluss/${response.abschluss.number}`);
-    }
-    catch (error: unknown) {
-        showMessage(apiErrorMessage(error, 'Der Tagesabschluss konnte nicht erstellt werden.'), true);
-    }
-    finally {
-        abschlussPending.value = false;
-    }
-}
-
-function formatDateTime(value: string) {
-    return new Intl.DateTimeFormat('de-DE', {
-        day: '2-digit',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Europe/Berlin',
-    }).format(new Date(value));
-}
 </script>
 
 <style scoped lang="scss">
@@ -554,6 +613,12 @@ function formatDateTime(value: string) {
     }
 }
 
+.storeadmin-hint {
+    margin: 0 0 0.85rem;
+    font-size: 0.8rem;
+    color: $lightgray300;
+}
+
 .storeadmin-inline-form {
     display: flex;
     flex-wrap: wrap;
@@ -561,6 +626,24 @@ function formatDateTime(value: string) {
     align-items: center;
 
     margin-bottom: 1rem;
+
+    select {
+        min-height: 42px;
+        padding: 0 0.75rem;
+        border: 1px solid $darkgray700;
+        border-radius: 8px;
+
+        font: inherit;
+        font-size: 0.85rem;
+        color: $lightgray50;
+
+        background: $darkgray900;
+
+        &:focus-visible {
+            border-color: $primary400;
+            outline: 2px solid rgb(221 91 69 / 22%);
+        }
+    }
 
     input:not([type='checkbox']) {
         flex: 1;
@@ -796,6 +879,24 @@ function formatDateTime(value: string) {
         gap: 0.5rem;
         align-items: center;
 
+        select {
+            min-height: 38px;
+            padding: 0 0.6rem;
+            border: 1px solid $darkgray700;
+            border-radius: 8px;
+
+            font: inherit;
+            font-size: 0.82rem;
+            color: $lightgray50;
+
+            background: $darkgray900;
+
+            &:focus-visible {
+                border-color: $primary400;
+                outline: 2px solid rgb(221 91 69 / 22%);
+            }
+        }
+
         input:not([type='checkbox']) {
             flex: 1;
 
@@ -870,117 +971,36 @@ function formatDateTime(value: string) {
     }
 }
 
-.storeadmin-preview {
-    &_period {
-        margin: 0 0 0.75rem;
-        font-size: 0.85rem;
-        color: $lightgray300;
-    }
+.storeadmin-abschluss-hint {
+    margin: 0 0 0.75rem;
+    font-size: 0.85rem;
+    color: $lightgray300;
 }
 
-.storeadmin-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+.storeadmin-abschluss-link {
+    display: inline-flex;
     gap: 0.5rem;
-    margin: 0 0 1rem;
+    align-items: center;
+    justify-content: center;
 
-    > div {
-        padding: 0.6rem 0.75rem;
-        border: 1px solid $darkgray800;
-        border-radius: 8px;
-        background: $darkgray900;
+    min-height: 46px;
+    padding: 0 1rem;
+    border-radius: 8px;
+
+    font-weight: 700;
+    color: $whiteOrig;
+    text-decoration: none;
+
+    background: $primary500;
+
+    svg {
+        width: 1.1rem;
+        height: 1.1rem;
     }
 
-    dt {
-        font-size: 0.7rem;
-        color: $lightgray400;
-    }
-
-    dd {
-        margin: 0.15rem 0 0;
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: $lightgray0;
-    }
-}
-
-.storeadmin-abschluss {
-    display: grid;
-    gap: 0.75rem;
-    max-width: 26rem;
-
-    label {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-
-        span {
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: $lightgray200;
-        }
-
-        input {
-            min-height: 44px;
-            padding: 0 0.75rem;
-            border: 1px solid $darkgray700;
-            border-radius: 8px;
-
-            font: inherit;
-            color: $lightgray50;
-
-            background: $darkgray900;
-            outline: none;
-
-            &:focus-visible {
-                border-color: $primary400;
-                outline: 2px solid rgb(221 91 69 / 22%);
-            }
-        }
-    }
-
-    &_expected {
-        margin: 0;
-        font-size: 0.82rem;
-        color: $lightgray300;
-
-        strong {
-            color: $success400;
-        }
-    }
-
-    &_diff--bad {
-        color: $error300 !important;
-    }
-
-    button {
-        cursor: pointer;
-
-        display: inline-flex;
-        gap: 0.5rem;
-        align-items: center;
-        justify-content: center;
-
-        min-height: 46px;
-        padding: 0 1rem;
-        border: 0;
-        border-radius: 8px;
-
-        font: inherit;
-        font-weight: 700;
-        color: $whiteOrig;
-
-        background: $primary500;
-
-        &:disabled {
-            cursor: wait;
-            opacity: 0.55;
-        }
-
-        &:focus-visible {
-            outline: 2px solid $primary300;
-            outline-offset: 3px;
-        }
+    &:focus-visible {
+        outline: 2px solid $primary300;
+        outline-offset: 3px;
     }
 }
 

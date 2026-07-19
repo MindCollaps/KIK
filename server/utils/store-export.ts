@@ -2,7 +2,7 @@ import ExcelJS from 'exceljs';
 import PdfPrinter from 'pdfmake/src/printer.js';
 import type { TDocumentDefinitions, Content, TableCell } from 'pdfmake/interfaces';
 import type { Prisma } from '@prisma/client';
-import type { BreakdownCategory } from '~~/types/store';
+import type { BreakdownCategory, NumberedBreakdownEntry } from '~~/types/store';
 import { paymentMethodLabels } from '~~/types/store';
 import { prisma } from './prisma';
 import { siteName } from './mail';
@@ -24,6 +24,10 @@ export function abschlussBreakdown(abschluss: AbschlussWithBons): BreakdownCateg
     return (Array.isArray(abschluss.breakdown) ? abschluss.breakdown : []) as unknown as BreakdownCategory[];
 }
 
+export function abschlussNumbered(abschluss: AbschlussWithBons): NumberedBreakdownEntry[] {
+    return (Array.isArray(abschluss.numberedBreakdown) ? abschluss.numberedBreakdown : []) as unknown as NumberedBreakdownEntry[];
+}
+
 export function toAbschlussResponse(abschluss: AbschlussWithBons) {
     return {
         number: abschluss.number,
@@ -39,7 +43,9 @@ export function toAbschlussResponse(abschluss: AbschlussWithBons) {
         bonCount: abschluss.bonCount,
         stornoCount: abschluss.stornoCount,
         stornoTotalCents: abschluss.stornoTotalCents,
+        cashDifferenceReason: abschluss.cashDifferenceReason,
         breakdown: abschlussBreakdown(abschluss),
+        numberedBreakdown: abschlussNumbered(abschluss),
         createdByName: abschluss.createdByName,
         createdAt: abschluss.createdAt,
         bons: abschluss.bons.map(toBonResponse),
@@ -59,9 +65,17 @@ function csvRow(...values: Array<string | number>) {
     return values.map(csvField).join(';');
 }
 
+function numberRange(item: { firstNumber: number | null; lastNumber: number | null }) {
+    if (item.firstNumber === null || item.lastNumber === null) return '';
+    return item.firstNumber === item.lastNumber ? `Nr. ${item.firstNumber}` : `Nr. ${item.firstNumber}–${item.lastNumber}`;
+}
+
 function bonPositions(bon: AbschlussWithBons['bons'][number]) {
     return bon.items
-        .map(item => `${item.quantity} × ${item.name} à ${formatEuro(item.unitPriceCents)}`)
+        .map(item => {
+            const range = numberRange(item);
+            return `${item.quantity} × ${item.name}${range ? ` (${range})` : ''} à ${formatEuro(item.unitPriceCents)}`;
+        })
         .join('; ');
 }
 
@@ -86,6 +100,7 @@ function summaryRows(abschluss: AbschlussWithBons): SummaryRow[] {
         { label: 'Kassenbestand erwartet', value: formatEuro(abschluss.expectedCashCents) },
         { label: 'Kassenbestand gezählt', value: formatEuro(abschluss.countedCashCents) },
         { label: 'Kassendifferenz', value: formatEuro(abschluss.differenceCents) },
+        ...abschluss.cashDifferenceReason ? [{ label: 'Grund Kassendifferenz', value: abschluss.cashDifferenceReason }] : [],
     ];
 }
 
@@ -105,6 +120,16 @@ export function buildCsv(abschluss: AbschlussWithBons) {
             lines.push(csvRow(category.categoryName, item.name, euroValue(item.unitPriceCents), item.quantity, euroValue(item.totalCents)));
         }
         lines.push(csvRow(category.categoryName, 'Gesamt', '', '', euroValue(category.totalCents)));
+    }
+
+    const numbered = abschlussNumbered(abschluss);
+    if (numbered.length) {
+        lines.push('');
+        lines.push(csvRow('Nummernpools'));
+        lines.push(csvRow('Pool', 'Erste Nr.', 'Letzte Nr. (erwartet)', 'Letzte Nr. (gezählt)', 'Stückzahl', 'Grund'));
+        for (const entry of numbered) {
+            lines.push(csvRow(entry.name, entry.firstNumber, entry.lastNumber, entry.countedLastNumber, entry.quantity, entry.reason ?? ''));
+        }
     }
 
     lines.push('');
@@ -156,6 +181,16 @@ export async function buildXlsx(abschluss: AbschlussWithBons) {
         const totalRow = itemsSheet.addRow([category.categoryName, 'Gesamt', '', '', category.totalCents / 100]);
         totalRow.font = { bold: true };
         totalRow.getCell(5).numFmt = euroFormat;
+    }
+
+    const numbered = abschlussNumbered(abschluss);
+    if (numbered.length) {
+        const numberedSheet = workbook.addWorksheet('Nummernpools');
+        numberedSheet.columns = [{ width: 32 }, { width: 12 }, { width: 20 }, { width: 20 }, { width: 12 }, { width: 40 }];
+        numberedSheet.addRow(['Pool', 'Erste Nr.', 'Letzte Nr. (erwartet)', 'Letzte Nr. (gezählt)', 'Stückzahl', 'Grund']).font = { bold: true };
+        for (const entry of numbered) {
+            numberedSheet.addRow([entry.name, entry.firstNumber, entry.lastNumber, entry.countedLastNumber, entry.quantity, entry.reason ?? '']);
+        }
     }
 
     const bonSheet = workbook.addWorksheet('Bons');
@@ -278,6 +313,36 @@ export async function buildPdf(abschluss: AbschlussWithBons) {
         ]);
     }
 
+    const numbered = abschlussNumbered(abschluss);
+    const numberedRows: TableCell[][] = [[
+        { text: 'Pool', bold: true },
+        { text: 'Erste Nr.', bold: true, alignment: 'right' },
+        { text: 'Letzte Nr. (erwartet)', bold: true, alignment: 'right' },
+        { text: 'Letzte Nr. (gezählt)', bold: true, alignment: 'right' },
+        { text: 'Stückzahl', bold: true, alignment: 'right' },
+        { text: 'Grund', bold: true },
+    ]];
+    for (const entry of numbered) {
+        numberedRows.push([
+            entry.name,
+            { text: String(entry.firstNumber), alignment: 'right' },
+            { text: String(entry.lastNumber), alignment: 'right' },
+            { text: String(entry.countedLastNumber), alignment: 'right', bold: entry.countedLastNumber !== entry.lastNumber },
+            { text: String(entry.quantity), alignment: 'right' },
+            entry.reason ?? '',
+        ]);
+    }
+    const numberedContent: Content[] = numbered.length
+        ? [
+                { text: 'Nummernpools', style: 'section' },
+                {
+                    table: { widths: ['*', 'auto', 'auto', 'auto', 'auto', '*'], headerRows: 1, body: numberedRows },
+                    layout: 'lightHorizontalLines',
+                    margin: [0, 6, 0, 20],
+                },
+            ]
+        : [];
+
     const content: Content = [
         { text: siteName, style: 'muted' },
         { text: `Tagesabschluss Nr. ${abschluss.number}`, style: 'title' },
@@ -295,6 +360,7 @@ export async function buildPdf(abschluss: AbschlussWithBons) {
             layout: 'lightHorizontalLines',
             margin: [0, 6, 0, 20],
         },
+        ...numberedContent,
         { text: 'Bons', style: 'section' },
         {
             table: { widths: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto', '*'], headerRows: 1, body: bonRows },

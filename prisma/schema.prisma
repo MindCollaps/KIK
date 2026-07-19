@@ -132,6 +132,21 @@ enum StoreLogType {
   BON_CANCELLED
   TAGESABSCHLUSS_CREATED
   TAGESABSCHLUSS_UPDATED
+  POOL_CREATED
+  POOL_UPDATED
+  POOL_DELETED
+}
+
+// Nummernpool: gruppiert Artikel, die sich einen fortlaufenden Nummernkreis
+// teilen (z. B. Kinokarten normal/ermäßigt vom selben physischen Kartenblock)
+model NumberPool {
+  id         String      @id @default(uuid())
+  name       String
+  nextNumber Int?
+  items      StoreItem[]
+  bonItems   BonItem[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 }
 
 model StoreCategory {
@@ -153,6 +168,8 @@ model StoreItem {
   name       String
   priceCents Int           @default(0)
   freePrice  Boolean       @default(false)
+  numberPoolId String?
+  numberPool NumberPool?   @relation(fields: [numberPoolId], references: [id], onDelete: SetNull)
   color      String?
   sortOrder  Int           @default(0)
   archived   Boolean       @default(false)
@@ -161,6 +178,7 @@ model StoreItem {
   updatedAt  DateTime      @updatedAt
 
   @@index([categoryId])
+  @@index([numberPoolId])
 }
 
 model Bon {
@@ -194,9 +212,14 @@ model BonItem {
   name           String
   unitPriceCents Int
   quantity       Int
+  firstNumber    Int?
+  lastNumber     Int?
+  numberPoolId   String?
+  numberPool     NumberPool? @relation(fields: [numberPoolId], references: [id], onDelete: SetNull)
 
   @@index([bonNumber])
   @@index([itemId])
+  @@index([numberPoolId])
 }
 
 model Tagesabschluss {
@@ -213,7 +236,9 @@ model Tagesabschluss {
   bonCount         Int
   stornoCount       Int
   stornoTotalCents  Int
+  cashDifferenceReason String?
   breakdown         Json
+  numberedBreakdown Json?
   bons             Bon[]
   createdById       String?
   createdBy         AdminUser? @relation(fields: [createdById], references: [id], onDelete: SetNull)
