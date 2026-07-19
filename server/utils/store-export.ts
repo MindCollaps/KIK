@@ -9,7 +9,7 @@ import { siteName } from './mail';
 import { bonInclude, formatDateTimeBerlin, formatEuro, toBonResponse } from './store';
 
 export type AbschlussWithBons = Prisma.TagesabschlussGetPayload<{
-    include: { bons: { include: { items: { include: { item: { include: { category: true } } } } } } };
+    include: { bons: { include: typeof bonInclude } };
 }>;
 
 export async function loadTagesabschluss(number: number): Promise<AbschlussWithBons | null> {

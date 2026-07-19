@@ -106,7 +106,7 @@
             <div class="form-grid">
                 <label class="field">
                     <span>Laufzeit in Minuten</span>
-                    <input v-model="form.runtimeMinutes" min="1" max="600" type="number">
+                    <input v-model.number="form.runtimeMinutes" min="1" max="600" type="number">
                 </label>
                 <label class="field">
                     <span>Altersfreigabe</span>
@@ -122,7 +122,7 @@
                 </label>
                 <label class="field">
                     <span>Erscheinungsjahr</span>
-                    <input v-model="form.releaseYear" min="1888" max="2200" type="number">
+                    <input v-model.number="form.releaseYear" min="1888" max="2200" type="number">
                 </label>
                 <label class="field field--wide">
                     <span>Weiterführender Link</span>
@@ -175,11 +175,11 @@ function emptyForm() {
     return {
         title: '',
         description: '',
-        runtimeMinutes: '',
+        runtimeMinutes: null as number | null,
         ageRating: '',
         director: '',
         country: '',
-        releaseYear: '',
+        releaseYear: null as number | null,
         infoUrl: '',
         imagePath: '',
         imageAlt: '',
@@ -193,11 +193,11 @@ watch(() => props.film, film => {
     Object.assign(form, film ? {
         title: film.title,
         description: film.description,
-        runtimeMinutes: film.runtimeMinutes?.toString() ?? '',
+        runtimeMinutes: film.runtimeMinutes ?? null,
         ageRating: film.ageRating ?? '',
         director: film.director ?? '',
         country: film.country ?? '',
-        releaseYear: film.releaseYear?.toString() ?? '',
+        releaseYear: film.releaseYear ?? null,
         infoUrl: film.infoUrl ?? '',
         imagePath: film.imagePath ?? '',
         imageAlt: film.imageAlt ?? '',
@@ -213,21 +213,17 @@ function nullableText(value: string) {
     return value.trim() || null;
 }
 
-function nullableNumber(value: string) {
-    return value === '' ? null : Number(value);
-}
-
 function submit() {
     errorMessage.value = '';
 
     emit('save', {
         title: form.title,
         description: form.description,
-        runtimeMinutes: nullableNumber(form.runtimeMinutes),
+        runtimeMinutes: form.runtimeMinutes,
         ageRating: nullableText(form.ageRating),
         director: nullableText(form.director),
         country: nullableText(form.country),
-        releaseYear: nullableNumber(form.releaseYear),
+        releaseYear: form.releaseYear,
         infoUrl: nullableText(form.infoUrl),
         imagePath: nullableText(form.imagePath),
         imageAlt: nullableText(form.imageAlt),

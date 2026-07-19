@@ -5,7 +5,7 @@
             `program-card--${ variant }`,
             `program-card--style-${ entry.style.toLowerCase() }`,
             {
-                'program-card--with-image': entry.imagePath,
+                'program-card--with-image': entry.film.imagePath,
                 'program-card--framed': entry.style === 'CUSTOM' && entry.customCardBorder,
             },
         ]"
