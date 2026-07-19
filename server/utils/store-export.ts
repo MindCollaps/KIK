@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs';
-import PdfPrinter from 'pdfmake/src/printer';
+import PdfPrinter from 'pdfmake/src/printer.js';
 import type { TDocumentDefinitions, Content, TableCell } from 'pdfmake/interfaces';
 import type { Prisma } from '@prisma/client';
 import type { BreakdownCategory } from '~~/types/store';
