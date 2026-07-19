@@ -35,8 +35,8 @@
                 <div class="film-search_control">
                     <ui-input-search
                         v-model="filmSearchTerm"
-                        minlength="2"
-                        maxlength="160"
+                        :minlength="2"
+                        :maxlength="160"
                         placeholder="Filmtitel suchen"
                         @search="searchFilms"
                     />
@@ -261,7 +261,7 @@ async function selectFilm(result: DoesTheDogDieSearchResult) {
 
         form.doesTheDogDieId = result.id;
         form.title = result.name;
-        form.releaseYear = result.releaseYear?.toString() ?? '';
+        form.releaseYear = result.releaseYear ?? null;
         if (result.overview) form.description = result.overview;
         if (posterImage) {
             try {
