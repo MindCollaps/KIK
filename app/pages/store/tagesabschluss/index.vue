@@ -1,6 +1,7 @@
 <template>
     <main class="abschluss-page">
         <store-header title="Tagesabschlüsse" />
+        <views-view-version/>
 
         <div class="abschluss-layout">
             <p v-if="!entries.length" class="abschluss-empty">Es wurden noch keine Tagesabschlüsse erstellt.</p>
@@ -29,9 +30,9 @@
                             <td :class="{ 'abschluss-table_diff': entry.differenceCents !== 0 }">{{ formatCents(entry.differenceCents) }}</td>
                             <td>{{ entry.createdByName }}</td>
                             <td>
-                                <nuxt-link :to="`/store/tagesabschluss/${entry.number}`" class="abschluss-table_link">
+                                <ui-button :to="`/store/tagesabschluss/${entry.number}`" type="link" class="abschluss-table_link">
                                     Ansehen
-                                </nuxt-link>
+                                </ui-button>
                             </td>
                         </tr>
                     </tbody>

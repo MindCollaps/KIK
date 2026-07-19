@@ -7,9 +7,9 @@
             :disabled="disabled"
             @input="onInput"
         >
-        <button v-if="clearable && model" type="button" class="ui-color_clear" @click="model = ''">
+        <ui-button v-if="clearable && model" tag="button" type="secondary" class="ui-color_clear" @click="model = ''">
             Entfernen
-        </button>
+        </ui-button>
     </div>
 </template>
 

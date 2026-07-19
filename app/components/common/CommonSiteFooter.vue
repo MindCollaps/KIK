@@ -2,13 +2,10 @@
     <footer class="site-footer">
         <ui-shell size="wide" class="site-footer_inner">
             <div class="site-footer_identity">
-                <NuxtLink class="site-footer_brand" to="/">
-                    <svg fill="none" viewBox="0 0 32 32" aria-hidden="true">
-                        <rect height="27" rx="7" stroke="currentColor" stroke-width="2.4" width="27" x="2.5" y="2.5" />
-                        <path d="M13 11.5L21.5 16L13 20.5V11.5Z" fill="currentColor" />
-                    </svg>
+                <ui-button class="site-footer_brand" to="/" type="link">
+                    <common-brand-mark aria-hidden="true" />
                     <span>Kino im Kasten</span>
-                </NuxtLink>
+                </ui-button>
                 <p>{{ footer.description }}</p>
                 <a
                     v-if="footer.addressLabel && footer.addressUrl"
@@ -30,9 +27,9 @@
             >
                 <h2>{{ group.title }}</h2>
                 <template v-for="link in group.links" :key="link.label">
-                    <NuxtLink v-if="link.to.startsWith('/')" :to="link.to">
+                    <ui-button v-if="link.to.startsWith('/')" :to="link.to" type="link">
                         <Icon :name="link.icon ?? 'material-symbols:link-rounded'" aria-hidden="true" />{{ link.label }}
-                    </NuxtLink>
+                    </ui-button>
                     <a
                         v-else
                         :href="link.to"

@@ -5,10 +5,10 @@
                 <ui-section-title tag="h2">{{ block.title }}</ui-section-title>
                 <!-- eslint-disable-next-line vue/no-v-html -- markdown-it renders with html:false, raw HTML is escaped -->
                 <div class="block-split_body" v-html="renderedBody" />
-                <NuxtLink v-if="block.linkLabel && block.linkTo" class="block-split_link" :to="block.linkTo">
+                <ui-button v-if="block.linkLabel && block.linkTo" class="block-split_link" :to="block.linkTo" type="link">
                     {{ block.linkLabel }}
                     <Icon name="material-symbols:arrow-forward-rounded" aria-hidden="true" />
-                </NuxtLink>
+                </ui-button>
             </div>
 
             <ul v-if="block.points.length" class="block-split_points">

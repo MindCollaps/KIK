@@ -6,10 +6,10 @@
             :title="entry?.film.title ?? 'Vorstellung'"
             :description="entry ? formatProgramDate(entry.startsAt) : undefined"
         >
-            <NuxtLink class="back-link" to="/programm">
+            <ui-button class="back-link" to="/programm" type="link">
                 <Icon name="material-symbols:arrow-back-rounded" aria-hidden="true" />
                 Zurück zum Programm
-            </NuxtLink>
+            </ui-button>
         </common-info-hero>
 
         <ui-shell v-if="entry" size="info" class="detail-layout">

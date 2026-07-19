@@ -7,6 +7,7 @@
             `button--size-${ size }`,
             `button--orientation-${ orientation }`,
             {
+                'button--active': active,
                 'button--disabled': disabled,
                 'button--icon': (!!$slots.icon || !!icon) && !$slots.default,
             },
@@ -62,6 +63,10 @@ const props = defineProps({
         type: String,
         default: null,
     },
+    buttonType: {
+        type: String as PropType<'button' | 'submit' | 'reset'>,
+        default: 'button',
+    },
     width: {
         type: String,
         default: null,
@@ -71,8 +76,12 @@ const props = defineProps({
         default: '16px',
     },
     type: {
-        type: String as PropType<'primary' | 'secondary' | 'secondary-black' | 'destructive' | 'link'>,
+        type: String as PropType<'primary' | 'secondary' | 'secondary-black' | 'destructive' | 'link' | 'pill' | 'pill-muted' | 'ghost' | 'quiet' | 'dashed' | 'icon-ghost'>,
         default: 'primary',
+    },
+    active: {
+        type: Boolean,
+        default: false,
     },
     orientation: {
         type: String as PropType<'vertical' | 'horizontal'>,
@@ -152,6 +161,9 @@ const getAttrs = computed(() => {
     else if (props.href) {
         attrs.href = props.href;
         if (props.rel) attrs.rel = props.rel;
+    }
+    else if (props.tag === 'button') {
+        attrs.type = props.buttonType;
     }
 
     return attrs;
@@ -299,6 +311,108 @@ const getAttrs = computed(() => {
                 color: var(--focus-color);
             }
         }
+    }
+
+    &--type-pill,
+    &--type-pill-muted {
+        min-height: 38px;
+        padding: 0 0.85rem;
+        border: 1px solid transparent;
+        border-radius: 999px;
+
+        font-size: 0.82rem;
+        color: $lightgray200;
+
+        background: transparent;
+
+        @include hover {
+            &:hover {
+                border-color: $secondary600;
+            }
+        }
+    }
+
+    &--type-pill-muted {
+        color: $lightgray400;
+    }
+
+    &--type-pill.button--active,
+    &--type-pill-muted.button--active {
+        border-color: $secondary600;
+        color: $secondary300;
+        background: rgb(192 143 46 / 8%);
+    }
+
+    &--type-ghost {
+        min-height: 40px;
+        padding: 0 0.8rem;
+        border: 1px solid $darkgray700;
+        border-radius: 8px;
+
+        font-size: 0.8rem;
+        color: $lightgray150;
+
+        background: transparent;
+
+        @include hover {
+            &:hover {
+                border-color: $secondary600;
+            }
+        }
+    }
+
+    &--type-quiet {
+        min-height: 34px;
+        padding: 0 0.7rem;
+        border: 1px solid $darkgray700;
+        border-radius: 8px;
+
+        font-size: 0.75rem;
+        color: $lightgray200;
+
+        background: transparent;
+
+        @include hover {
+            &:hover {
+                border-color: $secondary600;
+                color: $secondary300;
+            }
+        }
+    }
+
+    &--type-dashed {
+        min-height: 42px;
+        padding: 0 0.9rem;
+        border: 1px dashed $darkgray700;
+        border-radius: 8px;
+
+        font-size: 0.85rem;
+        color: $lightgray200;
+
+        background: transparent;
+
+        @include hover {
+            &:hover {
+                border-color: $secondary600;
+                color: $secondary300;
+            }
+        }
+    }
+
+    &--type-icon-ghost {
+        display: inline-grid;
+        place-items: center;
+
+        width: 40px;
+        min-width: 40px;
+        min-height: 40px;
+        padding: 0;
+        border: 1px solid $darkgray700;
+        border-radius: 8px;
+
+        color: $lightgray200;
+
+        background: transparent;
     }
 
     &--disabled {

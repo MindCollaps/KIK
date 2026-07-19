@@ -8,19 +8,17 @@
                 <option value="primary">Primär</option>
                 <option value="secondary">Sekundär</option>
             </ui-select>
-            <button type="button" class="icon-button" aria-label="Button entfernen" @click="actions.splice(index, 1)">
+            <ui-button tag="button" type="icon-ghost" aria-label="Button entfernen" @click="actions.splice(index, 1)">
                 <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-            </button>
+            </ui-button>
         </div>
-        <button
+        <ui-button tag="button" type="dashed"
             v-if="actions.length < 4"
-            type="button"
-            class="add-button"
             @click="actions.push({ label: '', to: '', style: 'secondary' })"
         >
             <Icon name="material-symbols:add-rounded" aria-hidden="true" />
             Button hinzufügen
-        </button>
+        </ui-button>
     </div>
 </template>
 
@@ -68,62 +66,6 @@ const actions = defineModel<BlockAction[]>({ required: true });
             border-color: $primary400;
             outline: 2px solid rgb(221 91 69 / 22%);
         }
-    }
-}
-
-.icon-button {
-    cursor: pointer;
-
-    display: grid;
-    place-items: center;
-
-    min-width: 40px;
-    min-height: 40px;
-    border: 1px solid $darkgray700;
-    border-radius: 8px;
-
-    color: $lightgray200;
-
-    background: transparent;
-
-    &:hover {
-        color: $error300;
-        background: rgb(194 37 105 / 8%);
-    }
-
-    &:focus-visible {
-        outline: 2px solid $primary400;
-        outline-offset: 2px;
-    }
-}
-
-.add-button {
-    cursor: pointer;
-
-    display: inline-flex;
-    gap: 0.4rem;
-    align-items: center;
-    justify-content: center;
-
-    min-height: 40px;
-    padding: 0 0.8rem;
-    border: 1px dashed $darkgray700;
-    border-radius: 8px;
-
-    font: inherit;
-    font-size: 0.8rem;
-    color: $lightgray200;
-
-    background: transparent;
-
-    &:hover {
-        border-color: $secondary600;
-        color: $secondary300;
-    }
-
-    &:focus-visible {
-        outline: 2px solid $primary400;
-        outline-offset: 2px;
     }
 }
 

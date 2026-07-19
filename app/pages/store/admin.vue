@@ -1,6 +1,7 @@
 <template>
     <main class="storeadmin-page">
         <store-header title="Kassen-Verwaltung" />
+        <views-view-version/>
 
         <div class="storeadmin-layout">
             <p v-if="message" class="storeadmin-message" :class="{ 'storeadmin-message--error': messageIsError }" role="alert">
@@ -13,10 +14,10 @@
                     <ui-checkbox v-model="showArchived" class="storeadmin-toggle">Archivierte anzeigen</ui-checkbox>
                 </header>
 
-                <form class="storeadmin-inline-form" @submit.prevent="createCategory">
+                <ui-form class="storeadmin-inline-form" @submit.prevent="createCategory">
                     <input v-model.trim="newCategoryName" required maxlength="60" placeholder="Neue Kategorie, z. B. Getränke">
-                    <button type="submit" :disabled="pendingAction">Kategorie anlegen</button>
-                </form>
+                    <ui-button tag="button" button-type="submit" :disabled="pendingAction">Kategorie anlegen</ui-button>
+                </ui-form>
 
                 <article
                     v-for="category in visibleCategories"
@@ -35,8 +36,8 @@
                                 <ui-icon-picker v-model="categoryEditIcon" class="storeadmin-iconpicker" />
                             </div>
                             <div class="storeadmin-row-actions">
-                                <button type="button" @click="saveCategory(category)">Speichern</button>
-                                <button type="button" class="storeadmin-row-actions_muted" @click="editingCategoryId = null">Abbrechen</button>
+                                <ui-button tag="button" type="secondary" @click="saveCategory(category)">Speichern</ui-button>
+                                <ui-button tag="button" type="secondary" class="storeadmin-row-actions_muted" @click="editingCategoryId = null">Abbrechen</ui-button>
                             </div>
                         </template>
                         <template v-else>
@@ -47,25 +48,26 @@
                                 <span v-if="category.archived" class="storeadmin-badge">Archiviert</span>
                             </h3>
                             <div class="storeadmin-row-actions">
-                                <button type="button" :disabled="pendingAction" aria-label="Nach oben" @click="moveCategory(category, -1)">
+                                <ui-button tag="button" type="secondary" :disabled="pendingAction" aria-label="Nach oben" @click="moveCategory(category, -1)">
                                     <Icon name="material-symbols:arrow-upward-rounded" aria-hidden="true" />
-                                </button>
-                                <button type="button" :disabled="pendingAction" aria-label="Nach unten" @click="moveCategory(category, 1)">
+                                </ui-button>
+                                <ui-button tag="button" type="secondary" :disabled="pendingAction" aria-label="Nach unten" @click="moveCategory(category, 1)">
                                     <Icon name="material-symbols:arrow-downward-rounded" aria-hidden="true" />
-                                </button>
-                                <button type="button" @click="startCategoryEdit(category)">Bearbeiten</button>
-                                <button type="button" class="storeadmin-row-actions_muted" @click="toggleCategoryArchived(category)">
+                                </ui-button>
+                                <ui-button tag="button" type="secondary" @click="startCategoryEdit(category)">Bearbeiten</ui-button>
+                                <ui-button tag="button" type="secondary" class="storeadmin-row-actions_muted" @click="toggleCategoryArchived(category)">
                                     {{ category.archived ? 'Reaktivieren' : 'Archivieren' }}
-                                </button>
-                                <button
+                                </ui-button>
+                                <ui-button
                                     v-if="category.archived"
-                                    type="button"
+                                    tag="button"
+                                    type="secondary"
                                     class="storeadmin-row-actions_danger"
                                     :disabled="pendingAction"
                                     @click="deleteCategory(category)"
                                 >
                                     Löschen
-                                </button>
+                                </ui-button>
                             </div>
                         </template>
                     </header>
@@ -92,8 +94,8 @@
                                     </label>
                                 </div>
                                 <div class="storeadmin-row-actions">
-                                    <button type="button" @click="saveItem(item)">Speichern</button>
-                                    <button type="button" class="storeadmin-row-actions_muted" @click="editingItemId = null">Abbrechen</button>
+                                    <ui-button tag="button" type="secondary" @click="saveItem(item)">Speichern</ui-button>
+                                    <ui-button tag="button" type="secondary" class="storeadmin-row-actions_muted" @click="editingItemId = null">Abbrechen</ui-button>
                                 </div>
                             </template>
                             <template v-else>
@@ -109,31 +111,32 @@
                                     </span>
                                 </div>
                                 <div class="storeadmin-row-actions">
-                                    <button type="button" :disabled="pendingAction" aria-label="Nach oben" @click="moveItem(category, item, -1)">
+                                    <ui-button tag="button" type="secondary" :disabled="pendingAction" aria-label="Nach oben" @click="moveItem(category, item, -1)">
                                         <Icon name="material-symbols:arrow-upward-rounded" aria-hidden="true" />
-                                    </button>
-                                    <button type="button" :disabled="pendingAction" aria-label="Nach unten" @click="moveItem(category, item, 1)">
+                                    </ui-button>
+                                    <ui-button tag="button" type="secondary" :disabled="pendingAction" aria-label="Nach unten" @click="moveItem(category, item, 1)">
                                         <Icon name="material-symbols:arrow-downward-rounded" aria-hidden="true" />
-                                    </button>
-                                    <button type="button" @click="startItemEdit(item)">Bearbeiten</button>
-                                    <button type="button" class="storeadmin-row-actions_muted" @click="toggleItemArchived(item)">
+                                    </ui-button>
+                                    <ui-button tag="button" type="secondary" @click="startItemEdit(item)">Bearbeiten</ui-button>
+                                    <ui-button tag="button" type="secondary" class="storeadmin-row-actions_muted" @click="toggleItemArchived(item)">
                                         {{ item.archived ? 'Reaktivieren' : 'Archivieren' }}
-                                    </button>
-                                    <button
+                                    </ui-button>
+                                    <ui-button
                                         v-if="item.archived"
-                                        type="button"
+                                        tag="button"
+                                        type="secondary"
                                         class="storeadmin-row-actions_danger"
                                         :disabled="pendingAction"
                                         @click="deleteItem(item)"
                                     >
                                         Löschen
-                                    </button>
+                                    </ui-button>
                                 </div>
                             </template>
                         </li>
                     </ul>
 
-                    <form class="storeadmin-inline-form storeadmin-inline-form--item" @submit.prevent="createItem(category)">
+                    <ui-form class="storeadmin-inline-form storeadmin-inline-form--item" @submit.prevent="createItem(category)">
                         <input v-model.trim="newItem[category.id]!.name" required maxlength="80" placeholder="Neuer Artikel, z. B. Kinoticket">
                         <input
                             v-model.trim="newItem[category.id]!.price"
@@ -147,8 +150,8 @@
                             <option value="">Kein Nummernpool</option>
                             <option v-for="pool in pools" :key="pool.id" :value="pool.id">{{ pool.name }}</option>
                         </ui-select>
-                        <button type="submit" :disabled="pendingAction">Hinzufügen</button>
-                    </form>
+                        <ui-button tag="button" button-type="submit" :disabled="pendingAction">Hinzufügen</ui-button>
+                    </ui-form>
                 </article>
             </section>
 
@@ -161,11 +164,11 @@
                     z. B. Kinokarten normal und ermäßigt vom selben Kartenblock.
                 </p>
 
-                <form class="storeadmin-inline-form" @submit.prevent="createPool">
+                <ui-form class="storeadmin-inline-form" @submit.prevent="createPool">
                     <input v-model.trim="newPoolName" required maxlength="60" placeholder="Neuer Pool, z. B. Kinokarten">
                     <input v-model.trim="newPoolNumber" inputmode="numeric" placeholder="Startnummer (optional)">
-                    <button type="submit" :disabled="pendingAction">Pool anlegen</button>
-                </form>
+                    <ui-button tag="button" button-type="submit" :disabled="pendingAction">Pool anlegen</ui-button>
+                </ui-form>
 
                 <p v-if="!pools.length" class="storeadmin-hint">Noch keine Pools angelegt.</p>
                 <ul v-else class="storeadmin-items">
@@ -176,8 +179,8 @@
                                 <input v-model.trim="poolEditNumber" inputmode="numeric" placeholder="Nächste Nr., z. B. 1001" aria-label="Nächste Nummer">
                             </div>
                             <div class="storeadmin-row-actions">
-                                <button type="button" @click="savePool(pool)">Speichern</button>
-                                <button type="button" class="storeadmin-row-actions_muted" @click="editingPoolId = null">Abbrechen</button>
+                                <ui-button tag="button" type="secondary" @click="savePool(pool)">Speichern</ui-button>
+                                <ui-button tag="button" type="secondary" class="storeadmin-row-actions_muted" @click="editingPoolId = null">Abbrechen</ui-button>
                             </div>
                         </template>
                         <template v-else>
@@ -189,16 +192,17 @@
                                 </span>
                             </div>
                             <div class="storeadmin-row-actions">
-                                <button type="button" @click="startPoolEdit(pool)">Bearbeiten</button>
-                                <button
-                                    type="button"
+                                <ui-button tag="button" type="secondary" @click="startPoolEdit(pool)">Bearbeiten</ui-button>
+                                <ui-button
+                                    tag="button"
+                                    type="secondary"
                                     class="storeadmin-row-actions_danger"
                                     :disabled="pendingAction || pool.itemCount > 0"
                                     :title="pool.itemCount > 0 ? 'Der Pool ist noch Artikeln zugeordnet.' : undefined"
                                     @click="deletePool(pool)"
                                 >
                                     Löschen
-                                </button>
+                                </ui-button>
                             </div>
                         </template>
                     </li>
@@ -212,10 +216,10 @@
                 <p class="storeadmin-abschluss-hint">
                     Der Tagesabschluss hat jetzt eine eigene Seite.
                 </p>
-                <nuxt-link to="/store/tagesabschluss/neu" class="storeadmin-abschluss-link">
+                <ui-button to="/store/tagesabschluss/neu" type="link" class="storeadmin-abschluss-link">
                     <Icon name="material-symbols:receipt-long-rounded" aria-hidden="true" />
                     Zum Tagesabschluss
-                </nuxt-link>
+                </ui-button>
             </section>
         </div>
     </main>
@@ -628,23 +632,19 @@ async function deleteItem(item: StoreItemRecord) {
         }
     }
 
-    button {
-        cursor: pointer;
-
+    :deep(.button) {
         min-height: 42px;
         padding: 0 0.9rem;
         border: 0;
         border-radius: 8px;
 
-        font: inherit;
         font-size: 0.82rem;
         font-weight: 700;
         color: $whiteOrig;
 
         background: $primary500;
 
-        &:disabled {
-            cursor: wait;
+        &.button--disabled {
             opacity: 0.55;
         }
 
@@ -832,15 +832,12 @@ async function deleteItem(item: StoreItemRecord) {
     display: inline-flex;
     gap: 0.35rem;
 
-    button {
-        cursor: pointer;
-
+    :deep(.button) {
         min-height: 34px;
         padding: 0 0.7rem;
         border: 1px solid $darkgray700;
         border-radius: 8px;
 
-        font: inherit;
         font-size: 0.75rem;
         color: $lightgray200;
 

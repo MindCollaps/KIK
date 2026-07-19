@@ -1,6 +1,7 @@
 <template>
     <main class="abschlussneu-page">
         <store-header title="Tagesabschluss" />
+        <views-view-version/>
 
         <div class="abschlussneu-layout">
             <p v-if="errorMessage" class="abschlussneu-error" role="alert">{{ errorMessage }}</p>
@@ -29,7 +30,7 @@
                 </div>
             </section>
 
-            <form class="abschlussneu-form" @submit.prevent="createAbschluss">
+            <ui-form class="abschlussneu-form" @submit.prevent="createAbschluss">
                 <section class="abschlussneu-section" aria-label="Kasse zählen">
                     <h2>Kasse zählen</h2>
                     <div class="abschlussneu-fields">
@@ -84,11 +85,11 @@
                     </div>
                 </section>
 
-                <button type="submit" class="abschlussneu-submit" :disabled="pending">
+                <ui-button tag="button" button-type="submit" class="abschlussneu-submit" :disabled="pending">
                     <Icon :name="pending ? 'material-symbols:progress-activity' : 'material-symbols:receipt-long-rounded'" aria-hidden="true" />
                     {{ pending ? 'Wird erstellt …' : 'Tagesabschluss durchführen' }}
-                </button>
-            </form>
+                </ui-button>
+            </ui-form>
         </div>
     </main>
 </template>
@@ -447,8 +448,6 @@ function formatDateTime(value: string) {
 }
 
 .abschlussneu-submit {
-    cursor: pointer;
-
     display: inline-flex;
     gap: 0.5rem;
     align-items: center;
@@ -456,10 +455,8 @@ function formatDateTime(value: string) {
 
     min-height: 50px;
     padding: 0 1.25rem;
-    border: 0;
     border-radius: 8px;
 
-    font: inherit;
     font-size: 1rem;
     font-weight: 700;
     color: $whiteOrig;

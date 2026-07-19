@@ -16,14 +16,15 @@
 
             <div class="toast-title">{{ toast.title }}</div>
 
-            <button
+            <ui-button
                 aria-label="Schließen"
                 class="toast-close"
-                type="button"
+                tag="button"
+                type="secondary"
                 @click="emit('close')"
             >
                 <icon name="material-symbols:close-rounded"/>
-            </button>
+            </ui-button>
         </div>
         <div
             v-if="toast.message"

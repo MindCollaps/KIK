@@ -1,13 +1,10 @@
 <template>
     <main class="error-page">
         <div class="error-card">
-            <NuxtLink class="error-card_brand" to="/" @click.prevent="goHome">
-                <svg fill="none" viewBox="0 0 32 32" aria-hidden="true">
-                    <rect height="27" rx="7" stroke="currentColor" stroke-width="2.4" width="27" x="2.5" y="2.5" />
-                    <path d="M13 11.5L21.5 16L13 20.5V11.5Z" fill="currentColor" />
-                </svg>
+            <ui-button class="error-card_brand" to="/" type="link" @click.prevent="goHome">
+                <common-brand-mark aria-hidden="true" />
                 <span>Kino im Kasten</span>
-            </NuxtLink>
+            </ui-button>
 
             <p class="error-card_code" aria-hidden="true">{{ error.statusCode }}</p>
             <h1>{{ heading }}</h1>
@@ -18,18 +15,18 @@
             </div>
 
             <div class="error-card_actions">
-                <button type="button" class="error-button error-button--primary" @click="goHome">
+                <ui-button tag="button" class="error-button error-button--primary" @click="goHome">
                     <Icon name="material-symbols:other-houses" aria-hidden="true" />
                     Zur Startseite
-                </button>
-                <button v-if="!isNotFound" type="button" class="error-button" @click="reload">
+                </ui-button>
+                <ui-button v-if="!isNotFound" tag="button" type="secondary" class="error-button" @click="reload">
                     <Icon name="material-symbols:refresh-rounded" aria-hidden="true" />
                     Erneut versuchen
-                </button>
-                <NuxtLink v-else class="error-button" to="/programm" @click.prevent="goToProgram">
+                </ui-button>
+                <ui-button v-else class="error-button" to="/programm" type="secondary" @click.prevent="goToProgram">
                     <Icon name="material-symbols:calendar-month-rounded" aria-hidden="true" />
                     Zum Programm
-                </NuxtLink>
+                </ui-button>
             </div>
         </div>
     </main>
@@ -193,8 +190,6 @@ function reload() {
 }
 
 .error-button {
-    cursor: pointer;
-
     display: inline-flex;
     gap: 0.5rem;
     align-items: center;
@@ -205,7 +200,6 @@ function reload() {
     border: 1px solid $darkgray700;
     border-radius: 8px;
 
-    font: inherit;
     font-weight: 700;
     color: $lightgray100;
     text-decoration: none;

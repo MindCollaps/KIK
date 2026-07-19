@@ -3,31 +3,14 @@
         <div
             class="header"
         >
-            <nuxt-link
+            <ui-button
                 class="header-text"
                 to="/"
+                type="link"
             >
-                <svg
-                    class="header-mark"
-                    fill="none"
-                    viewBox="0 0 32 32"
-                >
-                    <rect
-                        height="27"
-                        rx="7"
-                        stroke="currentColor"
-                        stroke-width="2.4"
-                        width="27"
-                        x="2.5"
-                        y="2.5"
-                    />
-                    <path
-                        d="M13 11.5L21.5 16L13 20.5V11.5Z"
-                        fill="currentColor"
-                    />
-                </svg>
+                <common-brand-mark class="header-mark" />
                 <span class="header-text_word">Kino im Kasten</span>
-            </nuxt-link>
+            </ui-button>
             <view-menu/>
         </div>
         <div class="app_content">
@@ -85,9 +68,19 @@ useLayout();
         color: $lightgray0;
         text-decoration: none;
 
+        :deep(.button_content) {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            width: auto;
+            min-width: 0;
+        }
+
         &_word {
             font-family: $displayFont;
             font-size: 20px;
+            line-height: 1;
             text-transform: uppercase;
             letter-spacing: 0.03em;
         }

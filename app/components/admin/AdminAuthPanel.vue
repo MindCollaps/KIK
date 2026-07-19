@@ -9,7 +9,7 @@
             </div>
         </div>
 
-        <form class="auth-form" @submit.prevent="submitAuth">
+        <ui-form class="auth-form" @submit.prevent="submitAuth">
             <div class="auth-form_heading">
                 <Icon :name="copy.icon" aria-hidden="true" />
                 <div>
@@ -46,20 +46,20 @@
             <p v-if="infoMessage" class="auth-info" role="status">{{ infoMessage }}</p>
             <p v-if="authError" class="auth-error" role="alert">{{ authError }}</p>
 
-            <button class="auth-submit" type="submit" :disabled="authPending">
+            <ui-button tag="button" type="secondary" class="auth-submit" button-type="submit" :disabled="authPending">
                 <Icon :name="authPending ? 'material-symbols:progress-activity' : 'material-symbols:arrow-forward-rounded'" aria-hidden="true" />
                 {{ authPending ? 'Bitte warten …' : copy.submitLabel }}
-            </button>
+            </ui-button>
 
             <div v-if="!registrationOpen" class="auth-links">
-                <button v-if="mode === 'login'" type="button" class="auth-link" @click="switchMode('forgot')">
+                <ui-button tag="button" type="secondary" v-if="mode === 'login'" class="auth-link" @click="switchMode('forgot')">
                     Passwort vergessen?
-                </button>
-                <button v-else type="button" class="auth-link" @click="switchMode('login')">
+                </ui-button>
+                <ui-button tag="button" type="secondary" v-else class="auth-link" @click="switchMode('login')">
                     Zurück zur Anmeldung
-                </button>
+                </ui-button>
             </div>
-        </form>
+        </ui-form>
     </section>
 </template>
 

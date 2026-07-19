@@ -11,33 +11,35 @@
 
         <template v-else>
             <nav v-if="visibleTabs.length" class="admin-tabs" aria-label="Verwaltungsbereiche">
-                <button
+                <ui-button
                     v-for="tab in visibleTabs"
                     :key="tab.value"
-                    type="button"
-                    :class="{ 'admin-tabs_button--active': activeTab === tab.value }"
                     class="admin-tabs_button"
+                    tag="button"
+                    type="pill"
+                    :active="activeTab === tab.value"
                     @click="activeTab = tab.value"
                 >
                     <Icon :name="tab.icon" aria-hidden="true" />
                     {{ tab.label }}
-                </button>
-                <nuxt-link
+                </ui-button>
+                <ui-button
                     v-if="storeDestination"
                     :to="storeDestination"
-                    class="admin-tabs_button admin-tabs_button--link"
+                    class="admin-tabs_button"
+                    type="pill"
                 >
                     <Icon name="material-symbols:point-of-sale" aria-hidden="true" />
                     Kasse
-                </nuxt-link>
+                </ui-button>
             </nav>
 
             <div v-if="!visibleTabs.length" class="admin-empty" role="status">
                 <p>Dein Konto hat keine Berechtigungen für die Website-Verwaltung.</p>
-                <nuxt-link v-if="storeDestination" :to="storeDestination" class="admin-empty_store-link">
+                <ui-button v-if="storeDestination" :to="storeDestination" class="admin-empty_store-link" type="primary">
                     <Icon name="material-symbols:point-of-sale" aria-hidden="true" />
                     Zum Kassensystem
-                </nuxt-link>
+                </ui-button>
                 <p v-else>Wende dich an eine Person mit Nutzerverwaltung.</p>
             </div>
             <template v-else>
@@ -174,41 +176,11 @@ async function logout() {
     background: $darkgray950;
 
     &_button {
-        cursor: pointer;
-
-        display: inline-flex;
-        gap: 0.45rem;
-        align-items: center;
-
-        min-height: 40px;
-        padding: 0 0.9rem;
-        border: 1px solid transparent;
-        border-radius: 999px;
-
-        font: inherit;
         font-size: 0.85rem;
-        color: $lightgray200;
-
-        background: transparent;
 
         svg {
             width: 1.1rem;
             height: 1.1rem;
-        }
-
-        &--active {
-            border-color: $secondary600;
-            color: $secondary300;
-            background: rgb(192 143 46 / 8%);
-        }
-
-        &--link {
-            text-decoration: none;
-        }
-
-        &:focus-visible {
-            outline: 2px solid $primary400;
-            outline-offset: 2px;
         }
     }
 }

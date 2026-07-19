@@ -64,32 +64,34 @@
                     v-else
                     class="icon-picker-grid"
                 >
-                    <button
+                    <ui-button
                         v-for="icon in results"
                         :key="icon"
                         class="icon-picker-option"
                         :class="{ 'icon-picker-option--active': icon === modelValue }"
                         :title="icon.split(':')[1]"
-                        type="button"
+                        tag="button"
+                        type="secondary"
                         @click="select(icon)"
                     >
                         <Icon
                             :name="icon"
                             size="20"
                         />
-                    </button>
+                    </ui-button>
                 </div>
                 <div
                     v-if="modelValue"
                     class="icon-picker-footer"
                 >
-                    <button
+                    <ui-button
                         class="icon-picker-clear"
-                        type="button"
+                        tag="button"
+                        type="secondary"
                         @click="clear"
                     >
                         Icon entfernen
-                    </button>
+                    </ui-button>
                 </div>
             </div>
         </teleport>

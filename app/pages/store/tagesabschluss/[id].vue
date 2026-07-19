@@ -1,6 +1,7 @@
 <template>
     <main class="abschluss-detail">
         <store-header :title="`Tagesabschluss #${abschluss.number}`" />
+        <views-view-version/>
 
         <div class="abschluss-detail_layout">
             <header class="abschluss-detail_head">
@@ -9,23 +10,24 @@
                     <span>Erstellt von {{ abschluss.createdByName }} am {{ formatDateTime(abschluss.createdAt) }}</span>
                 </div>
                 <div class="abschluss-detail_exports">
-                    <button
+                    <ui-button
                         v-if="can(Permission.KasseReportsEdit)"
-                        type="button"
+                        tag="button"
+                        type="secondary"
                         class="abschluss-detail_export"
                         @click="toggleEdit"
                     >
                         <Icon name="material-symbols:edit-rounded" aria-hidden="true" /> Bearbeiten
-                    </button>
-                    <a :href="`/api/store/tagesabschluss/${abschluss.number}/export?format=pdf`" class="abschluss-detail_export">
+                    </ui-button>
+                    <ui-button :href="`/api/store/tagesabschluss/${abschluss.number}/export?format=pdf`" class="abschluss-detail_export" type="secondary">
                         <Icon name="material-symbols:picture-as-pdf-rounded" aria-hidden="true" /> PDF
-                    </a>
-                    <a :href="`/api/store/tagesabschluss/${abschluss.number}/export?format=xlsx`" class="abschluss-detail_export">
+                    </ui-button>
+                    <ui-button :href="`/api/store/tagesabschluss/${abschluss.number}/export?format=xlsx`" class="abschluss-detail_export" type="secondary">
                         <Icon name="material-symbols:table-chart-outline" aria-hidden="true" /> XLSX
-                    </a>
-                    <a :href="`/api/store/tagesabschluss/${abschluss.number}/export?format=csv`" class="abschluss-detail_export">
+                    </ui-button>
+                    <ui-button :href="`/api/store/tagesabschluss/${abschluss.number}/export?format=csv`" class="abschluss-detail_export" type="secondary">
                         <Icon name="material-symbols:csv-outline" aria-hidden="true" /> CSV
-                    </a>
+                    </ui-button>
                 </div>
             </header>
 
@@ -35,7 +37,7 @@
                     Umsätze und Artikel werden aus den Bons abgeleitet. Hier lassen sich die Kassenbestände anpassen;
                     jede Änderung wird protokolliert.
                 </p>
-                <form class="abschluss-detail_edit-form" @submit.prevent="saveEdit">
+                <ui-form class="abschluss-detail_edit-form" @submit.prevent="saveEdit">
                     <label>
                         <span>Kassenbestand Beginn (EUR)</span>
                         <input v-model.trim="editOpeningCash" required inputmode="decimal" placeholder="z. B. 100,00">
@@ -46,12 +48,12 @@
                     </label>
                     <p v-if="editError" class="abschluss-detail_edit-error" role="alert">{{ editError }}</p>
                     <div class="abschluss-detail_edit-actions">
-                        <button type="button" class="abschluss-detail_edit-cancel" @click="editing = false">Abbrechen</button>
-                        <button type="submit" class="abschluss-detail_edit-save" :disabled="editPending">
+                        <ui-button tag="button" class="abschluss-detail_edit-cancel" type="secondary" @click="editing = false">Abbrechen</ui-button>
+                        <ui-button tag="button" button-type="submit" class="abschluss-detail_edit-save" :disabled="editPending">
                             {{ editPending ? 'Wird gespeichert …' : 'Speichern' }}
-                        </button>
+                        </ui-button>
                     </div>
-                </form>
+                </ui-form>
             </section>
 
             <dl class="abschluss-detail_stats">
@@ -138,15 +140,16 @@
             <section class="abschluss-detail_section" aria-label="Bons">
                 <header class="abschluss-detail_section-head">
                     <h2>Bons</h2>
-                    <button
+                    <ui-button
                         v-if="can(Permission.KasseReportsEdit)"
-                        type="button"
+                        tag="button"
+                        type="secondary"
                         class="abschluss-detail_add-bon"
                         :disabled="bonPending || !catalogItemCount"
                         @click="startCreateBon"
                     >
                         <Icon name="material-symbols:add-rounded" aria-hidden="true" /> Neuer Bon
-                    </button>
+                    </ui-button>
                 </header>
                 <store-report-bon-editor
                     v-if="bonEditor !== null"
@@ -187,12 +190,12 @@
                                     </template>
                                 </td>
                                 <td v-if="can(Permission.KasseReportsEdit)" class="abschluss-detail_bon-actions">
-                                    <button type="button" aria-label="Bon bearbeiten" :disabled="bonPending" @click="startEditBon(bon)">
+                                    <ui-button tag="button" type="secondary" aria-label="Bon bearbeiten" :disabled="bonPending" @click="startEditBon(bon)">
                                         <Icon name="material-symbols:edit-rounded" aria-hidden="true" />
-                                    </button>
-                                    <button type="button" class="abschluss-detail_bon-delete" aria-label="Bon löschen" :disabled="bonPending" @click="deleteBon(bon)">
+                                    </ui-button>
+                                    <ui-button tag="button" type="secondary" class="abschluss-detail_bon-delete" aria-label="Bon löschen" :disabled="bonPending" @click="deleteBon(bon)">
                                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                                    </button>
+                                    </ui-button>
                                 </td>
                             </tr>
                         </tbody>
@@ -756,9 +759,7 @@ function formatDateTime(value: string) {
         display: flex;
         gap: 0.35rem;
 
-        button {
-            cursor: pointer;
-
+        :deep(.button) {
             display: grid;
             place-items: center;
 
@@ -772,8 +773,7 @@ function formatDateTime(value: string) {
 
             background: transparent;
 
-            &:disabled {
-                cursor: wait;
+            &.button--disabled {
                 opacity: 0.5;
             }
 

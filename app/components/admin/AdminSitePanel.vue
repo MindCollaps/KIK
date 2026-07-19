@@ -6,10 +6,10 @@
                 <h1>Website</h1>
             </div>
             <div class="site-panel_transfer">
-                <button type="button" class="ghost-button" @click="exportSite">
+                <ui-button tag="button" type="ghost" @click="exportSite">
                     <Icon name="material-symbols:download-rounded" aria-hidden="true" />
                     Website exportieren
-                </button>
+                </ui-button>
                 <ui-input-file variant="ghost" accept="application/json,.json" @select="importSite">
                     <Icon name="material-symbols:upload-rounded" aria-hidden="true" />
                     Website importieren
@@ -24,10 +24,10 @@
         <div v-if="navigation" class="site-panel_section">
             <div class="site-panel_section-head">
                 <h2>Navigation</h2>
-                <button type="button" class="save-button" :disabled="savingNavigation" @click="saveNavigation">
+                <ui-button tag="button" type="secondary" class="save-button" :disabled="savingNavigation" @click="saveNavigation">
                     <Icon :name="savingNavigation ? 'material-symbols:progress-activity' : 'material-symbols:save-rounded'" aria-hidden="true" />
                     Speichern
-                </button>
+                </ui-button>
             </div>
             <p class="site-panel_hint">Menüpunkte der Hauptnavigation in angezeigter Reihenfolge.</p>
 
@@ -38,35 +38,33 @@
                     <ui-icon-picker v-model="item.icon" />
                 </div>
                 <div class="item-row_tools">
-                    <button type="button" class="icon-button" :disabled="index === 0" aria-label="Nach oben" @click="moveItem(navigation.items, index, -1)">
+                    <ui-button tag="button" type="icon-ghost" :disabled="index === 0" aria-label="Nach oben" @click="moveItem(navigation.items, index, -1)">
                         <Icon name="material-symbols:arrow-upward-rounded" aria-hidden="true" />
-                    </button>
-                    <button type="button" class="icon-button" :disabled="index === navigation.items.length - 1" aria-label="Nach unten" @click="moveItem(navigation.items, index, 1)">
+                    </ui-button>
+                    <ui-button tag="button" type="icon-ghost" :disabled="index === navigation.items.length - 1" aria-label="Nach unten" @click="moveItem(navigation.items, index, 1)">
                         <Icon name="material-symbols:arrow-downward-rounded" aria-hidden="true" />
-                    </button>
-                    <button type="button" class="icon-button icon-button--danger" aria-label="Menüpunkt entfernen" @click="navigation.items.splice(index, 1)">
+                    </ui-button>
+                    <ui-button tag="button" type="icon-ghost" class="icon-button--danger" aria-label="Menüpunkt entfernen" @click="navigation.items.splice(index, 1)">
                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                    </button>
+                    </ui-button>
                 </div>
             </div>
-            <button
+            <ui-button tag="button" type="dashed"
                 v-if="navigation.items.length < 12"
-                type="button"
-                class="add-button"
                 @click="navigation.items.push({ label: '', path: '/', icon: null })"
             >
                 <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                 Menüpunkt hinzufügen
-            </button>
+            </ui-button>
         </div>
 
         <div v-if="footer" class="site-panel_section">
             <div class="site-panel_section-head">
                 <h2>Footer</h2>
-                <button type="button" class="save-button" :disabled="savingFooter" @click="saveFooter">
+                <ui-button tag="button" type="secondary" class="save-button" :disabled="savingFooter" @click="saveFooter">
                     <Icon :name="savingFooter ? 'material-symbols:progress-activity' : 'material-symbols:save-rounded'" aria-hidden="true" />
                     Speichern
-                </button>
+                </ui-button>
             </div>
 
             <div class="form-grid">
@@ -95,9 +93,9 @@
             <div v-for="(group, groupIndex) in footer.groups" :key="groupIndex" class="footer-group">
                 <div class="footer-group_head">
                     <input v-model.trim="group.title" maxlength="60" placeholder="Spaltentitel">
-                    <button type="button" class="icon-button icon-button--danger" aria-label="Spalte entfernen" @click="footer.groups.splice(groupIndex, 1)">
+                    <ui-button tag="button" type="icon-ghost" class="icon-button--danger" aria-label="Spalte entfernen" @click="footer.groups.splice(groupIndex, 1)">
                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                    </button>
+                    </ui-button>
                 </div>
                 <div v-for="(link, linkIndex) in group.links" :key="linkIndex" class="item-row">
                     <div class="item-row_fields">
@@ -106,30 +104,26 @@
                         <ui-icon-picker v-model="link.icon" />
                     </div>
                     <div class="item-row_tools">
-                        <button type="button" class="icon-button icon-button--danger" aria-label="Link entfernen" @click="group.links.splice(linkIndex, 1)">
+                        <ui-button tag="button" type="icon-ghost" class="icon-button--danger" aria-label="Link entfernen" @click="group.links.splice(linkIndex, 1)">
                             <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                        </button>
+                        </ui-button>
                     </div>
                 </div>
-                <button
+                <ui-button tag="button" type="dashed"
                     v-if="group.links.length < 10"
-                    type="button"
-                    class="add-button"
                     @click="group.links.push({ label: '', to: '/', icon: null })"
                 >
                     <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                     Link hinzufügen
-                </button>
+                </ui-button>
             </div>
-            <button
+            <ui-button tag="button" type="dashed"
                 v-if="footer.groups.length < 4"
-                type="button"
-                class="add-button"
                 @click="footer.groups.push({ title: 'Neue Spalte', links: [] })"
             >
                 <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                 Spalte hinzufügen
-            </button>
+            </ui-button>
         </div>
     </section>
 </template>
@@ -456,100 +450,9 @@ async function importSite(file: File) {
     }
 }
 
-.icon-button {
-    cursor: pointer;
-
-    display: grid;
-    place-items: center;
-
-    min-width: 40px;
-    min-height: 40px;
-    border: 1px solid $darkgray700;
-    border-radius: 8px;
-
-    color: $lightgray200;
-
-    background: transparent;
-
-    &:disabled {
-        cursor: default;
-        opacity: 0.35;
-    }
-
-    &--danger:hover {
+.icon-button--danger:hover {
         color: $error300;
         background: rgb(194 37 105 / 8%);
-    }
-
-    &:focus-visible {
-        outline: 2px solid $primary400;
-        outline-offset: 2px;
-    }
-}
-
-.add-button {
-    cursor: pointer;
-
-    display: inline-flex;
-    gap: 0.4rem;
-    align-items: center;
-    justify-content: center;
-
-    min-height: 40px;
-    margin-top: 0.6rem;
-    padding: 0 0.8rem;
-    border: 1px dashed $darkgray700;
-    border-radius: 8px;
-
-    font: inherit;
-    font-size: 0.8rem;
-    color: $lightgray200;
-
-    background: transparent;
-
-    &:hover {
-        border-color: $secondary600;
-        color: $secondary300;
-    }
-
-    &:focus-visible {
-        outline: 2px solid $primary400;
-        outline-offset: 2px;
-    }
-}
-
-.ghost-button {
-    cursor: pointer;
-
-    display: inline-flex;
-    gap: 0.4rem;
-    align-items: center;
-
-    min-height: 40px;
-    padding: 0 0.8rem;
-    border: 1px solid $darkgray700;
-    border-radius: 8px;
-
-    font: inherit;
-    font-size: 0.8rem;
-    color: $lightgray150;
-
-    background: transparent;
-
-    svg {
-        width: 1.05rem;
-        height: 1.05rem;
-        color: $secondary300;
-    }
-
-    &:hover {
-        border-color: $secondary600;
-    }
-
-    &:focus-visible {
-        outline: 2px solid $primary400;
-        outline-offset: 2px;
-    }
 }
 
 .save-button {

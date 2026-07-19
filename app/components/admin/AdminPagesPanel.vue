@@ -6,16 +6,16 @@
                     <p>Inhalte</p>
                     <h1>Seiten</h1>
                 </div>
-                <button class="new-page-button" type="button" @click="createPage">
+                <ui-button tag="button" type="secondary" class="new-page-button" @click="createPage">
                     <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                     Neu
-                </button>
+                </ui-button>
             </div>
 
             <div v-if="pending" class="pages-panel_state">Seiten werden geladen …</div>
             <div v-else-if="loadError" class="pages-panel_state pages-panel_state--error">
                 <p>{{ loadError }}</p>
-                <button type="button" @click="loadPages()">Erneut versuchen</button>
+                <ui-button tag="button" type="secondary" @click="loadPages()">Erneut versuchen</ui-button>
             </div>
             <div v-else class="page-list">
                 <article
@@ -24,16 +24,16 @@
                     class="page-row"
                     :class="{ 'page-row--selected': selectedPage?.id === page.id }"
                 >
-                    <button type="button" class="page-row_main" @click="selectPage(page)">
+                    <ui-button tag="button" type="secondary" class="page-row_main" @click="selectPage(page)">
                         <span class="page-row_path">/{{ page.slug }}</span>
                         <strong>{{ page.title }}</strong>
                         <span class="page-row_status" :class="{ 'page-row_status--published': page.status === 'PUBLISHED' }">
                             {{ page.status === 'PUBLISHED' ? 'Veröffentlicht' : 'Entwurf' }}
                         </span>
-                    </button>
-                    <button type="button" class="page-row_delete" :aria-label="`${page.title} löschen`" @click="deletePage(page)">
+                    </ui-button>
+                    <ui-button tag="button" type="secondary" class="page-row_delete" :aria-label="`${page.title} löschen`" @click="deletePage(page)">
                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                    </button>
+                    </ui-button>
                 </article>
             </div>
         </aside>
@@ -52,10 +52,10 @@
                 <div class="pages-panel_empty-mark"><Icon name="material-symbols:web" aria-hidden="true" /></div>
                 <h2>Wähle eine Seite</h2>
                 <p>Bearbeite eine vorhandene Seite oder lege eine neue an. Jede Seite besteht aus frei kombinierbaren Blöcken.</p>
-                <button type="button" @click="createPage">
+                <ui-button tag="button" type="secondary" @click="createPage">
                     <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                     Neue Seite
-                </button>
+                </ui-button>
             </div>
         </section>
     </section>
@@ -224,7 +224,7 @@ async function deletePage(page: PageRecord) {
         &--error {
             color: $error300;
 
-            button {
+            :deep(.button) {
                 cursor: pointer;
 
                 min-height: 40px;
@@ -277,7 +277,7 @@ async function deletePage(page: PageRecord) {
             color: $lightgray300;
         }
 
-        button {
+        :deep(.button) {
             cursor: pointer;
 
             display: inline-flex;
@@ -381,16 +381,19 @@ async function deletePage(page: PageRecord) {
     }
 
     &_main {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 0.35rem 0.75rem;
-
         padding: 0.8rem;
-
-        font: inherit;
         text-align: left;
 
-        strong {
+        :deep(.button_content) {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0.35rem 0.75rem;
+            align-items: baseline;
+            width: 100%;
+            min-width: 0;
+        }
+
+        :deep(strong) {
             grid-column: 1 / -1;
             color: $lightgray50;
             overflow-wrap: anywhere;

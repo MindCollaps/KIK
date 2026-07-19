@@ -1,13 +1,13 @@
 <template>
-    <form class="program-editor" @submit.prevent="submit">
+    <ui-form class="program-editor" @submit.prevent="submit">
         <header class="program-editor_header">
             <div>
                 <p>{{ entry ? 'Eintrag bearbeiten' : 'Neue Vorstellung' }}</p>
                 <h2>{{ entry?.film.title || 'Vorstellung planen' }}</h2>
             </div>
-            <button v-if="entry" type="button" class="icon-button" aria-label="Editor schließen" @click="$emit('cancel')">
+            <ui-button tag="button" type="secondary" v-if="entry" class="icon-button" aria-label="Editor schließen" @click="$emit('cancel')">
                 <Icon name="material-symbols:close-rounded" aria-hidden="true" />
-            </button>
+            </ui-button>
         </header>
 
         <div class="program-editor_section film-picker">
@@ -25,7 +25,7 @@
                     <strong>{{ selectedFilm.title }}</strong>
                     <span>{{ selectedFilm.releaseYear ?? 'Jahr unbekannt' }}{{ selectedFilm.director ? ` · ${selectedFilm.director}` : '' }}</span>
                 </div>
-                <button type="button" @click="clearFilm">Ändern</button>
+                <ui-button tag="button" type="secondary" @click="clearFilm">Ändern</ui-button>
             </div>
 
             <template v-else>
@@ -34,10 +34,9 @@
                 <template v-else>
                     <ui-input-search v-model="filmSearchTerm" :maxlength="160" placeholder="Film suchen" class="film-picker_control" />
                     <div v-if="matchingFilms.length" class="film-results">
-                        <button
+                        <ui-button tag="button" type="secondary"
                             v-for="candidate in matchingFilms"
                             :key="candidate.id"
-                            type="button"
                             class="film-result"
                             @click="form.filmId = candidate.id"
                         >
@@ -47,7 +46,7 @@
                                 <strong>{{ candidate.title }}</strong>
                                 <small>{{ candidate.releaseYear ?? 'Jahr unbekannt' }}</small>
                             </span>
-                        </button>
+                        </ui-button>
                     </div>
                     <p v-else class="film-picker_hint">
                         Kein passender Film gefunden. Noch keinen passenden Film? Lege ihn zuerst unter „Filme“ an.
@@ -146,12 +145,12 @@
 
         <footer class="program-editor_actions">
             <ui-button v-if="entry" type="secondary" tag="button" @click="$emit('cancel')">Abbrechen</ui-button>
-            <button class="save-button" type="submit" :disabled="saving">
+            <ui-button tag="button" type="secondary" class="save-button" button-type="submit" :disabled="saving">
                 <Icon :name="saving ? 'material-symbols:progress-activity' : 'material-symbols:save-rounded'" aria-hidden="true" />
                 {{ saving ? 'Wird gespeichert …' : 'Programm speichern' }}
-            </button>
+            </ui-button>
         </footer>
-    </form>
+    </ui-form>
 </template>
 
 <script setup lang="ts">
@@ -477,7 +476,7 @@ function submit() {
         color: $lightgray300;
     }
 
-    button {
+    :deep(.button) {
         cursor: pointer;
 
         min-height: 38px;
@@ -721,7 +720,7 @@ function submit() {
     .linked-film {
         grid-template-columns: 48px minmax(0, 1fr);
 
-        button {
+        :deep(.button) {
             grid-column: 1 / -1;
             justify-self: start;
         }

@@ -1,5 +1,5 @@
 <template>
-    <form class="report-bon-editor" @submit.prevent="submit">
+    <ui-form class="report-bon-editor" @submit.prevent="submit">
         <div class="report-bon-editor_meta">
             <label>
                 <span>Zahlungsart</span>
@@ -39,27 +39,27 @@
                     <input v-model.number="line.quantity" required type="number" min="1" max="99">
                 </label>
                 <strong>{{ lineTotal(line) }}</strong>
-                <button type="button" class="report-bon-editor_remove" aria-label="Position entfernen" :disabled="lines.length === 1" @click="removeLine(index)">
+                <ui-button tag="button" type="secondary" class="report-bon-editor_remove" aria-label="Position entfernen" :disabled="lines.length === 1" @click="removeLine(index)">
                     <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                </button>
+                </ui-button>
             </div>
         </div>
 
-        <button type="button" class="report-bon-editor_add" @click="addLine">
+        <ui-button tag="button" type="secondary" class="report-bon-editor_add" @click="addLine">
             <Icon name="material-symbols:add-rounded" aria-hidden="true" /> Position hinzufügen
-        </button>
+        </ui-button>
 
         <p v-if="error" class="report-bon-editor_error" role="alert">{{ error }}</p>
         <footer class="report-bon-editor_footer">
             <p>Bon gesamt <strong>{{ formatCents(totalCents) }}</strong></p>
             <div>
-                <button type="button" class="report-bon-editor_cancel" :disabled="pending" @click="$emit('cancel')">Abbrechen</button>
-                <button type="submit" class="report-bon-editor_save" :disabled="pending">
+                <ui-button tag="button" type="secondary" class="report-bon-editor_cancel" :disabled="pending" @click="$emit('cancel')">Abbrechen</ui-button>
+                <ui-button tag="button" button-type="submit" class="report-bon-editor_save" :disabled="pending">
                     {{ pending ? 'Wird gespeichert …' : submitLabel }}
-                </button>
+                </ui-button>
             </div>
         </footer>
-    </form>
+    </ui-form>
 </template>
 
 <script setup lang="ts">

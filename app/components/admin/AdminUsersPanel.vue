@@ -22,12 +22,11 @@
                     aria-label="Nutzer durchsuchen"
                 />
                 <div class="users-toolbar_sort" role="group" aria-label="Sortierung">
-                    <button
+                    <ui-button tag="button" type="pill"
                         v-for="option in sortOptions"
                         :key="option.value"
-                        type="button"
                         class="users-toolbar_sort-button"
-                        :class="{ 'users-toolbar_sort-button--active': sortField === option.value }"
+                        :active="sortField === option.value"
                         @click="setSort(option.value)"
                     >
                         {{ option.label }}
@@ -36,7 +35,7 @@
                             :name="sortDirection === 'asc' ? 'material-symbols:arrow-upward-rounded' : 'material-symbols:arrow-downward-rounded'"
                             aria-hidden="true"
                         />
-                    </button>
+                    </ui-button>
                 </div>
             </div>
 
@@ -57,44 +56,40 @@
                             <span v-if="!user.emailConfirmedAt" class="user-row_pending">Bestätigung ausstehend</span>
                         </span>
                     </div>
-                    <button
-                        type="button"
-                        class="icon-button icon-button--danger"
+                    <ui-button tag="button" type="icon-ghost"
+                        class="icon-button--danger"
                         :disabled="user.id === currentUserId || deletingId === user.id || users.length <= 1"
                         :aria-label="`${user.name} entfernen`"
                         @click="deleteUser(user)"
                     >
                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                    </button>
+                    </ui-button>
                     <div class="user-row_permissions">
                         <admin-permission-select
                             :model-value="draftPermissions[user.id] ?? []"
                             class="user-row_permission-select"
                             @update:model-value="draftPermissions[user.id] = $event"
                         />
-                        <button
+                        <ui-button tag="button" type="secondary"
                             v-if="isDirty(user)"
-                            type="button"
                             class="save-button save-button--small"
                             :disabled="savingId === user.id"
                             @click="savePermissions(user)"
                         >
                             <Icon :name="savingId === user.id ? 'material-symbols:progress-activity' : 'material-symbols:save-rounded'" aria-hidden="true" />
                             {{ savingId === user.id ? 'Wird gespeichert …' : 'Speichern' }}
-                        </button>
-                        <button type="button" class="row-button" @click="startSetPassword(user)">
+                        </ui-button>
+                        <ui-button tag="button" type="quiet" @click="startSetPassword(user)">
                             Passwort setzen
-                        </button>
-                        <button
+                        </ui-button>
+                        <ui-button tag="button" type="quiet"
                             v-if="user.id !== currentUserId"
-                            type="button"
-                            class="row-button"
                             :class="{ 'row-button--danger': user.active }"
                             :disabled="togglingId === user.id"
                             @click="toggleActive(user)"
                         >
                             {{ user.active ? 'Deaktivieren' : 'Aktivieren' }}
-                        </button>
+                        </ui-button>
                     </div>
                     <div v-if="passwordUserId === user.id" class="user-row_password">
                         <input
@@ -106,15 +101,14 @@
                             autocomplete="new-password"
                             @keyup.enter="savePassword(user)"
                         >
-                        <button
-                            type="button"
+                        <ui-button tag="button" type="secondary"
                             class="save-button save-button--small"
                             :disabled="passwordSaving"
                             @click="savePassword(user)"
                         >
                             {{ passwordSaving ? 'Wird gespeichert …' : 'Passwort speichern' }}
-                        </button>
-                        <button type="button" class="row-button" @click="closeSetPassword">Abbrechen</button>
+                        </ui-button>
+                        <ui-button tag="button" type="quiet" @click="closeSetPassword">Abbrechen</ui-button>
                     </div>
                 </article>
             </div>
@@ -122,7 +116,7 @@
 
         <div class="users-panel_section">
             <h2>Neues Konto anlegen</h2>
-            <form class="new-user-form" @submit.prevent="createUser">
+            <ui-form class="new-user-form" @submit.prevent="createUser">
                 <label class="field">
                     <span>Name</span>
                     <input v-model.trim="form.name" required minlength="2" maxlength="80" autocomplete="off">
@@ -137,11 +131,11 @@
                 <small class="new-user-form_note">
                     Die Person erhält eine E-Mail, um das Konto zu bestätigen und ihr Passwort selbst festzulegen.
                 </small>
-                <button type="submit" class="save-button" :disabled="creating">
+                <ui-button tag="button" type="secondary" button-type="submit" class="save-button" :disabled="creating">
                     <Icon :name="creating ? 'material-symbols:progress-activity' : 'material-symbols:person-add-rounded'" aria-hidden="true" />
                     {{ creating ? 'Wird angelegt …' : 'Nutzer anlegen' }}
-                </button>
-            </form>
+                </ui-button>
+            </ui-form>
         </div>
     </section>
 </template>
@@ -578,40 +572,10 @@ function formatDateTime(value: string) {
     }
 }
 
-.row-button {
-    cursor: pointer;
-
-    min-height: 34px;
-    padding: 0 0.7rem;
-    border: 1px solid $darkgray700;
-    border-radius: 8px;
-
-    font: inherit;
-    font-size: 0.75rem;
-    color: $lightgray200;
-
-    background: transparent;
-
-    &:hover:not(:disabled) {
-        border-color: $secondary600;
-        color: $secondary300;
-    }
-
-    &--danger:hover:not(:disabled) {
+.row-button--danger:hover:not(:disabled) {
         border-color: $error500;
         color: $error300;
     }
-
-    &:disabled {
-        cursor: wait;
-        opacity: 0.55;
-    }
-
-    &:focus-visible {
-        outline: 2px solid $primary400;
-        outline-offset: 2px;
-    }
-}
 
 .users-toolbar {
     display: flex;
@@ -633,37 +597,12 @@ function formatDateTime(value: string) {
     }
 
     &_sort-button {
-        cursor: pointer;
-
-        display: inline-flex;
-        gap: 0.3rem;
-        align-items: center;
-
         min-height: 36px;
-        padding: 0 0.7rem;
-        border: 1px solid $darkgray700;
-        border-radius: 999px;
-
-        font: inherit;
         font-size: 0.78rem;
-        color: $lightgray200;
-
-        background: transparent;
 
         svg {
             width: 0.95rem;
             height: 0.95rem;
-        }
-
-        &--active {
-            border-color: $secondary600;
-            color: $secondary300;
-            background: rgb(192 143 46 / 8%);
-        }
-
-        &:focus-visible {
-            outline: 2px solid $primary400;
-            outline-offset: 2px;
         }
     }
 }
@@ -717,36 +656,10 @@ function formatDateTime(value: string) {
     }
 }
 
-.icon-button {
-    cursor: pointer;
-
-    display: grid;
-    place-items: center;
-
-    min-width: 40px;
-    min-height: 40px;
-    border: 1px solid $darkgray700;
-    border-radius: 8px;
-
-    color: $lightgray200;
-
-    background: transparent;
-
-    &:disabled {
-        cursor: default;
-        opacity: 0.35;
-    }
-
-    &--danger:hover:not(:disabled) {
+.icon-button--danger:hover:not(:disabled) {
         color: $error300;
         background: rgb(194 37 105 / 8%);
     }
-
-    &:focus-visible {
-        outline: 2px solid $primary400;
-        outline-offset: 2px;
-    }
-}
 
 .save-button {
     cursor: pointer;

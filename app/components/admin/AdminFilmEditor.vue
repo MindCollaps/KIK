@@ -1,13 +1,13 @@
 <template>
-    <form class="film-editor" @submit.prevent="submit">
+    <ui-form class="film-editor" @submit.prevent="submit">
         <header class="film-editor_header">
             <div>
                 <p>{{ film ? 'Film bearbeiten' : 'Neuer Film' }}</p>
                 <h2>{{ film?.title || 'Film anlegen' }}</h2>
             </div>
-            <button v-if="film" type="button" class="icon-button" aria-label="Editor schließen" @click="$emit('cancel')">
+            <ui-button tag="button" type="secondary" v-if="film" class="icon-button" aria-label="Editor schließen" @click="$emit('cancel')">
                 <Icon name="material-symbols:close-rounded" aria-hidden="true" />
-            </button>
+            </ui-button>
         </header>
 
         <div class="film-editor_section film-search">
@@ -28,7 +28,7 @@
                     <strong>{{ linkedFilmName || form.title }}</strong>
                     <span>DoesTheDogDie-ID {{ form.doesTheDogDieId }}</span>
                 </div>
-                <button type="button" @click="unlinkFilm">Verknüpfung lösen</button>
+                <ui-button tag="button" type="secondary" @click="unlinkFilm">Verknüpfung lösen</ui-button>
             </div>
 
             <template v-else>
@@ -40,17 +40,16 @@
                         placeholder="Filmtitel suchen"
                         @search="searchFilms"
                     />
-                    <button type="button" :disabled="filmSearchPending || filmSearchTerm.length < 2" @click="searchFilms">
+                    <ui-button tag="button" type="secondary" :disabled="filmSearchPending || filmSearchTerm.length < 2" @click="searchFilms">
                         {{ filmSearchPending ? 'Suche …' : 'Suchen' }}
-                    </button>
+                    </ui-button>
                 </div>
 
                 <p v-if="filmSearchError" class="film-search_error" role="alert">{{ filmSearchError }}</p>
                 <div v-if="filmSearchResults.length" class="film-results">
-                    <button
+                    <ui-button tag="button" type="secondary"
                         v-for="result in filmSearchResults"
                         :key="result.id"
-                        type="button"
                         class="film-result"
                         :disabled="selectingFilmId === result.id"
                         @click="selectFilm(result)"
@@ -63,7 +62,7 @@
                             <span>{{ result.overview || 'Keine Kurzbeschreibung verfügbar.' }}</span>
                         </span>
                         <Icon :name="selectingFilmId === result.id ? 'material-symbols:progress-activity' : 'material-symbols:add-link-rounded'" aria-hidden="true" />
-                    </button>
+                    </ui-button>
                 </div>
             </template>
         </div>
@@ -84,10 +83,10 @@
             <div class="image-field">
                 <div v-if="form.imagePath" class="image-preview">
                     <img :src="form.imagePath" :alt="form.imageAlt || 'Vorschau des Filmposters'">
-                    <button type="button" class="image-remove" @click="removeImage">
+                    <ui-button tag="button" type="secondary" class="image-remove" @click="removeImage">
                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
                         Bild entfernen
-                    </button>
+                    </ui-button>
                 </div>
                 <ui-input-file accept="image/jpeg,image/png,image/webp" :disabled="uploading" @select="uploadImage">
                     <Icon name="material-symbols:add-photo-alternate-rounded" aria-hidden="true" />
@@ -135,12 +134,12 @@
 
         <footer class="film-editor_actions">
             <ui-button v-if="film" type="secondary" tag="button" @click="$emit('cancel')">Abbrechen</ui-button>
-            <button class="save-button" type="submit" :disabled="saving || uploading">
+            <ui-button tag="button" type="secondary" class="save-button" button-type="submit" :disabled="saving || uploading">
                 <Icon :name="saving ? 'material-symbols:progress-activity' : 'material-symbols:save-rounded'" aria-hidden="true" />
                 {{ saving ? 'Wird gespeichert …' : 'Film speichern' }}
-            </button>
+            </ui-button>
         </footer>
-    </form>
+    </ui-form>
 </template>
 
 <script setup lang="ts">
@@ -437,7 +436,7 @@ function removeImage() {
             flex: 1;
         }
 
-        button {
+        :deep(.button) {
             cursor: pointer;
 
             flex-shrink: 0;
@@ -499,7 +498,7 @@ function removeImage() {
         color: $lightgray300;
     }
 
-    button {
+    :deep(.button) {
         cursor: pointer;
 
         min-height: 38px;
@@ -777,7 +776,7 @@ function removeImage() {
     .linked-film {
         grid-template-columns: auto minmax(0, 1fr);
 
-        button {
+        :deep(.button) {
             grid-column: 1 / -1;
             justify-self: start;
         }

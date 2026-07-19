@@ -49,17 +49,18 @@
         </div>
     </div>
 
-    <button
+    <ui-button
         ref="menuTrigger"
         class="mobile-menu-trigger"
-        type="button"
+        tag="button"
+        type="secondary"
         aria-label="Menü öffnen"
         :aria-expanded="isMenuOpen"
         aria-controls="mobile-menu"
         @click="openMenu"
     >
         <Icon name="material-symbols:menu-rounded" aria-hidden="true" />
-    </button>
+    </ui-button>
 
     <Teleport to="body">
         <Transition name="mobile-menu">
@@ -75,29 +76,31 @@
             >
                 <header class="mobile-menu-overlay_header">
                     <p>Kino im Kasten</p>
-                    <button
+                    <ui-button
                         class="mobile-menu-close"
-                        type="button"
+                        tag="button"
+                        type="secondary"
                         aria-label="Menü schließen"
                         @click="closeMenu()"
                     >
                         <Icon name="material-symbols:close-rounded" aria-hidden="true" />
-                    </button>
+                    </ui-button>
                 </header>
 
                 <nav class="mobile-menu-links" aria-label="Mobile Hauptnavigation">
-                    <NuxtLink
+                    <ui-button
                         v-for="(button, index) in headerMenu"
                         :key="button.text"
                         class="mobile-menu-link"
                         :class="{ 'mobile-menu-link--active': button.active }"
                         :to="button.path"
+                        type="link"
                         :aria-current="button.active ? 'page' : undefined"
                         @click="button.action?.()"
                     >
                         <span class="mobile-menu-link_index">{{ String(index + 1).padStart(2, '0') }}</span>
                         <span>{{ button.text }}</span>
-                    </NuxtLink>
+                    </ui-button>
                 </nav>
 
                 <p class="mobile-menu-overlay_footer">Studentisches Programmkino in Dresden</p>
@@ -372,10 +375,7 @@ function handleMenuKeydown(event: KeyboardEvent) {
     }
 
     .mobile-menu-link {
-        display: grid;
-        grid-template-columns: 2rem minmax(0, 1fr);
-        gap: 0.75rem;
-        align-items: baseline;
+        display: block;
 
         min-width: 0;
         padding: 0.5rem 0;
@@ -387,6 +387,16 @@ function handleMenuKeydown(event: KeyboardEvent) {
         text-decoration: none;
         text-transform: uppercase;
         overflow-wrap: anywhere;
+
+        :deep(.button_content) {
+            display: grid;
+            grid-template-columns: 2rem minmax(0, 1fr);
+            gap: 0.75rem;
+            align-items: baseline;
+
+            width: 100%;
+            min-width: 0;
+        }
 
         &_index {
             font-family: $defaultFont;

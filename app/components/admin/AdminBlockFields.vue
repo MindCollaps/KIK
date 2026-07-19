@@ -94,14 +94,14 @@
                         <input v-model="card.meta" maxlength="200" placeholder="Meta-Zeile (optional)">
                         <textarea v-model.trim="card.text" rows="2" maxlength="1000" placeholder="Beschreibung" />
                     </div>
-                    <button type="button" class="icon-button" aria-label="Karte entfernen" @click="cardGrid.cards.splice(index, 1)">
+                    <ui-button tag="button" type="icon-ghost" aria-label="Karte entfernen" @click="cardGrid.cards.splice(index, 1)">
                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                    </button>
+                    </ui-button>
                 </div>
-                <button type="button" class="add-button" @click="cardGrid.cards.push({ title: '', text: '', meta: null })">
+                <ui-button tag="button" type="dashed" @click="cardGrid.cards.push({ title: '', text: '', meta: null })">
                     <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                     Karte hinzufügen
-                </button>
+                </ui-button>
             </div>
         </template>
 
@@ -178,14 +178,14 @@
                         <input v-model.trim="link.url" maxlength="1000" placeholder="https://…">
                         <ui-icon-picker v-model="link.icon" />
                     </div>
-                    <button type="button" class="icon-button" aria-label="Link entfernen" @click="network.socialLinks.splice(index, 1)">
+                    <ui-button tag="button" type="icon-ghost" aria-label="Link entfernen" @click="network.socialLinks.splice(index, 1)">
                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                    </button>
+                    </ui-button>
                 </div>
-                <button type="button" class="add-button" @click="network.socialLinks.push({ label: '', url: '', icon: null })">
+                <ui-button tag="button" type="dashed" @click="network.socialLinks.push({ label: '', url: '', icon: null })">
                     <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                     Link hinzufügen
-                </button>
+                </ui-button>
             </div>
             <div class="item-list">
                 <p class="item-list_label">Unterstützer</p>
@@ -197,14 +197,14 @@
                         <ui-icon-picker v-model="supporter.icon" />
                         <input v-model="supporter.role" maxlength="80" placeholder="Rolle (optional)">
                     </div>
-                    <button type="button" class="icon-button" aria-label="Unterstützer entfernen" @click="network.supporters.splice(index, 1)">
+                    <ui-button tag="button" type="icon-ghost" aria-label="Unterstützer entfernen" @click="network.supporters.splice(index, 1)">
                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                    </button>
+                    </ui-button>
                 </div>
-                <button type="button" class="add-button" @click="network.supporters.push({ label: '', url: '', image: null, icon: null, role: null })">
+                <ui-button tag="button" type="dashed" @click="network.supporters.push({ label: '', url: '', image: null, icon: null, role: null })">
                     <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                     Unterstützer hinzufügen
-                </button>
+                </ui-button>
             </div>
         </template>
     </div>
@@ -357,62 +357,6 @@ async function uploadImage(file: File) {
         textarea {
             grid-column: 1 / -1;
         }
-    }
-}
-
-.icon-button {
-    cursor: pointer;
-
-    display: grid;
-    place-items: center;
-
-    min-width: 40px;
-    min-height: 40px;
-    border: 1px solid $darkgray700;
-    border-radius: 8px;
-
-    color: $lightgray200;
-
-    background: transparent;
-
-    &:hover {
-        color: $error300;
-        background: rgb(194 37 105 / 8%);
-    }
-
-    &:focus-visible {
-        outline: 2px solid $primary400;
-        outline-offset: 2px;
-    }
-}
-
-.add-button {
-    cursor: pointer;
-
-    display: inline-flex;
-    gap: 0.4rem;
-    align-items: center;
-    justify-content: center;
-
-    min-height: 40px;
-    padding: 0 0.8rem;
-    border: 1px dashed $darkgray700;
-    border-radius: 8px;
-
-    font: inherit;
-    font-size: 0.8rem;
-    color: $lightgray200;
-
-    background: transparent;
-
-    &:hover {
-        border-color: $secondary600;
-        color: $secondary300;
-    }
-
-    &:focus-visible {
-        outline: 2px solid $primary400;
-        outline-offset: 2px;
     }
 }
 

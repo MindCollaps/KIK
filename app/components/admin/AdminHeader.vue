@@ -1,20 +1,20 @@
 <template>
     <header class="admin-header">
-        <NuxtLink class="admin-brand" to="/">
+        <ui-button class="admin-brand" to="/" type="link">
             <span class="admin-brand_mark"><Icon name="material-symbols:play-arrow-rounded" aria-hidden="true" /></span>
             <span>Kino im Kasten</span>
-        </NuxtLink>
+        </ui-button>
         <div v-if="user" class="admin-user">
             <span>{{ user.name }}</span>
-            <button type="button" @click="$emit('logout')">
+            <ui-button type="secondary" tag="button" @click="$emit('logout')">
                 <Icon name="material-symbols:logout-rounded" aria-hidden="true" />
                 Abmelden
-            </button>
+            </ui-button>
         </div>
-        <NuxtLink v-else class="back-link" to="/">
+        <ui-button v-else class="back-link" to="/" type="link">
             <Icon name="material-symbols:arrow-back-rounded" aria-hidden="true" />
             Zur Website
-        </NuxtLink>
+        </ui-button>
     </header>
 </template>
 
@@ -46,7 +46,7 @@ defineEmits<{
 
 .admin-brand,
 .back-link,
-.admin-user button {
+.admin-user :deep(.button) {
     display: inline-flex;
     gap: 0.55rem;
     align-items: center;
@@ -69,8 +69,17 @@ defineEmits<{
     text-transform: uppercase;
     letter-spacing: 0.03em;
 
+    :deep(.button_content) {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        width: auto;
+        min-width: 0;
+        white-space: nowrap;
+    }
+
     &_mark {
-        display: grid;
+        display: inline-grid;
         place-items: center;
 
         width: 32px;
@@ -92,9 +101,8 @@ defineEmits<{
         color: $lightgray300;
     }
 
-    button {
+    :deep(.button) {
         cursor: pointer;
-
         padding: 0 0.7rem;
         border: 1px solid $darkgray700;
         border-radius: 6px;

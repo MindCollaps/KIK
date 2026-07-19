@@ -6,28 +6,27 @@
                     <p>Filmdatenbank</p>
                     <h1>Filme</h1>
                 </div>
-                <button class="new-entry-button" type="button" @click="createFilm">
+                <ui-button tag="button" type="secondary" class="new-entry-button" @click="createFilm">
                     <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                     Neu
-                </button>
+                </ui-button>
             </div>
 
             <div class="sort-row" aria-label="Sortierung">
-                <button
+                <ui-button tag="button" type="pill"
                     v-for="option in sortOptions"
                     :key="option.value"
-                    type="button"
-                    :class="{ 'sort-button--active': sortMode === option.value }"
+                    :active="sortMode === option.value"
                     @click="sortMode = option.value"
                 >
                     {{ option.label }}
-                </button>
+                </ui-button>
             </div>
 
             <div v-if="filmsPending" class="admin-list-state">Filme werden geladen …</div>
             <div v-else-if="filmsError" class="admin-list-state admin-list-state--error">
                 <p>{{ filmsError }}</p>
-                <button type="button" @click="loadFilms()">Erneut versuchen</button>
+                <ui-button tag="button" type="secondary" @click="loadFilms()">Erneut versuchen</ui-button>
             </div>
             <div v-else-if="!sortedFilms.length" class="admin-list-state">
                 <Icon name="material-symbols:movie-rounded" aria-hidden="true" />
@@ -40,17 +39,17 @@
                     class="entry-row"
                     :class="{ 'entry-row--selected': selectedFilm?.id === filmEntry.id }"
                 >
-                    <button type="button" class="entry-row_main" @click="selectFilm(filmEntry)">
+                    <ui-button tag="button" type="secondary" class="entry-row_main" @click="selectFilm(filmEntry)">
                         <strong>{{ filmEntry.title }}</strong>
                         <span class="entry-row_meta">
                             {{ filmEntry.timesShown }}× gezeigt
                             <template v-if="filmEntry.lastShownAt"> · zuletzt {{ formatCompactDate(filmEntry.lastShownAt) }}</template>
                             <template v-else> · noch nie gezeigt</template>
                         </span>
-                    </button>
-                    <button type="button" class="entry-row_delete" :aria-label="`${filmEntry.title} löschen`" @click="deleteFilm(filmEntry)">
+                    </ui-button>
+                    <ui-button tag="button" type="secondary" class="entry-row_delete" :aria-label="`${filmEntry.title} löschen`" @click="deleteFilm(filmEntry)">
                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                    </button>
+                    </ui-button>
                 </article>
             </div>
         </aside>
@@ -68,10 +67,10 @@
                 <div class="editor-empty_mark"><Icon name="material-symbols:movie-rounded" aria-hidden="true" /></div>
                 <h2>Wähle einen Film</h2>
                 <p>Bearbeite einen vorhandenen Film oder lege einen neuen an, damit er im Programm ausgewählt werden kann.</p>
-                <button type="button" @click="createFilm">
+                <ui-button tag="button" type="secondary" @click="createFilm">
                     <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                     Neuer Film
-                </button>
+                </ui-button>
             </div>
         </section>
     </section>
@@ -258,7 +257,7 @@ function formatCompactDate(value: string) {
 }
 
 .new-entry-button,
-.editor-empty button {
+.editor-empty :deep(.button) {
     cursor: pointer;
 
     display: inline-flex;
@@ -291,31 +290,10 @@ function formatCompactDate(value: string) {
     margin-top: 1.25rem;
     padding-bottom: 0.35rem;
 
-    button {
-        cursor: pointer;
-
+    :deep(.button) {
         min-height: 36px;
-        padding: 0 0.7rem;
-        border: 1px solid $darkgray700;
-        border-radius: 999px;
-
-        font: inherit;
         font-size: 0.8rem;
-        color: $lightgray200;
         white-space: nowrap;
-
-        background: transparent;
-
-        &.sort-button--active {
-            border-color: $secondary600;
-            color: $secondary300;
-            background: rgb(192 143 46 / 8%);
-        }
-
-        &:focus-visible {
-            outline: 2px solid $primary400;
-            outline-offset: 2px;
-        }
     }
 }
 
@@ -354,12 +332,18 @@ function formatCompactDate(value: string) {
     }
 
     &_main {
-        display: grid;
-        gap: 0.35rem;
         padding: 0.8rem;
         text-align: left;
 
-        strong {
+        :deep(.button_content) {
+            display: grid;
+            gap: 0.35rem;
+            align-items: baseline;
+            width: 100%;
+            min-width: 0;
+        }
+
+        :deep(strong) {
             color: $lightgray50;
             overflow-wrap: anywhere;
         }
@@ -404,7 +388,7 @@ function formatCompactDate(value: string) {
     &--error {
         color: $error300;
 
-        button {
+        :deep(.button) {
             cursor: pointer;
 
             min-height: 40px;

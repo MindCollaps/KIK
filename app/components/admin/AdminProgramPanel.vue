@@ -6,17 +6,17 @@
                     <p>Redaktionsplan</p>
                     <h1>Programm</h1>
                 </div>
-                <button class="new-entry-button" type="button" @click="createEntry">
+                <ui-button tag="button" type="secondary" class="new-entry-button" @click="createEntry">
                     <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                     Neu
-                </button>
+                </ui-button>
             </div>
 
             <div class="transfer-row">
-                <button type="button" class="ghost-button" @click="exportProgram">
+                <ui-button tag="button" type="ghost" @click="exportProgram">
                     <Icon name="material-symbols:download-rounded" aria-hidden="true" />
                     Exportieren
-                </button>
+                </ui-button>
                 <ui-input-file variant="ghost" accept="application/json,.json" @select="importProgram">
                     <Icon name="material-symbols:upload-rounded" aria-hidden="true" />
                     Importieren
@@ -24,34 +24,32 @@
             </div>
 
             <div class="filter-row" aria-label="Programm filtern">
-                <button
+                <ui-button tag="button" type="pill"
                     v-for="filter in filters"
                     :key="filter.value"
-                    type="button"
-                    :class="{ 'filter-button--active': activeFilter === filter.value }"
+                    :active="activeFilter === filter.value"
                     @click="activeFilter = filter.value"
                 >
                     {{ filter.label }}
                     <span>{{ filter.count }}</span>
-                </button>
+                </ui-button>
             </div>
 
             <div class="sort-row" aria-label="Sortierung">
-                <button
+                <ui-button tag="button" type="pill"
                     v-for="option in sortOptions"
                     :key="option.value"
-                    type="button"
-                    :class="{ 'sort-button--active': sortMode === option.value }"
+                    :active="sortMode === option.value"
                     @click="sortMode = option.value"
                 >
                     {{ option.label }}
-                </button>
+                </ui-button>
             </div>
 
             <div v-if="entriesPending" class="admin-list-state">Programm wird geladen …</div>
             <div v-else-if="entriesError" class="admin-list-state admin-list-state--error">
                 <p>{{ entriesError }}</p>
-                <button type="button" @click="loadEntries()">Erneut versuchen</button>
+                <ui-button tag="button" type="secondary" @click="loadEntries()">Erneut versuchen</ui-button>
             </div>
             <div v-else-if="!sortedEntries.length" class="admin-list-state">
                 <Icon name="material-symbols:movie-edit-rounded" aria-hidden="true" />
@@ -64,16 +62,16 @@
                     class="entry-row"
                     :class="{ 'entry-row--selected': selectedEntry?.id === entry.id }"
                 >
-                    <button type="button" class="entry-row_main" @click="selectEntry(entry)">
+                    <ui-button tag="button" type="secondary" class="entry-row_main" @click="selectEntry(entry)">
                         <span class="entry-row_date">{{ formatCompactDate(entry.startsAt) }}</span>
                         <strong>{{ entry.film.title }}</strong>
                         <span class="entry-row_status" :class="`entry-row_status--${entry.status.toLowerCase()}`">
                             {{ statusLabels[entry.status] }}
                         </span>
-                    </button>
-                    <button type="button" class="entry-row_delete" :aria-label="`${entry.film.title} löschen`" @click="deleteEntry(entry)">
+                    </ui-button>
+                    <ui-button tag="button" type="secondary" class="entry-row_delete" :aria-label="`${entry.film.title} löschen`" @click="deleteEntry(entry)">
                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                    </button>
+                    </ui-button>
                 </article>
             </div>
         </aside>
@@ -91,10 +89,10 @@
                 <div class="editor-empty_mark"><Icon name="material-symbols:movie-edit-rounded" aria-hidden="true" /></div>
                 <h2>Wähle eine Vorstellung</h2>
                 <p>Bearbeite einen vorhandenen Eintrag oder plane eine neue Vorstellung.</p>
-                <button type="button" @click="createEntry">
+                <ui-button tag="button" type="secondary" @click="createEntry">
                     <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                     Neue Vorstellung
-                </button>
+                </ui-button>
             </div>
         </section>
     </section>
@@ -331,7 +329,7 @@ function formatCompactDate(value: string) {
 }
 
 .new-entry-button,
-.editor-empty button {
+.editor-empty :deep(.button) {
     cursor: pointer;
 
     display: inline-flex;
@@ -363,40 +361,6 @@ function formatCompactDate(value: string) {
     margin-top: 1rem;
 }
 
-.ghost-button {
-    cursor: pointer;
-
-    display: inline-flex;
-    gap: 0.4rem;
-    align-items: center;
-
-    min-height: 40px;
-    padding: 0 0.8rem;
-    border: 1px solid $darkgray700;
-    border-radius: 8px;
-
-    font: inherit;
-    font-size: 0.8rem;
-    color: $lightgray150;
-
-    background: transparent;
-
-    svg {
-        width: 1.05rem;
-        height: 1.05rem;
-        color: $secondary300;
-    }
-
-    &:hover {
-        border-color: $secondary600;
-    }
-
-    &:focus-visible {
-        outline: 2px solid $primary400;
-        outline-offset: 2px;
-    }
-}
-
 .filter-row {
     overflow-x: auto;
     display: flex;
@@ -405,33 +369,13 @@ function formatCompactDate(value: string) {
     margin-top: 1.25rem;
     padding-bottom: 0.35rem;
 
-    button {
-        cursor: pointer;
-
+    :deep(.button) {
         min-height: 36px;
-        padding: 0 0.7rem;
-        border: 1px solid $darkgray700;
-        border-radius: 999px;
-
-        color: $lightgray200;
         white-space: nowrap;
-
-        background: transparent;
 
         span {
             margin-left: 0.35rem;
             color: $lightgray400;
-        }
-
-        &.filter-button--active {
-            border-color: $secondary600;
-            color: $secondary300;
-            background: rgb(192 143 46 / 8%);
-        }
-
-        &:focus-visible {
-            outline: 2px solid $primary400;
-            outline-offset: 2px;
         }
     }
 }
@@ -444,31 +388,10 @@ function formatCompactDate(value: string) {
     margin-top: 0.4rem;
     padding-bottom: 0.35rem;
 
-    button {
-        cursor: pointer;
-
+    :deep(.button) {
         min-height: 36px;
-        padding: 0 0.7rem;
-        border: 1px solid $darkgray700;
-        border-radius: 999px;
-
-        font: inherit;
         font-size: 0.8rem;
-        color: $lightgray200;
         white-space: nowrap;
-
-        background: transparent;
-
-        &.sort-button--active {
-            border-color: $secondary600;
-            color: $secondary300;
-            background: rgb(192 143 46 / 8%);
-        }
-
-        &:focus-visible {
-            outline: 2px solid $primary400;
-            outline-offset: 2px;
-        }
     }
 }
 
@@ -507,15 +430,19 @@ function formatCompactDate(value: string) {
     }
 
     &_main {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 0.35rem 0.75rem;
-
         padding: 0.8rem;
-
         text-align: left;
 
-        strong {
+        :deep(.button_content) {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0.35rem 0.75rem;
+            align-items: baseline;
+            width: 100%;
+            min-width: 0;
+        }
+
+        :deep(strong) {
             grid-column: 1 / -1;
             color: $lightgray50;
             overflow-wrap: anywhere;
@@ -578,7 +505,7 @@ function formatCompactDate(value: string) {
     &--error {
         color: $error300;
 
-        button {
+        :deep(.button) {
             cursor: pointer;
 
             min-height: 40px;

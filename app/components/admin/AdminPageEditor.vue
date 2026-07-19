@@ -1,22 +1,22 @@
 <template>
-    <form class="page-editor" @submit.prevent="submit">
+    <ui-form class="page-editor" @submit.prevent="submit">
         <header class="page-editor_header">
             <div>
                 <p>{{ page ? 'Seite bearbeiten' : 'Neue Seite' }}</p>
                 <h2>{{ draft.title || 'Ohne Titel' }}</h2>
             </div>
             <div class="page-editor_header-actions">
-                <button type="button" class="ghost-button" @click="exportPage">
+                <ui-button tag="button" type="ghost" @click="exportPage">
                     <Icon name="material-symbols:download-rounded" aria-hidden="true" />
                     Export
-                </button>
+                </ui-button>
                 <ui-input-file variant="ghost" accept="application/json,.json" @select="importPage">
                     <Icon name="material-symbols:upload-rounded" aria-hidden="true" />
                     Import
                 </ui-input-file>
-                <button type="button" class="icon-button" aria-label="Editor schließen" @click="$emit('cancel')">
+                <ui-button tag="button" type="icon-ghost" aria-label="Editor schließen" @click="$emit('cancel')">
                     <Icon name="material-symbols:close-rounded" aria-hidden="true" />
-                </button>
+                </ui-button>
             </div>
         </header>
 
@@ -71,15 +71,15 @@
                     <span class="block-card_type">{{ blockTypeLabels[block.type] }}</span>
                     <span class="block-card_title">{{ blockSummary(block) }}</span>
                     <span class="block-card_tools">
-                        <button type="button" class="icon-button" :disabled="index === 0" aria-label="Nach oben" @click.prevent="moveBlock(index, -1)">
+                        <ui-button tag="button" type="icon-ghost" :disabled="index === 0" aria-label="Nach oben" @click.prevent="moveBlock(index, -1)">
                             <Icon name="material-symbols:arrow-upward-rounded" aria-hidden="true" />
-                        </button>
-                        <button type="button" class="icon-button" :disabled="index === draft.blocks.length - 1" aria-label="Nach unten" @click.prevent="moveBlock(index, 1)">
+                        </ui-button>
+                        <ui-button tag="button" type="icon-ghost" :disabled="index === draft.blocks.length - 1" aria-label="Nach unten" @click.prevent="moveBlock(index, 1)">
                             <Icon name="material-symbols:arrow-downward-rounded" aria-hidden="true" />
-                        </button>
-                        <button type="button" class="icon-button icon-button--danger" aria-label="Block entfernen" @click.prevent="removeBlock(index)">
+                        </ui-button>
+                        <ui-button tag="button" type="icon-ghost" class="icon-button--danger" aria-label="Block entfernen" @click.prevent="removeBlock(index)">
                             <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                        </button>
+                        </ui-button>
                     </span>
                     <Icon class="block-card_chevron" name="material-symbols:expand-more-rounded" aria-hidden="true" />
                 </summary>
@@ -94,22 +94,22 @@
                         {{ blockTypeLabels[type] }}
                     </option>
                 </ui-select>
-                <button type="button" @click="addBlock">
+                <ui-button tag="button" type="dashed" @click="addBlock">
                     <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                     Block hinzufügen
-                </button>
+                </ui-button>
             </div>
         </div>
 
         <p v-if="localError" class="page-editor_error" role="alert">{{ localError }}</p>
 
         <footer class="page-editor_footer">
-            <button type="submit" class="save-button" :disabled="saving">
+            <ui-button tag="button" type="secondary" button-type="submit" class="save-button" :disabled="saving">
                 <Icon :name="saving ? 'material-symbols:progress-activity' : 'material-symbols:save-rounded'" aria-hidden="true" />
                 {{ saving ? 'Wird gespeichert …' : 'Seite speichern' }}
-            </button>
+            </ui-button>
         </footer>
-    </form>
+    </ui-form>
 </template>
 
 <script setup lang="ts">
@@ -429,104 +429,15 @@ function submit() {
     }
 }
 
-.icon-button {
-    cursor: pointer;
-
-    display: grid;
-    place-items: center;
-
-    min-width: 36px;
-    min-height: 36px;
-    border: 1px solid $darkgray700;
-    border-radius: 8px;
-
-    color: $lightgray200;
-
-    background: transparent;
-
-    &:disabled {
-        cursor: default;
-        opacity: 0.35;
-    }
-
-    &--danger:hover {
+.icon-button--danger:hover {
         color: $error300;
         background: rgb(194 37 105 / 8%);
-    }
-
-    &:focus-visible {
-        outline: 2px solid $primary400;
-        outline-offset: 2px;
-    }
-}
-
-.ghost-button {
-    cursor: pointer;
-
-    display: inline-flex;
-    gap: 0.4rem;
-    align-items: center;
-
-    min-height: 36px;
-    padding: 0 0.7rem;
-    border: 1px solid $darkgray700;
-    border-radius: 8px;
-
-    font: inherit;
-    font-size: 0.8rem;
-    color: $lightgray150;
-
-    background: transparent;
-
-    svg {
-        width: 1.05rem;
-        height: 1.05rem;
-        color: $secondary300;
-    }
-
-    &:hover {
-        border-color: $secondary600;
-    }
-
-    &:focus-visible {
-        outline: 2px solid $primary400;
-        outline-offset: 2px;
-    }
 }
 
 .add-block {
     display: flex;
     gap: 0.5rem;
     margin-top: 0.75rem;
-
-    button {
-        cursor: pointer;
-
-        display: inline-flex;
-        gap: 0.4rem;
-        align-items: center;
-
-        min-height: 42px;
-        padding: 0 0.9rem;
-        border: 1px dashed $darkgray700;
-        border-radius: 8px;
-
-        font: inherit;
-        font-size: 0.85rem;
-        color: $lightgray200;
-
-        background: transparent;
-
-        &:hover {
-            border-color: $secondary600;
-            color: $secondary300;
-        }
-
-        &:focus-visible {
-            outline: 2px solid $primary400;
-            outline-offset: 2px;
-        }
-    }
 }
 
 .save-button {

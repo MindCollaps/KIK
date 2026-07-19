@@ -1,28 +1,31 @@
 <template>
     <main class="pos-page">
         <store-header title="Kasse" />
+        <views-view-version/>
 
         <div class="pos-layout">
             <section class="pos-catalog" aria-label="Artikel">
                 <div v-if="categories.length" class="pos-mode" role="group" aria-label="Ansicht">
-                    <button
-                        type="button"
+                    <ui-button
                         class="pos-mode_button"
-                        :class="{ 'pos-mode_button--active': viewMode === 'open' }"
+                        tag="button"
+                        type="pill"
+                        :active="viewMode === 'open'"
                         @click="setViewMode('open')"
                     >
                         <Icon name="material-symbols:grid-view-rounded" aria-hidden="true" />
                         Alle Artikel
-                    </button>
-                    <button
-                        type="button"
+                    </ui-button>
+                    <ui-button
                         class="pos-mode_button"
-                        :class="{ 'pos-mode_button--active': viewMode === 'grouped' }"
+                        tag="button"
+                        type="pill"
+                        :active="viewMode === 'grouped'"
                         @click="setViewMode('grouped')"
                     >
                         <Icon name="material-symbols:category-rounded" aria-hidden="true" />
                         Kategorien
-                    </button>
+                    </ui-button>
                 </div>
 
                 <p v-if="!categories.length" class="pos-empty">
@@ -31,41 +34,44 @@
 
                 <template v-else-if="viewMode === 'grouped'">
                     <nav v-if="categories.length > 1" class="pos-tabs" aria-label="Kategorien">
-                        <button
+                        <ui-button
                             v-for="category in categories"
                             :key="category.id"
-                            type="button"
                             class="pos-tabs_button"
-                            :class="{ 'pos-tabs_button--active': activeCategoryId === category.id }"
+                            tag="button"
+                            type="pill"
+                            :active="activeCategoryId === category.id"
                             @click="activeCategoryId = category.id"
                         >
                             <Icon v-if="category.icon" :name="category.icon" aria-hidden="true" />
                             {{ category.name }}
-                        </button>
+                        </ui-button>
                     </nav>
 
                     <div class="pos-grid">
                         <div v-for="item in activeItems" :key="item.id" class="pos-item-wrap">
-                            <button
-                                type="button"
+                            <ui-button
                                 class="pos-item"
                                 :class="{ 'pos-item--colored': item.color }"
                                 :style="itemStyle(item)"
+                                tag="button"
+                                type="secondary"
                                 @click="addItem(item)"
                             >
                                 <strong>{{ item.name }}</strong>
                                 <span>{{ item.freePrice ? 'Freier Preis' : formatCents(item.priceCents) }}</span>
                                 <span v-if="item.numberPool" class="pos-item_number">{{ nextNumberLabel(item.numberPool) }}</span>
-                            </button>
-                            <button
+                            </ui-button>
+                            <ui-button
                                 v-if="item.numberPool"
-                                type="button"
                                 class="pos-item_numedit"
                                 :aria-label="`Startnummer für Pool ${item.numberPool.name} festlegen`"
+                                tag="button"
+                                type="secondary"
                                 @click="openNumberModal(item.numberPool)"
                             >
                                 <Icon name="material-symbols:edit-rounded" aria-hidden="true" />
-                            </button>
+                            </ui-button>
                         </div>
                     </div>
                 </template>
@@ -85,26 +91,28 @@
                         </header>
                         <div class="pos-grid">
                             <div v-for="item in category.items" :key="item.id" class="pos-item-wrap">
-                                <button
-                                    type="button"
+                                <ui-button
                                     class="pos-item"
                                     :class="{ 'pos-item--colored': item.color }"
                                     :style="itemStyle(item)"
+                                    tag="button"
+                                    type="secondary"
                                     @click="addItem(item)"
                                 >
                                     <strong>{{ item.name }}</strong>
                                     <span>{{ item.freePrice ? 'Freier Preis' : formatCents(item.priceCents) }}</span>
                                     <span v-if="item.numberPool" class="pos-item_number">{{ nextNumberLabel(item.numberPool) }}</span>
-                                </button>
-                                <button
+                                </ui-button>
+                                <ui-button
                                     v-if="item.numberPool"
-                                    type="button"
                                     class="pos-item_numedit"
                                     :aria-label="`Startnummer für Pool ${item.numberPool.name} festlegen`"
+                                    tag="button"
+                                    type="secondary"
                                     @click="openNumberModal(item.numberPool)"
                                 >
                                     <Icon name="material-symbols:edit-rounded" aria-hidden="true" />
-                                </button>
+                                </ui-button>
                             </div>
                         </div>
                     </section>
@@ -123,14 +131,15 @@
                                     Storniert{{ bon.cancelledByName ? ` von ${bon.cancelledByName}` : '' }}: {{ bon.cancelReason }}
                                 </span>
                             </div>
-                            <button
+                            <ui-button
                                 v-if="bon.status === 'COMPLETED'"
-                                type="button"
                                 class="pos-recent_cancel"
+                                tag="button"
+                                type="secondary"
                                 @click="stornoTarget = bon"
                             >
                                 Storno
-                            </button>
+                            </ui-button>
                         </li>
                     </ul>
                 </section>
@@ -152,9 +161,9 @@
                             <span>{{ formatCents(line.unitPriceCents) }}<template v-if="cartLineNumbers(line)"> · {{ cartLineNumbers(line) }}</template></span>
                         </div>
                         <div class="pos-cart_line-controls">
-                            <button type="button" :aria-label="`${line.name} verringern`" @click="changeQuantity(line, -1)">−</button>
+                            <ui-button tag="button" type="secondary" :aria-label="`${line.name} verringern`" @click="changeQuantity(line, -1)">−</ui-button>
                             <span>{{ line.quantity }}</span>
-                            <button type="button" :aria-label="`${line.name} erhöhen`" @click="changeQuantity(line, 1)">+</button>
+                            <ui-button tag="button" type="secondary" :aria-label="`${line.name} erhöhen`" @click="changeQuantity(line, 1)">+</ui-button>
                         </div>
                         <span class="pos-cart_line-total">{{ formatCents(line.unitPriceCents * line.quantity) }}</span>
                     </li>
@@ -166,31 +175,32 @@
                 </div>
 
                 <div class="pos-cart_payment" role="group" aria-label="Zahlungsart">
-                    <button
+                    <ui-button
                         v-for="method in paymentMethods"
                         :key="method"
-                        type="button"
                         class="pos-cart_payment-button"
-                        :class="{ 'pos-cart_payment-button--active': paymentMethod === method }"
+                        tag="button"
+                        type="pill"
+                        :active="paymentMethod === method"
                         @click="paymentMethod = method"
                     >
                         <Icon :name="method === 'CASH' ? 'material-symbols:euro-rounded' : 'material-symbols:credit-card-outline'" aria-hidden="true" />
                         {{ paymentMethodLabels[method] }}
-                    </button>
+                    </ui-button>
                 </div>
 
-                <button
-                    type="button"
+                <ui-button
                     class="pos-cart_checkout"
+                    tag="button"
                     :disabled="!cart.length || checkoutPending"
                     @click="checkout"
                 >
                     <Icon :name="checkoutPending ? 'material-symbols:progress-activity' : 'material-symbols:receipt-rounded'" aria-hidden="true" />
                     {{ checkoutPending ? 'Wird gespeichert …' : 'Abrechnung' }}
-                </button>
-                <button v-if="cart.length" type="button" class="pos-cart_clear" @click="cart = []">
+                </ui-button>
+                <ui-button v-if="cart.length" tag="button" type="secondary" class="pos-cart_clear" @click="cart = []">
                     Bon verwerfen
-                </button>
+                </ui-button>
             </aside>
         </div>
 
@@ -209,8 +219,8 @@
                 </label>
                 <p v-if="priceError" class="pos-modal_error" role="alert">{{ priceError }}</p>
                 <div class="pos-modal_actions">
-                    <button type="button" class="pos-modal_secondary" @click="priceItem = null">Abbrechen</button>
-                    <button type="button" class="pos-modal_primary" @click="confirmPrice">Hinzufügen</button>
+                    <ui-button tag="button" type="secondary" class="pos-modal_secondary" @click="priceItem = null">Abbrechen</ui-button>
+                    <ui-button tag="button" class="pos-modal_primary" @click="confirmPrice">Hinzufügen</ui-button>
                 </div>
             </div>
         </div>
@@ -233,10 +243,10 @@
                 </label>
                 <p v-if="numberError" class="pos-modal_error" role="alert">{{ numberError }}</p>
                 <div class="pos-modal_actions">
-                    <button type="button" class="pos-modal_secondary" @click="closeNumberModal">Abbrechen</button>
-                    <button type="button" class="pos-modal_primary" :disabled="numberPending" @click="confirmNumber">
+                    <ui-button tag="button" type="secondary" class="pos-modal_secondary" @click="closeNumberModal">Abbrechen</ui-button>
+                    <ui-button tag="button" class="pos-modal_primary" :disabled="numberPending" @click="confirmNumber">
                         {{ numberPending ? 'Wird gespeichert …' : 'Speichern' }}
-                    </button>
+                    </ui-button>
                 </div>
             </div>
         </div>
@@ -253,10 +263,10 @@
                 </label>
                 <p v-if="stornoError" class="pos-modal_error" role="alert">{{ stornoError }}</p>
                 <div class="pos-modal_actions">
-                    <button type="button" class="pos-modal_secondary" @click="closeStorno">Abbrechen</button>
-                    <button type="button" class="pos-modal_danger" :disabled="stornoPending" @click="confirmStorno">
+                    <ui-button tag="button" type="secondary" class="pos-modal_secondary" @click="closeStorno">Abbrechen</ui-button>
+                    <ui-button tag="button" type="secondary" class="pos-modal_danger" :disabled="stornoPending" @click="confirmStorno">
                         {{ stornoPending ? 'Wird storniert …' : 'Stornieren' }}
-                    </button>
+                    </ui-button>
                 </div>
             </div>
         </div>
@@ -633,36 +643,13 @@ function formatTime(value: string) {
     background: $darkgray950;
 
     &_button {
-        cursor: pointer;
-
-        display: inline-flex;
-        gap: 0.4rem;
-        align-items: center;
-
         min-height: 36px;
-        padding: 0 0.9rem;
-        border: 0;
-        border-radius: 999px;
-
-        font: inherit;
         font-size: 0.8rem;
         color: $lightgray300;
-
-        background: transparent;
 
         svg {
             width: 1rem;
             height: 1rem;
-        }
-
-        &--active {
-            color: $secondary300;
-            background: rgb(192 143 46 / 12%);
-        }
-
-        &:focus-visible {
-            outline: 2px solid $primary400;
-            outline-offset: 2px;
         }
     }
 }
@@ -705,37 +692,12 @@ function formatTime(value: string) {
     margin-bottom: 1rem;
 
     &_button {
-        cursor: pointer;
-
-        display: inline-flex;
-        gap: 0.4rem;
-        align-items: center;
-
         min-height: 40px;
-        padding: 0 1rem;
-        border: 1px solid $darkgray700;
-        border-radius: 999px;
-
-        font: inherit;
         font-size: 0.85rem;
-        color: $lightgray200;
-
-        background: transparent;
 
         svg {
             width: 1.05rem;
             height: 1.05rem;
-        }
-
-        &--active {
-            border-color: $secondary600;
-            color: $secondary300;
-            background: rgb(192 143 46 / 8%);
-        }
-
-        &:focus-visible {
-            outline: 2px solid $primary400;
-            outline-offset: 2px;
         }
     }
 }
@@ -1014,15 +976,12 @@ function formatTime(value: string) {
         gap: 0.35rem;
         align-items: center;
 
-        button {
-            cursor: pointer;
-
+        :deep(.button) {
             width: 32px;
             height: 32px;
             border: 1px solid $darkgray700;
             border-radius: 6px;
 
-            font: inherit;
             color: $lightgray100;
 
             background: transparent;
@@ -1073,37 +1032,12 @@ function formatTime(value: string) {
     }
 
     &_payment-button {
-        cursor: pointer;
-
-        display: inline-flex;
-        gap: 0.4rem;
-        align-items: center;
-        justify-content: center;
-
         min-height: 42px;
-        border: 1px solid $darkgray700;
-        border-radius: 8px;
-
-        font: inherit;
         font-size: 0.85rem;
-        color: $lightgray200;
-
-        background: transparent;
 
         svg {
             width: 1.1rem;
             height: 1.1rem;
-        }
-
-        &--active {
-            border-color: $secondary600;
-            color: $secondary300;
-            background: rgb(192 143 46 / 8%);
-        }
-
-        &:focus-visible {
-            outline: 2px solid $primary400;
-            outline-offset: 2px;
         }
     }
 
