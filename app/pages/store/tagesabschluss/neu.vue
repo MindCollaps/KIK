@@ -17,6 +17,16 @@
                     <div><dt>davon Karte</dt><dd>{{ formatCents(preview.stats.cardRevenueCents) }}</dd></div>
                     <div><dt>Storno</dt><dd>{{ preview.stats.stornoCount }} ({{ formatCents(preview.stats.stornoTotalCents) }})</dd></div>
                 </dl>
+
+                <div v-if="shownFilmSummaries.length" class="abschlussneu-films">
+                    <h3>Gezeigte Filme</h3>
+                    <ul>
+                        <li v-for="film in shownFilmSummaries" :key="film.filmId">
+                            <strong>{{ film.title }}</strong>
+                            <span>{{ film.count }}× · {{ film.startsAt.map(formatDateTime).join(', ') }}</span>
+                        </li>
+                    </ul>
+                </div>
             </section>
 
             <form class="abschlussneu-form" @submit.prevent="createAbschluss">
@@ -115,6 +125,24 @@ const pending = ref(false);
 const errorMessage = ref('');
 
 const numberedForms = ref<NumberedForm[]>(preview.numberedPools.map(stat => ({ stat, countedInput: '', reason: '' })));
+
+interface ShownFilmSummary {
+    filmId: string;
+    title: string;
+    count: number;
+    startsAt: string[];
+}
+
+const shownFilmSummaries = computed<ShownFilmSummary[]>(() => {
+    const byFilm = new Map<string, ShownFilmSummary>();
+    for (const screening of preview.shownFilms) {
+        const entry = byFilm.get(screening.filmId) ?? { filmId: screening.filmId, title: screening.title, count: 0, startsAt: [] };
+        entry.count += 1;
+        entry.startsAt.push(screening.startsAt);
+        byFilm.set(screening.filmId, entry);
+    }
+    return [...byFilm.values()].sort((a, b) => a.title.localeCompare(b.title, 'de'));
+});
 
 const expectedCashCents = computed(() => {
     const opening = parseEuroInput(openingCashInput.value);
@@ -274,6 +302,47 @@ function formatDateTime(value: string) {
         font-size: 1.05rem;
         font-weight: 700;
         color: $lightgray0;
+    }
+}
+
+.abschlussneu-films {
+    margin-top: 1.25rem;
+
+    h3 {
+        margin: 0 0 0.6rem;
+        font-size: 0.85rem;
+        color: $lightgray200;
+    }
+
+    ul {
+        display: grid;
+        gap: 0.4rem;
+
+        margin: 0;
+        padding: 0;
+
+        list-style: none;
+    }
+
+    li {
+        display: grid;
+        gap: 0.15rem;
+
+        padding: 0.55rem 0.7rem;
+        border: 1px solid $darkgray800;
+        border-radius: 8px;
+
+        background: $darkgray900;
+
+        strong {
+            font-size: 0.85rem;
+            color: $lightgray50;
+        }
+
+        span {
+            font-size: 0.72rem;
+            color: $secondary300;
+        }
     }
 }
 

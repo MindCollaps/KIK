@@ -45,13 +45,14 @@ export default defineEventHandler(async event => {
 
     const entries = await prisma.programEntry.findMany({
         where: programVisibilityWhere(now),
+        include: { film: true },
         orderBy: { startsAt: 'asc' },
         take: 200,
     });
 
     const events = entries.flatMap(entry => {
         const start = entry.startsAt;
-        const end = new Date(start.getTime() + (entry.runtimeMinutes ?? defaultRuntimeMinutes) * 60 * 1000);
+        const end = new Date(start.getTime() + (entry.film.runtimeMinutes ?? defaultRuntimeMinutes) * 60 * 1000);
 
         return [
             'BEGIN:VEVENT',
@@ -59,7 +60,7 @@ export default defineEventHandler(async event => {
             icsLine('DTSTAMP', formatIcsDate(entry.updatedAt)),
             icsLine('DTSTART', formatIcsDate(start)),
             icsLine('DTEND', formatIcsDate(end)),
-            icsLine('SUMMARY', entry.title),
+            icsLine('SUMMARY', entry.film.title),
             icsLine('DESCRIPTION', buildFeedDescription(entry)),
             icsLine('LOCATION', entry.venue ?? defaultLocation),
             icsLine('URL', `${siteUrl}/programm/${entry.id}`),

@@ -12,7 +12,7 @@
         :style="cardStyle"
         role="link"
         tabindex="0"
-        :aria-label="`${entry.title} vollständig anzeigen`"
+        :aria-label="`${entry.film.title} vollständig anzeigen`"
         @click="openDetails"
         @keydown.enter="openDetails"
     >
@@ -25,10 +25,10 @@
             {{ badgeMeta.label }}
         </span>
 
-        <div v-if="entry.imagePath" class="program-card_media">
+        <div v-if="entry.film.imagePath" class="program-card_media">
             <img
-                :src="entry.imagePath"
-                :alt="entry.imageAlt || `Szenenbild zu ${entry.title}`"
+                :src="entry.film.imagePath"
+                :alt="entry.film.imageAlt || `Szenenbild zu ${entry.film.title}`"
                 loading="lazy"
             >
             <div class="program-card_media-shade" aria-hidden="true" />
@@ -40,10 +40,10 @@
                 {{ formatProgramDate(entry.startsAt) }}
             </p>
 
-            <h2 v-if="variant === 'feature'" class="program-card_title">{{ entry.title }}</h2>
-            <h3 v-else class="program-card_title">{{ entry.title }}</h3>
+            <h2 v-if="variant === 'feature'" class="program-card_title">{{ entry.film.title }}</h2>
+            <h3 v-else class="program-card_title">{{ entry.film.title }}</h3>
 
-            <p class="program-card_description">{{ entry.description }}</p>
+            <p class="program-card_description">{{ entry.film.description }}</p>
 
             <div v-if="confirmedWarnings.length" class="program-card_warnings">
                 <span class="program-card_warnings-label">
@@ -64,13 +64,13 @@
                     <dt><Icon name="material-symbols:subtitles-rounded" aria-hidden="true" /><span>Fassung</span></dt>
                     <dd>{{ entry.language }}</dd>
                 </div>
-                <div v-if="entry.runtimeMinutes">
+                <div v-if="entry.film.runtimeMinutes">
                     <dt><Icon name="material-symbols:schedule-rounded" aria-hidden="true" /><span>Laufzeit</span></dt>
-                    <dd>{{ entry.runtimeMinutes }} Min.</dd>
+                    <dd>{{ entry.film.runtimeMinutes }} Min.</dd>
                 </div>
-                <div v-if="entry.ageRating">
+                <div v-if="entry.film.ageRating">
                     <dt><Icon name="material-symbols:family-link-rounded" aria-hidden="true" /><span>Freigabe</span></dt>
-                    <dd>{{ entry.ageRating }}</dd>
+                    <dd>{{ entry.film.ageRating }}</dd>
                 </div>
             </dl>
 
@@ -104,11 +104,11 @@ const cardStyle = computed<CSSProperties>(() => ({
 }));
 
 const credits = computed(() => {
-    const origin = [props.entry.country, props.entry.releaseYear].filter(Boolean).join(' ');
-    return [props.entry.director ? `Regie: ${props.entry.director}` : '', origin].filter(Boolean).join(' · ');
+    const origin = [props.entry.film.country, props.entry.film.releaseYear].filter(Boolean).join(' ');
+    return [props.entry.film.director ? `Regie: ${props.entry.film.director}` : '', origin].filter(Boolean).join(' · ');
 });
 
-const confirmedWarnings = computed(() => (props.entry.contentWarnings?.stats ?? [])
+const confirmedWarnings = computed(() => (props.entry.film.contentWarnings?.stats ?? [])
     .filter(stat => stat.yesSum > stat.noSum)
     .sort((left, right) => right.yesSum - left.yesSum));
 

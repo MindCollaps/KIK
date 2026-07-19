@@ -30,14 +30,15 @@
                 aria-multiselectable="true"
                 :style="panelStyle"
             >
-                <label v-for="permission in allPermissions" :key="permission" class="permission-select-option">
-                    <input
-                        type="checkbox"
-                        :checked="modelValue.includes(permission)"
-                        @change="togglePermission(permission)"
-                    >
-                    <span>{{ permissionLabels[permission] }}</span>
-                </label>
+                <ui-checkbox
+                    v-for="permission in allPermissions"
+                    :key="permission"
+                    class="permission-select-option"
+                    :model-value="modelValue.includes(permission)"
+                    @update:model-value="togglePermission(permission)"
+                >
+                    {{ permissionLabels[permission] }}
+                </ui-checkbox>
             </div>
         </teleport>
     </div>
@@ -207,12 +208,6 @@ onUnmounted(() => {
 }
 
 .permission-select-option {
-    cursor: pointer;
-
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-
     padding: 0.45rem 0.55rem;
     border-radius: 6px;
 
@@ -223,10 +218,6 @@ onUnmounted(() => {
 
     &:hover {
         background: $darkgray800;
-    }
-
-    input {
-        accent-color: $primary500;
     }
 }
 </style>

@@ -6,27 +6,37 @@ import type { ProgramExport } from '~~/types/program';
 export default defineEventHandler(async event => {
     await requireAuth(event, Permission.Program);
 
-    const entries = await prisma.programEntry.findMany({
-        orderBy: [{ startsAt: 'asc' }, { createdAt: 'desc' }],
-    });
+    const [films, entries] = await Promise.all([
+        prisma.film.findMany({ orderBy: { title: 'asc' } }),
+        prisma.programEntry.findMany({
+            orderBy: [{ startsAt: 'asc' }, { createdAt: 'desc' }],
+        }),
+    ]);
 
     const payload: ProgramExport = {
         kind: 'kik-program',
-        version: 1,
+        version: 2,
         exportedAt: new Date().toISOString(),
+        films: films.map(film => ({
+            id: film.id,
+            title: film.title,
+            description: film.description,
+            runtimeMinutes: film.runtimeMinutes,
+            ageRating: film.ageRating,
+            director: film.director,
+            country: film.country,
+            releaseYear: film.releaseYear,
+            infoUrl: film.infoUrl,
+            imagePath: film.imagePath,
+            imageAlt: film.imageAlt,
+            doesTheDogDieId: film.doesTheDogDieId,
+        })),
         entries: entries.map(entry => ({
             id: entry.id,
-            title: entry.title,
-            description: entry.description,
+            filmId: entry.filmId,
             startsAt: entry.startsAt.toISOString(),
             venue: entry.venue,
             language: entry.language,
-            runtimeMinutes: entry.runtimeMinutes,
-            ageRating: entry.ageRating,
-            director: entry.director,
-            country: entry.country,
-            releaseYear: entry.releaseYear,
-            infoUrl: entry.infoUrl,
             priceCents: entry.priceCents,
             isFree: entry.isFree,
             style: entry.style,
@@ -35,9 +45,6 @@ export default defineEventHandler(async event => {
             customBadgeBorder: entry.customBadgeBorder,
             customBadgeIcon: entry.customBadgeIcon,
             customCardBorder: entry.customCardBorder,
-            imagePath: entry.imagePath,
-            imageAlt: entry.imageAlt,
-            doesTheDogDieId: entry.doesTheDogDieId,
             status: entry.status,
             visibleFrom: entry.visibleFrom?.toISOString() ?? null,
             visibleUntil: entry.visibleUntil?.toISOString() ?? null,

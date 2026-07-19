@@ -15,15 +15,12 @@
             <h2>Administrationskonten</h2>
 
             <div class="users-toolbar">
-                <div class="users-toolbar_search">
-                    <Icon name="material-symbols:search-rounded" aria-hidden="true" />
-                    <input
-                        v-model.trim="searchQuery"
-                        type="search"
-                        placeholder="Nach Name oder E-Mail suchen …"
-                        aria-label="Nutzer durchsuchen"
-                    >
-                </div>
+                <ui-input-search
+                    v-model="searchQuery"
+                    class="users-toolbar_search"
+                    placeholder="Nach Name oder E-Mail suchen …"
+                    aria-label="Nutzer durchsuchen"
+                />
                 <div class="users-toolbar_sort" role="group" aria-label="Sortierung">
                     <button
                         v-for="option in sortOptions"
@@ -626,48 +623,8 @@ function formatDateTime(value: string) {
     margin-bottom: 0.85rem;
 
     &_search {
-        display: flex;
         flex: 1;
-        gap: 0.5rem;
-        align-items: center;
-
         min-width: 14rem;
-        min-height: 40px;
-        padding: 0 0.75rem;
-        border: 1px solid $darkgray700;
-        border-radius: 8px;
-
-        background: $darkgray900;
-
-        svg {
-            flex-shrink: 0;
-            width: 1.05rem;
-            height: 1.05rem;
-            color: $lightgray400;
-        }
-
-        input {
-            flex: 1;
-
-            min-width: 0;
-            border: 0;
-
-            font: inherit;
-            font-size: 0.85rem;
-            color: $lightgray50;
-
-            background: transparent;
-            outline: none;
-
-            &::placeholder {
-                color: $lightgray400;
-            }
-        }
-
-        &:focus-within {
-            border-color: $primary400;
-            outline: 2px solid rgb(221 91 69 / 22%);
-        }
     }
 
     &_sort {

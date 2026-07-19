@@ -2,7 +2,7 @@ import ExcelJS from 'exceljs';
 import PdfPrinter from 'pdfmake/src/printer.js';
 import type { TDocumentDefinitions, Content, TableCell } from 'pdfmake/interfaces';
 import type { Prisma } from '@prisma/client';
-import type { BreakdownCategory, NumberedBreakdownEntry } from '~~/types/store';
+import type { BreakdownCategory, NumberedBreakdownEntry, ShownFilmEntry } from '~~/types/store';
 import { paymentMethodLabels } from '~~/types/store';
 import { prisma } from './prisma';
 import { siteName } from './mail';
@@ -28,6 +28,11 @@ export function abschlussNumbered(abschluss: AbschlussWithBons): NumberedBreakdo
     return (Array.isArray(abschluss.numberedBreakdown) ? abschluss.numberedBreakdown : []) as unknown as NumberedBreakdownEntry[];
 }
 
+export function abschlussShownFilms(abschluss: AbschlussWithBons): ShownFilmEntry[] {
+    const value = Array.isArray(abschluss.shownFilms) ? abschluss.shownFilms : [];
+    return value as ShownFilmEntry[];
+}
+
 export function toAbschlussResponse(abschluss: AbschlussWithBons) {
     return {
         number: abschluss.number,
@@ -46,10 +51,31 @@ export function toAbschlussResponse(abschluss: AbschlussWithBons) {
         cashDifferenceReason: abschluss.cashDifferenceReason,
         breakdown: abschlussBreakdown(abschluss),
         numberedBreakdown: abschlussNumbered(abschluss),
+        shownFilms: abschlussShownFilms(abschluss),
         createdByName: abschluss.createdByName,
         createdAt: abschluss.createdAt,
         bons: abschluss.bons.map(toBonResponse),
     };
+}
+
+interface ShownFilmSummary {
+    filmId: string;
+    title: string;
+    count: number;
+    startsAt: string[];
+}
+
+// Fasst die Rohliste der Vorführungen pro Film zusammen (Anzahl + Zeitpunkte),
+// alphabetisch sortiert.
+function summarizeShownFilms(abschluss: AbschlussWithBons): ShownFilmSummary[] {
+    const byFilm = new Map<string, ShownFilmSummary>();
+    for (const screening of abschlussShownFilms(abschluss)) {
+        const entry = byFilm.get(screening.filmId) ?? { filmId: screening.filmId, title: screening.title, count: 0, startsAt: [] };
+        entry.count += 1;
+        entry.startsAt.push(screening.startsAt);
+        byFilm.set(screening.filmId, entry);
+    }
+    return [...byFilm.values()].sort((a, b) => a.title.localeCompare(b.title, 'de'));
 }
 
 function euroValue(cents: number) {
@@ -132,6 +158,16 @@ export function buildCsv(abschluss: AbschlussWithBons) {
         }
     }
 
+    const shownFilms = summarizeShownFilms(abschluss);
+    if (shownFilms.length) {
+        lines.push('');
+        lines.push(csvRow('Gezeigte Filme'));
+        lines.push(csvRow('Film', 'Anzahl Vorführungen', 'Vorführzeiten'));
+        for (const film of shownFilms) {
+            lines.push(csvRow(film.title, film.count, film.startsAt.map(value => formatDateTimeBerlin(new Date(value))).join('; ')));
+        }
+    }
+
     lines.push('');
     lines.push(csvRow('Bons'));
     lines.push(csvRow('Bon-Nr.', 'Zeitpunkt', 'Zahlungsart', 'Status', 'Positionen', 'Betrag (EUR)', 'Erstellt von', 'Storniert von', 'Storniert am', 'Stornogrund'));
@@ -190,6 +226,16 @@ export async function buildXlsx(abschluss: AbschlussWithBons) {
         numberedSheet.addRow(['Pool', 'Erste Nr.', 'Letzte Nr. (erwartet)', 'Letzte Nr. (gezählt)', 'Stückzahl', 'Grund']).font = { bold: true };
         for (const entry of numbered) {
             numberedSheet.addRow([entry.name, entry.firstNumber, entry.lastNumber, entry.countedLastNumber, entry.quantity, entry.reason ?? '']);
+        }
+    }
+
+    const shownFilms = summarizeShownFilms(abschluss);
+    if (shownFilms.length) {
+        const filmsSheet = workbook.addWorksheet('Gezeigte Filme');
+        filmsSheet.columns = [{ width: 32 }, { width: 20 }, { width: 60 }];
+        filmsSheet.addRow(['Film', 'Anzahl Vorführungen', 'Vorführzeiten']).font = { bold: true };
+        for (const film of shownFilms) {
+            filmsSheet.addRow([film.title, film.count, film.startsAt.map(value => formatDateTimeBerlin(new Date(value))).join('; ')]);
         }
     }
 
@@ -313,6 +359,30 @@ export async function buildPdf(abschluss: AbschlussWithBons) {
         ]);
     }
 
+    const shownFilms = summarizeShownFilms(abschluss);
+    const shownFilmRows: TableCell[][] = [[
+        { text: 'Film', bold: true },
+        { text: 'Anzahl', bold: true, alignment: 'right' },
+        { text: 'Vorführzeiten', bold: true },
+    ]];
+    for (const film of shownFilms) {
+        shownFilmRows.push([
+            film.title,
+            { text: String(film.count), alignment: 'right' },
+            film.startsAt.map(value => formatDateTimeBerlin(new Date(value))).join(', '),
+        ]);
+    }
+    const shownFilmsContent: Content[] = shownFilms.length
+        ? [
+                { text: 'Gezeigte Filme', style: 'section' },
+                {
+                    table: { widths: ['*', 'auto', '*'], headerRows: 1, body: shownFilmRows },
+                    layout: 'lightHorizontalLines',
+                    margin: [0, 6, 0, 20],
+                },
+            ]
+        : [];
+
     const numbered = abschlussNumbered(abschluss);
     const numberedRows: TableCell[][] = [[
         { text: 'Pool', bold: true },
@@ -361,6 +431,7 @@ export async function buildPdf(abschluss: AbschlussWithBons) {
             margin: [0, 6, 0, 20],
         },
         ...numberedContent,
+        ...shownFilmsContent,
         { text: 'Bons', style: 'section' },
         {
             table: { widths: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto', '*'], headerRows: 1, body: bonRows },

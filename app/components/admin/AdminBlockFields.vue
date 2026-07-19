@@ -32,10 +32,7 @@
                     <span>Einleitung <small>optional</small></span>
                     <textarea v-model="landingHero.lead" rows="3" maxlength="500" />
                 </label>
-                <label class="check-field">
-                    <input v-model="landingHero.showNextScreening" type="checkbox">
-                    <span>Nächste Vorstellung anzeigen</span>
-                </label>
+                <ui-checkbox v-model="landingHero.showNextScreening" class="check-field">Nächste Vorstellung anzeigen</ui-checkbox>
             </div>
             <admin-action-list v-model="landingHero.actions" />
         </template>
@@ -126,11 +123,10 @@
                     <span>Bildunterschrift <small>optional</small></span>
                     <input v-model="imageBlock.caption" maxlength="300">
                 </label>
-                <label class="upload-control">
+                <ui-input-file accept="image/jpeg,image/png,image/webp" :disabled="uploading" @select="uploadImage">
                     <Icon name="material-symbols:add-photo-alternate-rounded" aria-hidden="true" />
                     <span>{{ uploading ? 'Bild wird hochgeladen …' : 'Bild hochladen' }}</span>
-                    <input type="file" accept="image/jpeg,image/png,image/webp" :disabled="uploading" @change="uploadImage">
-                </label>
+                </ui-input-file>
             </div>
         </template>
 
@@ -241,10 +237,8 @@ const splitPointsText = computed({
     },
 });
 
-async function uploadImage(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file || !imageBlock.value) return;
+async function uploadImage(file: File) {
+    if (!imageBlock.value) return;
 
     uploading.value = true;
     try {
@@ -255,7 +249,6 @@ async function uploadImage(event: Event) {
     }
     finally {
         uploading.value = false;
-        input.value = '';
     }
 }
 </script>
@@ -322,17 +315,7 @@ async function uploadImage(event: Event) {
 }
 
 .check-field {
-    cursor: pointer;
-
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
     align-self: end;
-
-    min-height: 42px;
-
-    font-size: 0.85rem;
-    color: $lightgray150;
 }
 
 .item-list {
@@ -430,32 +413,6 @@ async function uploadImage(event: Event) {
     &:focus-visible {
         outline: 2px solid $primary400;
         outline-offset: 2px;
-    }
-}
-
-.upload-control {
-    cursor: pointer;
-
-    display: inline-flex;
-    gap: 0.5rem;
-    align-items: center;
-
-    min-height: 42px;
-    padding: 0 0.8rem;
-    border: 1px dashed $darkgray700;
-    border-radius: 8px;
-
-    font-size: 0.85rem;
-    color: $lightgray200;
-
-    input {
-        display: none;
-    }
-
-    svg {
-        width: 1.2rem;
-        height: 1.2rem;
-        color: $secondary300;
     }
 }
 

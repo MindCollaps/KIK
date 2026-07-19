@@ -8,6 +8,7 @@ export default defineEventHandler(async event => {
     const now = new Date();
     const entry = await prisma.programEntry.findFirst({
         where: { id, ...programVisibilityWhere(now) },
+        include: { film: true },
     });
 
     if (!entry) throw createError({ statusCode: 404, statusMessage: 'Diese Vorstellung wurde nicht gefunden.' });

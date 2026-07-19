@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { assertSameOrigin, requireAuth } from '../../../utils/auth';
 import { Permission } from '~~/types/permissions';
 import type { NumberedBreakdownEntry } from '~~/types/store';
+import { getShownFilmsInPeriod } from '../../../utils/program';
 import { prisma } from '../../../utils/prisma';
 import { bonInclude, computeNumberedStats, computePeriodStats, writeStoreLog } from '../../../utils/store';
 
@@ -39,6 +40,8 @@ export default defineEventHandler(async event => {
         const stats = computePeriodStats(bons);
         const numberedStats = computeNumberedStats(bons);
         const now = new Date();
+        const periodStart = lastAbschluss?.periodEnd ?? bons[0]?.createdAt ?? now;
+        const shownFilms = await getShownFilmsInPeriod(periodStart, now);
         const expectedCashCents = parsed.data.openingCashCents + stats.cashRevenueCents;
         const differenceCents = parsed.data.countedCashCents - expectedCashCents;
 
@@ -80,7 +83,7 @@ export default defineEventHandler(async event => {
 
         const created = await transaction.tagesabschluss.create({
             data: {
-                periodStart: lastAbschluss?.periodEnd ?? bons[0]?.createdAt ?? now,
+                periodStart,
                 periodEnd: now,
                 openingCashCents: parsed.data.openingCashCents,
                 countedCashCents: parsed.data.countedCashCents,
@@ -95,6 +98,7 @@ export default defineEventHandler(async event => {
                 stornoTotalCents: stats.stornoTotalCents,
                 breakdown: stats.breakdown as unknown as Prisma.InputJsonValue,
                 numberedBreakdown: numberedBreakdown as unknown as Prisma.InputJsonValue,
+                shownFilms,
                 createdById: user.id,
                 createdByName: user.name,
             },

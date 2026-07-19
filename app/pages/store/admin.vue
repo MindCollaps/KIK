@@ -10,10 +10,7 @@
             <section class="storeadmin-section" aria-label="Sortiment">
                 <header class="storeadmin-section_head">
                     <h2>Sortiment</h2>
-                    <label class="storeadmin-toggle">
-                        <input v-model="showArchived" type="checkbox">
-                        <span>Archivierte anzeigen</span>
-                    </label>
+                    <ui-checkbox v-model="showArchived" class="storeadmin-toggle">Archivierte anzeigen</ui-checkbox>
                 </header>
 
                 <form class="storeadmin-inline-form" @submit.prevent="createCategory">
@@ -33,8 +30,7 @@
                                 <input v-model.trim="categoryEditName" maxlength="60" class="storeadmin-category_edit" aria-label="Kategoriename">
                                 <label class="storeadmin-color">
                                     <span>Farbe</span>
-                                    <input type="color" :value="categoryEditColor || '#2b2420'" @input="categoryEditColor = colorFromEvent($event)">
-                                    <button v-if="categoryEditColor" type="button" @click="categoryEditColor = ''">Entfernen</button>
+                                    <ui-input-color v-model="categoryEditColor" clearable />
                                 </label>
                                 <ui-icon-picker v-model="categoryEditIcon" class="storeadmin-iconpicker" />
                             </div>
@@ -85,18 +81,14 @@
                                 <div class="storeadmin-item_edit">
                                     <input v-model.trim="itemEditName" maxlength="80" aria-label="Artikelname">
                                     <input v-model.trim="itemEditPrice" :disabled="itemEditFreePrice" inputmode="decimal" placeholder="Preis, z. B. 4,00" aria-label="Preis in Euro">
-                                    <label>
-                                        <input v-model="itemEditFreePrice" type="checkbox">
-                                        <span>Freier Preis</span>
-                                    </label>
-                                    <select v-model="itemEditPoolId" aria-label="Nummernpool">
+                                    <ui-checkbox v-model="itemEditFreePrice">Freier Preis</ui-checkbox>
+                                    <ui-select v-model="itemEditPoolId" aria-label="Nummernpool">
                                         <option value="">Kein Nummernpool</option>
                                         <option v-for="pool in pools" :key="pool.id" :value="pool.id">{{ pool.name }}</option>
-                                    </select>
+                                    </ui-select>
                                     <label class="storeadmin-color">
                                         <span>Farbe</span>
-                                        <input type="color" :value="itemEditColor || '#2b2420'" @input="itemEditColor = colorFromEvent($event)">
-                                        <button v-if="itemEditColor" type="button" @click="itemEditColor = ''">Entfernen</button>
+                                        <ui-input-color v-model="itemEditColor" clearable />
                                     </label>
                                 </div>
                                 <div class="storeadmin-row-actions">
@@ -150,14 +142,11 @@
                             :required="!newItem[category.id]!.freePrice"
                             placeholder="Preis, z. B. 4,00"
                         >
-                        <label class="storeadmin-toggle">
-                            <input v-model="newItem[category.id]!.freePrice" type="checkbox">
-                            <span>Freier Preis</span>
-                        </label>
-                        <select v-model="newItem[category.id]!.numberPoolId" aria-label="Nummernpool">
+                        <ui-checkbox v-model="newItem[category.id]!.freePrice" class="storeadmin-toggle">Freier Preis</ui-checkbox>
+                        <ui-select v-model="newItem[category.id]!.numberPoolId" aria-label="Nummernpool">
                             <option value="">Kein Nummernpool</option>
                             <option v-for="pool in pools" :key="pool.id" :value="pool.id">{{ pool.name }}</option>
-                        </select>
+                        </ui-select>
                         <button type="submit" :disabled="pendingAction">Hinzufügen</button>
                     </form>
                 </article>
@@ -292,10 +281,6 @@ const newPoolNumber = ref('');
 const editingPoolId = ref<string | null>(null);
 const poolEditName = ref('');
 const poolEditNumber = ref('');
-
-function colorFromEvent(event: Event) {
-    return (event.target as HTMLInputElement).value;
-}
 
 const visibleCategories = computed(() => showArchived.value ? categories.value : categories.value.filter(category => !category.archived));
 
@@ -599,18 +584,8 @@ async function deleteItem(item: StoreItemRecord) {
 }
 
 .storeadmin-toggle {
-    cursor: pointer;
-
-    display: inline-flex;
-    gap: 0.4rem;
-    align-items: center;
-
     font-size: 0.78rem;
     color: $lightgray300;
-
-    input {
-        accent-color: $primary500;
-    }
 }
 
 .storeadmin-hint {
@@ -626,24 +601,6 @@ async function deleteItem(item: StoreItemRecord) {
     align-items: center;
 
     margin-bottom: 1rem;
-
-    select {
-        min-height: 42px;
-        padding: 0 0.75rem;
-        border: 1px solid $darkgray700;
-        border-radius: 8px;
-
-        font: inherit;
-        font-size: 0.85rem;
-        color: $lightgray50;
-
-        background: $darkgray900;
-
-        &:focus-visible {
-            border-color: $primary400;
-            outline: 2px solid rgb(221 91 69 / 22%);
-        }
-    }
 
     input:not([type='checkbox']) {
         flex: 1;
@@ -780,36 +737,6 @@ async function deleteItem(item: StoreItemRecord) {
 
     font-size: 0.75rem;
     color: $lightgray300;
-
-    input[type='color'] {
-        cursor: pointer;
-
-        width: 40px;
-        height: 34px;
-        padding: 0.15rem;
-        border: 1px solid $darkgray700;
-        border-radius: 8px;
-
-        background: $darkgray950;
-    }
-
-    button {
-        cursor: pointer;
-
-        padding: 0.2rem 0.4rem;
-        border: 0;
-
-        font: inherit;
-        font-size: 0.7rem;
-        color: $lightgray400;
-        text-decoration: underline;
-
-        background: transparent;
-
-        &:focus-visible {
-            outline: 2px solid $primary400;
-        }
-    }
 }
 
 .storeadmin-swatch {
@@ -879,24 +806,6 @@ async function deleteItem(item: StoreItemRecord) {
         gap: 0.5rem;
         align-items: center;
 
-        select {
-            min-height: 38px;
-            padding: 0 0.6rem;
-            border: 1px solid $darkgray700;
-            border-radius: 8px;
-
-            font: inherit;
-            font-size: 0.82rem;
-            color: $lightgray50;
-
-            background: $darkgray900;
-
-            &:focus-visible {
-                border-color: $primary400;
-                outline: 2px solid rgb(221 91 69 / 22%);
-            }
-        }
-
         input:not([type='checkbox']) {
             flex: 1;
 
@@ -914,19 +823,6 @@ async function deleteItem(item: StoreItemRecord) {
 
             &:disabled {
                 opacity: 0.45;
-            }
-        }
-
-        label {
-            display: inline-flex;
-            gap: 0.35rem;
-            align-items: center;
-
-            font-size: 0.75rem;
-            color: $lightgray300;
-
-            input {
-                accent-color: $primary500;
             }
         }
     }

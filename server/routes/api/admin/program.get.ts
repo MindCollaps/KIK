@@ -6,6 +6,7 @@ export default defineEventHandler(async event => {
     await requireAuth(event, Permission.Program);
     return {
         entries: await prisma.programEntry.findMany({
+            include: { film: true },
             orderBy: [{ startsAt: 'asc' }, { createdAt: 'desc' }],
         }),
     };

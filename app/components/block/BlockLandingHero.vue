@@ -68,11 +68,11 @@ const primaryScreening = computed(() => props.entries[0] ?? null);
         z-index: -1;
         inset: 0;
 
-        opacity: 0.58;
-        background-image: radial-gradient(rgb(244 240 234 / 12%) 1px, transparent 1.4px);
-        background-size: 7px 7px;
+        opacity: 0.48;
+        background-image: radial-gradient(rgb(244 240 234 / 8%) 4px, transparent 1.4px);
+        background-size: 22px 22px;
 
-        mask-image: linear-gradient(to bottom, black 0%, rgb(0 0 0 / 88%) 42%, transparent 100%);
+        mask-image: linear-gradient(to bottom, black 0%, rgb(0 0 0 / 88%) 10%, transparent 100%);
     }
 
     &_inner {

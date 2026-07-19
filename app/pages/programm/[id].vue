@@ -3,7 +3,7 @@
         <main class="program-detail">
         <common-info-hero
             eyebrow="Programm"
-            :title="entry?.title ?? 'Vorstellung'"
+            :title="entry?.film.title ?? 'Vorstellung'"
             :description="entry ? formatProgramDate(entry.startsAt) : undefined"
         >
             <NuxtLink class="back-link" to="/programm">
@@ -16,9 +16,9 @@
             <program-card :entry="entry" variant="list" />
 
             <a
-                v-if="entry.infoUrl"
+                v-if="entry.film.infoUrl"
                 class="film-link"
-                :href="entry.infoUrl"
+                :href="entry.film.infoUrl"
                 target="_blank"
                 rel="noreferrer noopener"
             >
@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ContentWarningSnapshot, ContentWarningStat, ProgramEntry } from '~~/types/program';
+import type { ContentWarningStat, ProgramEntry } from '~~/types/program';
 import { formatProgramDate } from '~/composables/program';
 import ThemePageSwitcher from '~/components/theme/ThemePageSwitcher.vue';
 import { usePageSeo } from '~/composables/seo';
@@ -86,17 +86,17 @@ if (error.value) {
 }
 
 const entry = computed(() => data.value?.entry ?? null);
-const warningSnapshot = computed(() => entry.value?.contentWarnings as ContentWarningSnapshot | null);
+const warningSnapshot = computed(() => entry.value?.film.contentWarnings ?? null);
 const confirmedWarnings = computed(() => (warningSnapshot.value?.stats ?? [])
     .filter(warning => warning.yesSum > warning.noSum)
     .sort((left, right) => right.yesSum - left.yesSum));
 
 usePageSeo(() => ({
-    title: entry.value?.title ?? 'Vorstellung',
+    title: entry.value?.film.title ?? 'Vorstellung',
     description: entry.value
-        ? `${ formatProgramDate(entry.value.startsAt) } – ${ truncateForMeta(entry.value.description, 130) }`
+        ? `${ formatProgramDate(entry.value.startsAt) } – ${ truncateForMeta(entry.value.film.description, 130) }`
         : null,
-    image: entry.value?.imagePath,
+    image: entry.value?.film.imagePath,
     type: 'article',
 }));
 

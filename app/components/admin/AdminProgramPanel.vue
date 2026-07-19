@@ -17,11 +17,10 @@
                     <Icon name="material-symbols:download-rounded" aria-hidden="true" />
                     Exportieren
                 </button>
-                <label class="ghost-button">
+                <ui-input-file variant="ghost" accept="application/json,.json" @select="importProgram">
                     <Icon name="material-symbols:upload-rounded" aria-hidden="true" />
                     Importieren
-                    <input type="file" accept="application/json,.json" @change="importProgram">
-                </label>
+                </ui-input-file>
             </div>
 
             <div class="filter-row" aria-label="Programm filtern">
@@ -37,30 +36,42 @@
                 </button>
             </div>
 
+            <div class="sort-row" aria-label="Sortierung">
+                <button
+                    v-for="option in sortOptions"
+                    :key="option.value"
+                    type="button"
+                    :class="{ 'sort-button--active': sortMode === option.value }"
+                    @click="sortMode = option.value"
+                >
+                    {{ option.label }}
+                </button>
+            </div>
+
             <div v-if="entriesPending" class="admin-list-state">Programm wird geladen …</div>
             <div v-else-if="entriesError" class="admin-list-state admin-list-state--error">
                 <p>{{ entriesError }}</p>
                 <button type="button" @click="loadEntries()">Erneut versuchen</button>
             </div>
-            <div v-else-if="!filteredEntries.length" class="admin-list-state">
+            <div v-else-if="!sortedEntries.length" class="admin-list-state">
                 <Icon name="material-symbols:movie-edit-rounded" aria-hidden="true" />
                 <p>In dieser Ansicht gibt es noch keine Einträge.</p>
             </div>
             <div v-else class="entry-list">
                 <article
-                    v-for="entry in filteredEntries"
+                    v-for="entry in sortedEntries"
                     :key="entry.id"
                     class="entry-row"
                     :class="{ 'entry-row--selected': selectedEntry?.id === entry.id }"
                 >
                     <button type="button" class="entry-row_main" @click="selectEntry(entry)">
                         <span class="entry-row_date">{{ formatCompactDate(entry.startsAt) }}</span>
-                        <strong>{{ entry.title }}</strong>
+                        <strong>{{ entry.film.title }}</strong>
                         <span class="entry-row_status" :class="`entry-row_status--${entry.status.toLowerCase()}`">
                             {{ statusLabels[entry.status] }}
                         </span>
                     </button>
-                    <button type="button" class="entry-row_delete" :aria-label="`${entry.title} löschen`" @click="deleteEntry(entry)">
+                    <button type="button" class="entry-row_delete" :aria-label="`${entry.film.title} löschen`" @click="deleteEntry(entry)">
                         <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
                     </button>
                 </article>
@@ -99,6 +110,8 @@ interface ApiError {
     data?: { statusMessage?: string };
 }
 
+type ProgramSortMode = 'title' | 'newest' | 'oldest';
+
 const entries = ref<ProgramEntry[]>([]);
 const entriesPending = ref(false);
 const entriesError = ref('');
@@ -106,6 +119,7 @@ const selectedEntry = ref<ProgramEntry | null>(null);
 const editorOpen = ref(false);
 const savingEntry = ref(false);
 const activeFilter = ref<'ALL' | ProgramStatus>('ALL');
+const sortMode = ref<ProgramSortMode>('newest');
 const { showToast } = useToastManager();
 
 const statusLabels: Record<ProgramStatus, string> = {
@@ -123,9 +137,26 @@ const filters = computed(() => [
     { value: 'HIDDEN' as const, label: 'Verborgen', count: entries.value.filter(entry => entry.status === 'HIDDEN').length },
 ]);
 
+const sortOptions: Array<{ value: ProgramSortMode; label: string }> = [
+    { value: 'title', label: 'Alphabetisch' },
+    { value: 'newest', label: 'Neueste zuerst' },
+    { value: 'oldest', label: 'Älteste zuerst' },
+];
+
 const filteredEntries = computed(() => activeFilter.value === 'ALL'
     ? entries.value
     : entries.value.filter(entry => entry.status === activeFilter.value));
+
+const sortedEntries = computed(() => {
+    const list = [...filteredEntries.value];
+    if (sortMode.value === 'title') {
+        return list.sort((a, b) => a.film.title.localeCompare(b.film.title, 'de'));
+    }
+
+    const direction = sortMode.value === 'newest' ? -1 : 1;
+    return list.sort((a, b) => direction * (new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
+        || a.film.title.localeCompare(b.film.title, 'de'));
+});
 
 loadEntries();
 
@@ -195,7 +226,7 @@ async function saveEntry(input: ProgramEntryInput) {
 }
 
 async function deleteEntry(entry: ProgramEntry) {
-    if (!confirm(`„${entry.title}“ wirklich löschen?`)) return;
+    if (!confirm(`„${entry.film.title}“ wirklich löschen?`)) return;
     try {
         await $fetch(`/api/admin/program/${entry.id}`, { method: 'DELETE' });
         if (selectedEntry.value?.id === entry.id) closeEditor();
@@ -220,23 +251,18 @@ async function exportProgram() {
     }
 }
 
-async function importProgram(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = '';
-    if (!file) return;
-
+async function importProgram(file: File) {
     if (!confirm('Der Import überschreibt Programmeinträge mit gleicher ID. Fortfahren?')) return;
 
     try {
         const parsed = JSON.parse(await file.text());
-        const result = await $fetch<{ importedEntries: number }>('/api/admin/program-import', { method: 'POST', body: parsed });
+        const result = await $fetch<{ importedFilms: number; importedEntries: number }>('/api/admin/program-import', { method: 'POST', body: parsed });
         closeEditor();
         await loadEntries();
         showToast({
             mode: ToastMode.Success,
             title: 'Import abgeschlossen',
-            message: `${result.importedEntries} Einträge übernommen.`,
+            message: `${result.importedFilms} Filme und ${result.importedEntries} Einträge übernommen.`,
         });
     }
     catch (error: unknown) {
@@ -355,10 +381,6 @@ function formatCompactDate(value: string) {
 
     background: transparent;
 
-    input {
-        display: none;
-    }
-
     svg {
         width: 1.05rem;
         height: 1.05rem;
@@ -402,6 +424,42 @@ function formatCompactDate(value: string) {
         }
 
         &.filter-button--active {
+            border-color: $secondary600;
+            color: $secondary300;
+            background: rgb(192 143 46 / 8%);
+        }
+
+        &:focus-visible {
+            outline: 2px solid $primary400;
+            outline-offset: 2px;
+        }
+    }
+}
+
+.sort-row {
+    overflow-x: auto;
+    display: flex;
+    gap: 0.4rem;
+
+    margin-top: 0.4rem;
+    padding-bottom: 0.35rem;
+
+    button {
+        cursor: pointer;
+
+        min-height: 36px;
+        padding: 0 0.7rem;
+        border: 1px solid $darkgray700;
+        border-radius: 999px;
+
+        font: inherit;
+        font-size: 0.8rem;
+        color: $lightgray200;
+        white-space: nowrap;
+
+        background: transparent;
+
+        &.sort-button--active {
             border-color: $secondary600;
             color: $secondary300;
             background: rgb(192 143 46 / 8%);

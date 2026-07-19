@@ -99,6 +99,16 @@ export interface NumberedBreakdownEntry extends NumberedPoolStat {
     reason: string | null;
 }
 
+// Snapshot einer Vorführung im Zeitraum eines Tagesabschlusses. Wird als
+// unveränderliches Json gespeichert - siehe `getShownFilmsInPeriod`.
+// Als `type` statt `interface` definiert, damit das Array ohne Cast über
+// `unknown` direkt als Prisma.InputJsonValue geschrieben werden kann.
+export type ShownFilmEntry = {
+    filmId: string;
+    title: string;
+    startsAt: string;
+};
+
 export interface PeriodStats {
     bonCount: number;
     stornoCount: number;
@@ -114,6 +124,7 @@ export interface TagesabschlussPreview {
     suggestedOpeningCashCents: number;
     stats: PeriodStats;
     numberedPools: NumberedPoolStat[];
+    shownFilms: ShownFilmEntry[];
 }
 
 export interface TagesabschlussListEntry {
@@ -138,5 +149,6 @@ export interface TagesabschlussRecord extends TagesabschlussListEntry {
     cashDifferenceReason: string | null;
     breakdown: BreakdownCategory[];
     numberedBreakdown: NumberedBreakdownEntry[];
+    shownFilms: ShownFilmEntry[];
     bons: BonRecord[];
 }

@@ -1,6 +1,5 @@
 import { assertSameOrigin, requireAuth } from '../../../utils/auth';
 import { Permission } from '~~/types/permissions';
-import { getDoesTheDogDieSnapshot } from '../../../utils/does-the-dog-die';
 import { prisma } from '../../../utils/prisma';
 import { programEntrySchema, toProgramData } from '../../../utils/program';
 
@@ -13,17 +12,13 @@ export default defineEventHandler(async event => {
         throw createError({ statusCode: 400, statusMessage: parsed.error.issues[0]?.message ?? 'Ungültiger Programmeintrag.' });
     }
 
-    const snapshot = parsed.data.doesTheDogDieId
-        ? await getDoesTheDogDieSnapshot(parsed.data.doesTheDogDieId)
-        : null;
+    const film = await prisma.film.findUnique({ where: { id: parsed.data.filmId } });
+    if (!film) throw createError({ statusCode: 404, statusMessage: 'Der ausgewählte Film wurde nicht gefunden.' });
 
     return {
         entry: await prisma.programEntry.create({
-            data: {
-                ...toProgramData(parsed.data),
-                contentWarnings: snapshot ?? undefined,
-                contentWarningsUpdatedAt: snapshot ? new Date(snapshot.fetchedAt) : null,
-            },
+            data: toProgramData(parsed.data),
+            include: { film: true },
         }),
     };
 });

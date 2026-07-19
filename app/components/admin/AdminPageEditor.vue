@@ -10,11 +10,10 @@
                     <Icon name="material-symbols:download-rounded" aria-hidden="true" />
                     Export
                 </button>
-                <label class="ghost-button">
+                <ui-input-file variant="ghost" accept="application/json,.json" @select="importPage">
                     <Icon name="material-symbols:upload-rounded" aria-hidden="true" />
                     Import
-                    <input type="file" accept="application/json,.json" @change="importPage">
-                </label>
+                </ui-input-file>
                 <button type="button" class="icon-button" aria-label="Editor schließen" @click="$emit('cancel')">
                     <Icon name="material-symbols:close-rounded" aria-hidden="true" />
                 </button>
@@ -41,18 +40,18 @@
                 </label>
                 <label class="field">
                     <span>Stil</span>
-                    <select v-model="draft.theme">
+                    <ui-select v-model="draft.theme">
                         <option v-for="option in pageThemeOptions" :key="option.value" :value="option.value">
                             {{ option.label }}
                         </option>
-                    </select>
+                    </ui-select>
                 </label>
                 <label class="field">
                     <span>Status</span>
-                    <select v-model="draft.status">
+                    <ui-select v-model="draft.status">
                         <option value="DRAFT">Entwurf</option>
                         <option value="PUBLISHED">Veröffentlicht</option>
-                    </select>
+                    </ui-select>
                 </label>
             </div>
         </div>
@@ -90,11 +89,11 @@
             </details>
 
             <div class="add-block">
-                <select v-model="newBlockType">
+                <ui-select v-model="newBlockType">
                     <option v-for="type in blockTypes" :key="type" :value="type">
                         {{ blockTypeLabels[type] }}
                     </option>
-                </select>
+                </ui-select>
                 <button type="button" @click="addBlock">
                     <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                     Block hinzufügen
@@ -180,12 +179,7 @@ function exportPage() {
     downloadJson(payload, `kik-seite-${draft.slug || 'startseite'}.json`);
 }
 
-async function importPage(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = '';
-    if (!file) return;
-
+async function importPage(file: File) {
     localError.value = '';
     try {
         const parsed = JSON.parse(await file.text());
@@ -310,8 +304,7 @@ function submit() {
     }
 
     input,
-    textarea,
-    select {
+    textarea {
         min-height: 42px;
         padding: 0.5rem 0.75rem;
         border: 1px solid $darkgray700;
@@ -485,10 +478,6 @@ function submit() {
 
     background: transparent;
 
-    input {
-        display: none;
-    }
-
     svg {
         width: 1.05rem;
         height: 1.05rem;
@@ -509,19 +498,6 @@ function submit() {
     display: flex;
     gap: 0.5rem;
     margin-top: 0.75rem;
-
-    select {
-        min-height: 42px;
-        padding: 0 0.75rem;
-        border: 1px solid $darkgray700;
-        border-radius: 8px;
-
-        font: inherit;
-        font-size: 0.85rem;
-        color: $lightgray50;
-
-        background: $darkgray950;
-    }
 
     button {
         cursor: pointer;

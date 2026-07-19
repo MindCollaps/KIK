@@ -1,8 +1,13 @@
 <template>
     <div
         class="checkbox"
-        :class="{ 'checkbox--checked': checked, 'checkbox--revert': revert }"
-        @click="checked = !checked"
+        :class="{ 'checkbox--checked': checked, 'checkbox--revert': revert, 'checkbox--disabled': disabled }"
+        role="checkbox"
+        :aria-checked="checked"
+        :aria-disabled="disabled"
+        :tabindex="disabled ? -1 : 0"
+        @click="toggle"
+        @keydown.enter.space.prevent="toggle"
     >
         <div class="checkbox_icon">
             <Icon
@@ -19,8 +24,12 @@
 <script setup lang="ts">
 import type { VNode } from 'vue';
 
-defineProps({
+const props = defineProps({
     revert: {
+        type: Boolean,
+        default: false,
+    },
+    disabled: {
         type: Boolean,
         default: false,
     },
@@ -29,6 +38,11 @@ defineProps({
 defineSlots<{ default: () => VNode[] }>();
 
 const checked = defineModel({ type: Boolean, required: true });
+
+function toggle() {
+    if (props.disabled) return;
+    checked.value = !checked.value;
+}
 </script>
 
 <style scoped lang="scss">
@@ -49,6 +63,11 @@ const checked = defineModel({ type: Boolean, required: true });
         flex-direction: row-reverse;
     }
 
+    &--disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+    }
+
     &_icon {
         display: flex;
         align-items: center;
@@ -66,6 +85,11 @@ const checked = defineModel({ type: Boolean, required: true });
             width: 10px;
             transition: 0.3s;
         }
+    }
+
+    &:focus-visible {
+        outline: 2px solid $primary400;
+        outline-offset: 3px;
     }
 
     &--checked .checkbox {

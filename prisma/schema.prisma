@@ -34,6 +34,7 @@ enum Permission {
   KASSE_REPORTS_EDIT
   KASSE_MANAGE
   USERS
+  FILMS
 }
 
 model Page {
@@ -239,6 +240,7 @@ model Tagesabschluss {
   cashDifferenceReason String?
   breakdown         Json
   numberedBreakdown Json?
+  shownFilms        Json?
   bons             Bon[]
   createdById       String?
   createdBy         AdminUser? @relation(fields: [createdById], references: [id], onDelete: SetNull)
@@ -259,40 +261,57 @@ model StoreAuditLog {
   @@index([type])
 }
 
-model ProgramEntry {
-  id             String        @id @default(uuid())
-  title          String
-  description    String
-  startsAt       DateTime
-  venue          String?
-  language       String?
-  runtimeMinutes Int?
-  ageRating      String?
-  director       String?
-  country        String?
-  releaseYear    Int?
-  infoUrl        String?
-  priceCents     Int?
-  isFree         Boolean       @default(false)
-  style          ProgramStyle  @default(DEFAULT)
-  highlightColor String?
-  customBadgeText String?
-  customBadgeBorder Boolean     @default(false)
-  customBadgeIcon String?
-  customCardBorder Boolean     @default(false)
-  imagePath      String?
-  imageAlt       String?
-  doesTheDogDieId Int?
-  contentWarnings Json?
+// Ein Film bleibt dauerhaft in der Datenbank, auch wenn er gerade nicht im
+// Programm läuft - er muss einmal angelegt werden, um im Programm gewählt zu
+// werden zu können, und trägt alle Filmdaten (Titel bis Inhaltshinweise).
+model Film {
+  id                       String         @id @default(uuid())
+  title                    String
+  description              String
+  runtimeMinutes           Int?
+  ageRating                String?
+  director                 String?
+  country                  String?
+  releaseYear              Int?
+  infoUrl                  String?
+  imagePath                String?
+  imageAlt                 String?
+  doesTheDogDieId          Int?
+  contentWarnings          Json?
   contentWarningsUpdatedAt DateTime?
-  status         ProgramStatus @default(DRAFT)
-  visibleFrom    DateTime?
-  visibleUntil   DateTime?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  entries                  ProgramEntry[]
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+
+  @@index([title])
+  @@index([doesTheDogDieId])
+}
+
+// Eine Vorstellung ist nur noch der Termin für einen existierenden Film -
+// die Filmdaten selbst liegen auf Film.
+model ProgramEntry {
+  id                String        @id @default(uuid())
+  filmId            String
+  film              Film          @relation(fields: [filmId], references: [id], onDelete: Restrict)
+  startsAt          DateTime
+  venue             String?
+  language          String?
+  priceCents        Int?
+  isFree            Boolean       @default(false)
+  style             ProgramStyle  @default(DEFAULT)
+  highlightColor    String?
+  customBadgeText   String?
+  customBadgeBorder Boolean       @default(false)
+  customBadgeIcon   String?
+  customCardBorder  Boolean       @default(false)
+  status            ProgramStatus @default(DRAFT)
+  visibleFrom       DateTime?
+  visibleUntil      DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   @@index([status, startsAt])
   @@index([status, visibleFrom, visibleUntil])
-  @@index([doesTheDogDieId])
+  @@index([filmId])
 }
 

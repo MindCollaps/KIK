@@ -94,6 +94,24 @@
                 </div>
             </section>
 
+            <section v-if="shownFilmSummaries.length" class="abschluss-detail_section" aria-label="Gezeigte Filme">
+                <h2>Gezeigte Filme</h2>
+                <div class="abschluss-detail_table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Film</th><th>Anzahl</th><th>Vorführzeiten</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="film in shownFilmSummaries" :key="film.filmId">
+                                <td>{{ film.title }}</td>
+                                <td>{{ film.count }}</td>
+                                <td>{{ film.startsAt.map(formatDateTime).join(', ') }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <section class="abschluss-detail_section" aria-label="Verkaufte Artikel">
                 <h2>Verkaufte Artikel</h2>
                 <p v-if="!abschluss.breakdown.length" class="abschluss-detail_empty">Keine Verkäufe in diesem Zeitraum.</p>
@@ -234,6 +252,24 @@ const bonEditor = ref<'create' | number | null>(null);
 const bonPending = ref(false);
 const bonError = ref('');
 const bonActionError = ref('');
+
+interface ShownFilmSummary {
+    filmId: string;
+    title: string;
+    count: number;
+    startsAt: string[];
+}
+
+const shownFilmSummaries = computed<ShownFilmSummary[]>(() => {
+    const byFilm = new Map<string, ShownFilmSummary>();
+    for (const screening of abschluss.value.shownFilms) {
+        const entry = byFilm.get(screening.filmId) ?? { filmId: screening.filmId, title: screening.title, count: 0, startsAt: [] };
+        entry.count += 1;
+        entry.startsAt.push(screening.startsAt);
+        byFilm.set(screening.filmId, entry);
+    }
+    return [...byFilm.values()].sort((a, b) => a.title.localeCompare(b.title, 'de'));
+});
 
 const catalogItemCount = computed(() => catalogCategories.value.reduce((sum, category) => sum + category.items.length, 0));
 const editingBon = computed(() => typeof bonEditor.value === 'number'

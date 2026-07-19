@@ -17,6 +17,7 @@ export default defineEventHandler(async event => {
 
     const entries = await prisma.programEntry.findMany({
         where: programVisibilityWhere(now),
+        include: { film: true },
         orderBy: { startsAt: 'asc' },
         take: 200,
     });
@@ -25,7 +26,7 @@ export default defineEventHandler(async event => {
         const link = `${siteUrl}/programm/${entry.id}`;
         return [
             '  <item>',
-            `    <title>${escapeXml(entry.title)}</title>`,
+            `    <title>${escapeXml(entry.film.title)}</title>`,
             `    <link>${escapeXml(link)}</link>`,
             `    <guid isPermaLink="true">${escapeXml(link)}</guid>`,
             `    <pubDate>${entry.startsAt.toUTCString()}</pubDate>`,

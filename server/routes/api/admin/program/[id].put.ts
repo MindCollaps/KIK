@@ -1,6 +1,5 @@
 import { assertSameOrigin, requireAuth } from '../../../../utils/auth';
 import { Permission } from '~~/types/permissions';
-import { getDoesTheDogDieSnapshot } from '../../../../utils/does-the-dog-die';
 import { prisma } from '../../../../utils/prisma';
 import { programEntrySchema, toProgramData } from '../../../../utils/program';
 
@@ -19,26 +18,14 @@ export default defineEventHandler(async event => {
     const existing = await prisma.programEntry.findUnique({ where: { id } });
     if (!existing) throw createError({ statusCode: 404, statusMessage: 'Programmeintrag nicht gefunden.' });
 
-    let snapshot = existing.contentWarnings;
-    let snapshotUpdatedAt = existing.contentWarningsUpdatedAt;
-    if (!parsed.data.doesTheDogDieId) {
-        snapshot = null;
-        snapshotUpdatedAt = null;
-    }
-    else if (parsed.data.doesTheDogDieId !== existing.doesTheDogDieId || !snapshot) {
-        const refreshedSnapshot = await getDoesTheDogDieSnapshot(parsed.data.doesTheDogDieId);
-        snapshot = refreshedSnapshot;
-        snapshotUpdatedAt = new Date(refreshedSnapshot.fetchedAt);
-    }
+    const film = await prisma.film.findUnique({ where: { id: parsed.data.filmId } });
+    if (!film) throw createError({ statusCode: 404, statusMessage: 'Der ausgewählte Film wurde nicht gefunden.' });
 
     return {
         entry: await prisma.programEntry.update({
             where: { id },
-            data: {
-                ...toProgramData(parsed.data),
-                contentWarnings: snapshot ?? undefined,
-                contentWarningsUpdatedAt: snapshotUpdatedAt,
-            },
+            data: toProgramData(parsed.data),
+            include: { film: true },
         }),
     };
 });

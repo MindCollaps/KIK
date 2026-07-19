@@ -10,11 +10,10 @@
                     <Icon name="material-symbols:download-rounded" aria-hidden="true" />
                     Website exportieren
                 </button>
-                <label class="ghost-button">
+                <ui-input-file variant="ghost" accept="application/json,.json" @select="importSite">
                     <Icon name="material-symbols:upload-rounded" aria-hidden="true" />
                     Website importieren
-                    <input type="file" accept="application/json,.json" @change="importSite">
-                </label>
+                </ui-input-file>
             </div>
         </header>
 
@@ -259,12 +258,7 @@ async function exportSite() {
     }
 }
 
-async function importSite(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = '';
-    if (!file) return;
-
+async function importSite(file: File) {
     if (!confirm('Der Import überschreibt Seiten mit gleichem Pfad sowie Navigation und Footer. Fortfahren?')) return;
 
     try {
@@ -541,10 +535,6 @@ async function importSite(event: Event) {
     color: $lightgray150;
 
     background: transparent;
-
-    input {
-        display: none;
-    }
 
     svg {
         width: 1.05rem;

@@ -42,6 +42,7 @@
             </div>
             <template v-else>
                 <admin-program-panel v-if="activeTab === 'program'" />
+                <admin-film-panel v-else-if="activeTab === 'films'" />
                 <admin-pages-panel v-else-if="activeTab === 'pages'" />
                 <admin-site-panel v-else-if="activeTab === 'site'" />
                 <admin-users-panel v-else-if="activeTab === 'users'" :current-user-id="currentUser?.id ?? ''" />
@@ -82,9 +83,10 @@ const registrationOpen = ref(setupResponse.registrationOpen);
 const currentUser = ref(meResponse.user);
 store.adminUser = meResponse.user;
 
-type AdminTab = 'program' | 'pages' | 'site' | 'users';
+type AdminTab = 'program' | 'films' | 'pages' | 'site' | 'users';
 const adminTabs: Array<{ value: AdminTab; label: string; icon: string; permission: Permission }> = [
     { value: 'program', label: 'Programm', icon: 'material-symbols:movie-rounded', permission: Permission.Program },
+    { value: 'films', label: 'Filme', icon: 'material-symbols:movie-rounded', permission: Permission.Films },
     { value: 'pages', label: 'Seiten', icon: 'material-symbols:web', permission: Permission.Pages },
     { value: 'site', label: 'Website', icon: 'material-symbols:settings-rounded', permission: Permission.Settings },
     { value: 'users', label: 'Nutzer', icon: 'material-symbols:group-rounded', permission: Permission.Users },

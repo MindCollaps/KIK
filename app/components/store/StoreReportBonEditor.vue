@@ -3,14 +3,14 @@
         <div class="report-bon-editor_meta">
             <label>
                 <span>Zahlungsart</span>
-                <select v-model="paymentMethod">
+                <ui-select v-model="paymentMethod">
                     <option :value="PaymentMethod.Cash">Bar</option>
                     <option :value="PaymentMethod.Card">Karte</option>
-                </select>
+                </ui-select>
             </label>
             <label>
                 <span>Zeitpunkt</span>
-                <input v-model="createdAt" type="datetime-local" :min="minDateTime" :max="maxDateTime" required>
+                <ui-input-date-time v-model="createdAt" :min="minDateTime" :max="maxDateTime" required />
             </label>
         </div>
 
@@ -18,7 +18,7 @@
             <div v-for="(line, index) in lines" :key="line.key" class="report-bon-editor_line">
                 <label class="report-bon-editor_item">
                     <span>Artikel</span>
-                    <select v-model="line.itemId" required @change="selectItem(line)">
+                    <ui-select v-model="line.itemId" required @change="selectItem(line)">
                         <option value="" disabled>Artikel wählen</option>
                         <option v-if="historicalOption(line)" :value="historicalOption(line)!.id">
                             {{ historicalOption(line)!.name }} (archiviert)
@@ -28,7 +28,7 @@
                                 {{ item.name }}
                             </option>
                         </optgroup>
-                    </select>
+                    </ui-select>
                 </label>
                 <label>
                     <span>Einzelpreis</span>
@@ -208,8 +208,7 @@ function submit() {
         }
     }
 
-    input,
-    select {
+    input {
         min-width: 0;
         min-height: 42px;
         padding: 0 0.65rem;

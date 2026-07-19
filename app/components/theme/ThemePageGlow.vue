@@ -21,8 +21,8 @@ defineProps<{
 
     &::before {
         background:
-            radial-gradient(circle at 92% 88%, rgba($secondary400Orig, 0.34) 0%, rgba($secondary400Orig, 0) 44%),
-            radial-gradient(circle at 10% 6%, rgba($primary500Orig, 0.26) 0%, rgba($primary500Orig, 0) 38%);
+            radial-gradient(circle at 100% 88%, rgba($secondary400Orig, 0.15) 0%, rgba($secondary300Orig, 0) 50%),
+            radial-gradient(circle at 10% 0%, rgba($primary500Orig, 0.31) 0%, rgba($primary500Orig, 0) 43%);
     }
 
     &::after {

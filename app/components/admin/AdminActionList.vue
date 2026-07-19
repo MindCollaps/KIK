@@ -4,10 +4,10 @@
         <div v-for="(action, index) in actions" :key="index" class="action-row">
             <input v-model.trim="action.label" maxlength="80" placeholder="Beschriftung">
             <input v-model.trim="action.to" maxlength="1000" placeholder="/pfad oder https://…">
-            <select v-model="action.style">
+            <ui-select v-model="action.style">
                 <option value="primary">Primär</option>
                 <option value="secondary">Sekundär</option>
-            </select>
+            </ui-select>
             <button type="button" class="icon-button" aria-label="Button entfernen" @click="actions.splice(index, 1)">
                 <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
             </button>
@@ -51,8 +51,7 @@ const actions = defineModel<BlockAction[]>({ required: true });
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto 40px;
     gap: 0.5rem;
 
-    input,
-    select {
+    input {
         min-height: 42px;
         padding: 0.5rem 0.75rem;
         border: 1px solid $darkgray700;

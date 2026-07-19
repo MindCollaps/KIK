@@ -2,7 +2,7 @@
   "name": "kik",
   "type": "module",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.5.0",
   "scripts": {
     "build": "nuxt build",
     "dev": "UID=$(id -u) GID=$(id -g) docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build",

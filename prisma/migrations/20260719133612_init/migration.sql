@@ -8,7 +8,7 @@ CREATE TYPE "ProgramStyle" AS ENUM ('DEFAULT', 'SPECIAL', 'HIGHLIGHTED', 'CUSTOM
 CREATE TYPE "PageStatus" AS ENUM ('DRAFT', 'PUBLISHED');
 
 -- CreateEnum
-CREATE TYPE "Permission" AS ENUM ('PAGES', 'PROGRAM', 'SETTINGS', 'KASSE_USE', 'KASSE_REPORTS', 'KASSE_REPORTS_EDIT', 'KASSE_MANAGE', 'USERS');
+CREATE TYPE "Permission" AS ENUM ('PAGES', 'PROGRAM', 'SETTINGS', 'KASSE_USE', 'KASSE_REPORTS', 'KASSE_REPORTS_EDIT', 'KASSE_MANAGE', 'USERS', 'FILMS');
 
 -- CreateEnum
 CREATE TYPE "AdminTokenType" AS ENUM ('INVITE', 'PASSWORD_RESET');
@@ -186,6 +186,7 @@ CREATE TABLE "Tagesabschluss" (
     "cashDifferenceReason" TEXT,
     "breakdown" JSONB NOT NULL,
     "numberedBreakdown" JSONB,
+    "shownFilms" JSONB,
     "createdById" TEXT,
     "createdByName" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -207,19 +208,34 @@ CREATE TABLE "StoreAuditLog" (
 );
 
 -- CreateTable
-CREATE TABLE "ProgramEntry" (
+CREATE TABLE "Film" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "startsAt" TIMESTAMP(3) NOT NULL,
-    "venue" TEXT,
-    "language" TEXT,
     "runtimeMinutes" INTEGER,
     "ageRating" TEXT,
     "director" TEXT,
     "country" TEXT,
     "releaseYear" INTEGER,
     "infoUrl" TEXT,
+    "imagePath" TEXT,
+    "imageAlt" TEXT,
+    "doesTheDogDieId" INTEGER,
+    "contentWarnings" JSONB,
+    "contentWarningsUpdatedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Film_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ProgramEntry" (
+    "id" TEXT NOT NULL,
+    "filmId" TEXT NOT NULL,
+    "startsAt" TIMESTAMP(3) NOT NULL,
+    "venue" TEXT,
+    "language" TEXT,
     "priceCents" INTEGER,
     "isFree" BOOLEAN NOT NULL DEFAULT false,
     "style" "ProgramStyle" NOT NULL DEFAULT 'DEFAULT',
@@ -228,11 +244,6 @@ CREATE TABLE "ProgramEntry" (
     "customBadgeBorder" BOOLEAN NOT NULL DEFAULT false,
     "customBadgeIcon" TEXT,
     "customCardBorder" BOOLEAN NOT NULL DEFAULT false,
-    "imagePath" TEXT,
-    "imageAlt" TEXT,
-    "doesTheDogDieId" INTEGER,
-    "contentWarnings" JSONB,
-    "contentWarningsUpdatedAt" TIMESTAMP(3),
     "status" "ProgramStatus" NOT NULL DEFAULT 'DRAFT',
     "visibleFrom" TIMESTAMP(3),
     "visibleUntil" TIMESTAMP(3),
@@ -297,13 +308,19 @@ CREATE INDEX "StoreAuditLog_createdAt_idx" ON "StoreAuditLog"("createdAt");
 CREATE INDEX "StoreAuditLog_type_idx" ON "StoreAuditLog"("type");
 
 -- CreateIndex
+CREATE INDEX "Film_title_idx" ON "Film"("title");
+
+-- CreateIndex
+CREATE INDEX "Film_doesTheDogDieId_idx" ON "Film"("doesTheDogDieId");
+
+-- CreateIndex
 CREATE INDEX "ProgramEntry_status_startsAt_idx" ON "ProgramEntry"("status", "startsAt");
 
 -- CreateIndex
 CREATE INDEX "ProgramEntry_status_visibleFrom_visibleUntil_idx" ON "ProgramEntry"("status", "visibleFrom", "visibleUntil");
 
 -- CreateIndex
-CREATE INDEX "ProgramEntry_doesTheDogDieId_idx" ON "ProgramEntry"("doesTheDogDieId");
+CREATE INDEX "ProgramEntry_filmId_idx" ON "ProgramEntry"("filmId");
 
 -- AddForeignKey
 ALTER TABLE "AdminUserToken" ADD CONSTRAINT "AdminUserToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "AdminUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -337,3 +354,6 @@ ALTER TABLE "BonItem" ADD CONSTRAINT "BonItem_numberPoolId_fkey" FOREIGN KEY ("n
 
 -- AddForeignKey
 ALTER TABLE "Tagesabschluss" ADD CONSTRAINT "Tagesabschluss_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "AdminUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProgramEntry" ADD CONSTRAINT "ProgramEntry_filmId_fkey" FOREIGN KEY ("filmId") REFERENCES "Film"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -9,6 +9,7 @@ export default defineEventHandler(async event => {
 
     const entries = await prisma.programEntry.findMany({
         where: programVisibilityWhere(now),
+        include: { film: true },
         orderBy: { startsAt: 'asc' },
         take: limit,
     });
