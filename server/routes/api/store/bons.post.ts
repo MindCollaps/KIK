@@ -56,6 +56,11 @@ export default defineEventHandler(async event => {
 
     const totalCents = lines.reduce((sum, line) => sum + line.unitPriceCents * line.quantity, 0);
 
+    // Frischer Stand der betroffenen Pools nach dem Verkauf, damit der Client
+    // seine lokale Kopie (inkl. updatedAt für die Optimistic-Concurrency-Prüfung)
+    // synchron halten kann, ohne extra nachzuladen
+    const touchedPools = new Map<string, { id: string; nextNumber: number | null; updatedAt: Date }>();
+
     const bon = await prisma.$transaction(async transaction => {
         const lineData: Array<{ itemId: string; name: string; unitPriceCents: number; quantity: number; firstNumber?: number; lastNumber?: number; numberPoolId?: string }> = [];
 
@@ -74,6 +79,7 @@ export default defineEventHandler(async event => {
             if (updated.nextNumber === null) {
                 throw createError({ statusCode: 400, statusMessage: `Für „${numberPool.name}“ muss zuerst die Start-Nummer festgelegt werden.` });
             }
+            touchedPools.set(updated.id, { id: updated.id, nextNumber: updated.nextNumber, updatedAt: updated.updatedAt });
             lineData.push({
                 ...data,
                 firstNumber: updated.nextNumber - line.quantity,
@@ -107,5 +113,5 @@ export default defineEventHandler(async event => {
         })),
     }, bon.number);
 
-    return { bon: toBonResponse(bon) };
+    return { bon: toBonResponse(bon), pools: [...touchedPools.values()] };
 });

@@ -25,7 +25,9 @@ services:
     image: 'postgres:18.1-alpine'
     container_name: kikdb
     volumes:
-      - db_data:/var/lib/postgresql/18/docker
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
     healthcheck:
       test:
         - CMD-SHELL

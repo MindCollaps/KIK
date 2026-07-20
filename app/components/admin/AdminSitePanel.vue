@@ -93,9 +93,17 @@
             <div v-for="(group, groupIndex) in footer.groups" :key="groupIndex" class="footer-group">
                 <div class="footer-group_head">
                     <input v-model.trim="group.title" maxlength="60" placeholder="Spaltentitel">
-                    <ui-button tag="button" type="icon-ghost" class="icon-button--danger" aria-label="Spalte entfernen" @click="footer.groups.splice(groupIndex, 1)">
-                        <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
-                    </ui-button>
+                    <div class="footer-group_tools">
+                        <ui-button tag="button" type="icon-ghost" :disabled="groupIndex === 0" aria-label="Spalte nach links" @click="moveItem(footer.groups, groupIndex, -1)">
+                            <Icon name="material-symbols:arrow-upward-rounded" aria-hidden="true" />
+                        </ui-button>
+                        <ui-button tag="button" type="icon-ghost" :disabled="groupIndex === footer.groups.length - 1" aria-label="Spalte nach rechts" @click="moveItem(footer.groups, groupIndex, 1)">
+                            <Icon name="material-symbols:arrow-downward-rounded" aria-hidden="true" />
+                        </ui-button>
+                        <ui-button tag="button" type="icon-ghost" class="icon-button--danger" aria-label="Spalte entfernen" @click="footer.groups.splice(groupIndex, 1)">
+                            <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
+                        </ui-button>
+                    </div>
                 </div>
                 <div v-for="(link, linkIndex) in group.links" :key="linkIndex" class="item-row">
                     <div class="item-row_fields">
@@ -104,6 +112,12 @@
                         <ui-icon-picker v-model="link.icon" />
                     </div>
                     <div class="item-row_tools">
+                        <ui-button tag="button" type="icon-ghost" :disabled="linkIndex === 0" aria-label="Nach oben" @click="moveItem(group.links, linkIndex, -1)">
+                            <Icon name="material-symbols:arrow-upward-rounded" aria-hidden="true" />
+                        </ui-button>
+                        <ui-button tag="button" type="icon-ghost" :disabled="linkIndex === group.links.length - 1" aria-label="Nach unten" @click="moveItem(group.links, linkIndex, 1)">
+                            <Icon name="material-symbols:arrow-downward-rounded" aria-hidden="true" />
+                        </ui-button>
                         <ui-button tag="button" type="icon-ghost" class="icon-button--danger" aria-label="Link entfernen" @click="group.links.splice(linkIndex, 1)">
                             <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
                         </ui-button>
@@ -448,11 +462,16 @@ async function importSite(file: File) {
         grid-template-columns: minmax(0, 1fr) auto;
         gap: 0.5rem;
     }
+
+    &_tools {
+        display: flex;
+        gap: 0.3rem;
+    }
 }
 
 .icon-button--danger:hover {
-        color: $error300;
-        background: rgb(194 37 105 / 8%);
+    color: $error300;
+    background: rgb(194 37 105 / 8%);
 }
 
 .save-button {

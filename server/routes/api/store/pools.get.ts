@@ -15,6 +15,7 @@ export default defineEventHandler(async event => {
             id: pool.id,
             name: pool.name,
             nextNumber: pool.nextNumber,
+            updatedAt: pool.updatedAt,
             itemCount: pool._count.items,
         })),
     };

@@ -241,6 +241,12 @@
                         @keyup.enter="confirmNumber"
                     >
                 </label>
+                <p v-if="numberConflict" class="pos-modal_conflict" role="alert">
+                    Eine andere Kasse hat den Stand inzwischen auf
+                    {{ numberConflict.nextNumber === null ? 'keine Startnummer' : numberConflict.nextNumber }}
+                    geändert.
+                    <button type="button" class="pos-modal_conflict-action" @click="acceptFreshNumber">Aktuellen Wert übernehmen</button>
+                </p>
                 <p v-if="numberError" class="pos-modal_error" role="alert">{{ numberError }}</p>
                 <div class="pos-modal_actions">
                     <ui-button tag="button" type="secondary" class="pos-modal_secondary" @click="closeNumberModal">Abbrechen</ui-button>
@@ -288,7 +294,11 @@ usePageSeo(() => ({ title: 'Kasse', noindex: true }));
 await requireStorePermission(Permission.KasseUse);
 
 interface ApiError {
-    data?: { statusMessage?: string };
+    data?: {
+        statusMessage?: string;
+        statusCode?: number;
+        data?: { pool?: { nextNumber: number | null; updatedAt: string } };
+    };
 }
 
 interface CartLine {
@@ -331,9 +341,44 @@ type ViewMode = 'open' | 'grouped';
 const viewModeStorageKey = 'kik-pos-view-mode';
 const viewMode = ref<ViewMode>('open');
 
+// Regelmäßiger Hintergrund-Sync der Nummernpools, damit Bon-Nummern und
+// Stückzähler auch dann aktuell bleiben, wenn eine andere Kasse zwischenzeitlich verkauft hat
+const POOL_SYNC_INTERVAL_MS = 20000;
+let poolSyncTimer: ReturnType<typeof setInterval> | undefined;
+
+async function syncPools() {
+    try {
+        const response = await $fetch<{ categories: StoreCategoryRecord[] }>('/api/store/catalog');
+        for (const category of response.categories) {
+            for (const item of category.items) {
+                const fresh = item.numberPool;
+                if (!fresh) continue;
+                const pool = poolInstances.get(fresh.id);
+                if (!pool || pool.updatedAt === fresh.updatedAt) continue;
+
+                // Modal für genau diesen Pool ist offen und die Eingabe basiert
+                // auf einem inzwischen veralteten Stand -> sichtbar machen statt still zu überschreiben
+                if (numberPool.value?.id === pool.id && numberBaseline.value !== fresh.updatedAt) {
+                    numberConflict.value = { nextNumber: fresh.nextNumber, updatedAt: fresh.updatedAt };
+                }
+                pool.nextNumber = fresh.nextNumber;
+                pool.updatedAt = fresh.updatedAt;
+            }
+        }
+    }
+    catch {
+        // Hintergrund-Sync ist nicht kritisch für den Kassenbetrieb; nächster Versuch folgt automatisch
+    }
+}
+
 onMounted(() => {
     const stored = localStorage.getItem(viewModeStorageKey);
     if (stored === 'open' || stored === 'grouped') viewMode.value = stored;
+    poolSyncTimer = setInterval(syncPools, POOL_SYNC_INTERVAL_MS);
+});
+
+onBeforeUnmount(() => {
+    if (poolSyncTimer) clearInterval(poolSyncTimer);
 });
 
 function setViewMode(mode: ViewMode) {
@@ -379,6 +424,10 @@ const numberPending = ref(false);
 // Merkt sich den Artikel, der nach dem Setzen der Startnummer in den Bon soll
 const numberAddItem = ref<StoreItemRecord | null>(null);
 const numberInputRef = ref<HTMLInputElement | null>(null);
+// Stand des Pools, auf dem die Eingabe im Modal basiert (Optimistic-Concurrency-Prüfung beim Speichern)
+const numberBaseline = ref('');
+// Wird gesetzt, wenn der Hintergrund-Sync erkennt, dass eine andere Kasse den offenen Pool geändert hat
+const numberConflict = ref<{ nextNumber: number | null; updatedAt: string } | null>(null);
 
 const itemsById = computed(() => {
     const map = new Map<string, StoreItemRecord>();
@@ -459,6 +508,8 @@ function nextNumberLabel(pool: NumberPoolRecord) {
 function openNumberModal(pool: NumberPoolRecord) {
     numberPool.value = pool;
     numberInput.value = pool.nextNumber === null ? '' : String(pool.nextNumber);
+    numberBaseline.value = pool.updatedAt;
+    numberConflict.value = null;
     numberError.value = '';
     nextTick(() => numberInputRef.value?.focus());
 }
@@ -467,6 +518,17 @@ function closeNumberModal() {
     if (numberPending.value) return;
     numberPool.value = null;
     numberAddItem.value = null;
+    numberConflict.value = null;
+}
+
+// Übernimmt den von einer anderen Kasse gesetzten Stand in die Eingabe,
+// statt ihn beim Speichern versehentlich zu überschreiben
+function acceptFreshNumber() {
+    if (!numberConflict.value) return;
+    numberInput.value = numberConflict.value.nextNumber === null ? '' : String(numberConflict.value.nextNumber);
+    numberBaseline.value = numberConflict.value.updatedAt;
+    numberConflict.value = null;
+    numberError.value = '';
 }
 
 async function confirmNumber() {
@@ -481,18 +543,29 @@ async function confirmNumber() {
     numberPending.value = true;
     numberError.value = '';
     try {
-        const response = await $fetch<{ pool: { nextNumber: number | null } }>(`/api/store/pools/${pool.id}/number`, {
+        const response = await $fetch<{ pool: { nextNumber: number | null; updatedAt: string } }>(`/api/store/pools/${pool.id}/number`, {
             method: 'POST',
-            body: { nextNumber: parsed },
+            body: { nextNumber: parsed, expectedUpdatedAt: numberBaseline.value },
         });
         pool.nextNumber = response.pool.nextNumber;
+        pool.updatedAt = response.pool.updatedAt;
         numberPool.value = null;
+        numberConflict.value = null;
         const pendingItem = numberAddItem.value;
         numberAddItem.value = null;
         if (pendingItem) addItem(pendingItem);
     }
     catch (error: unknown) {
-        numberError.value = apiErrorMessage(error, 'Die Nummer konnte nicht gespeichert werden.');
+        const conflictPool = (error as ApiError).data?.data?.pool;
+        if ((error as ApiError).data?.statusCode === 409 && conflictPool) {
+            pool.nextNumber = conflictPool.nextNumber;
+            pool.updatedAt = conflictPool.updatedAt;
+            numberConflict.value = conflictPool;
+            numberError.value = 'Der Nummernstand wurde inzwischen von einer anderen Kasse geändert. Bitte prüfen und übernehmen.';
+        }
+        else {
+            numberError.value = apiErrorMessage(error, 'Die Nummer konnte nicht gespeichert werden.');
+        }
     }
     finally {
         numberPending.value = false;
@@ -538,7 +611,7 @@ async function checkout() {
     checkoutPending.value = true;
     errorMessage.value = '';
     try {
-        const response = await $fetch<{ bon: BonRecord }>('/api/store/bons', {
+        const response = await $fetch<{ bon: BonRecord; pools: Array<{ id: string; nextNumber: number | null; updatedAt: string }> }>('/api/store/bons', {
             method: 'POST',
             body: {
                 paymentMethod: paymentMethod.value,
@@ -550,12 +623,13 @@ async function checkout() {
             },
         });
         lastBon.value = response.bon;
-        // Nummernstände lokal nachziehen, damit die Anzeige ohne Neuladen stimmt
-        for (const line of response.bon.items) {
-            if (line.numberPoolId === null || line.lastNumber === null) continue;
-            const pool = poolInstances.get(line.numberPoolId);
-            if (pool && (pool.nextNumber === null || pool.nextNumber <= line.lastNumber)) {
-                pool.nextNumber = line.lastNumber + 1;
+        // Nummernstände (inkl. updatedAt) lokal nachziehen, damit Anzeige und
+        // Optimistic-Concurrency-Prüfung ohne Neuladen konsistent bleiben
+        for (const fresh of response.pools) {
+            const pool = poolInstances.get(fresh.id);
+            if (pool) {
+                pool.nextNumber = fresh.nextNumber;
+                pool.updatedAt = fresh.updatedAt;
             }
         }
         cart.value = [];
@@ -1159,6 +1233,41 @@ function formatTime(value: string) {
         margin: 0.75rem 0 0;
         font-size: 0.8rem;
         color: $error300;
+    }
+
+    &_conflict {
+        margin: 0.75rem 0 0;
+        padding: 0.6rem 0.75rem;
+        border: 1px solid $warning400;
+        border-radius: 8px;
+
+        font-size: 0.8rem;
+        line-height: 1.5;
+        color: $warning300;
+
+        background: rgb(226 148 31 / 10%);
+
+        &-action {
+            cursor: pointer;
+
+            display: block;
+
+            margin-top: 0.35rem;
+            padding: 0;
+            border: 0;
+
+            font: inherit;
+            font-weight: 700;
+            color: $warning300;
+            text-decoration: underline;
+
+            background: none;
+
+            &:focus-visible {
+                outline: 2px solid $warning300;
+                outline-offset: 2px;
+            }
+        }
     }
 
     &_actions {

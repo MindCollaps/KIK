@@ -23,6 +23,7 @@ export interface NumberPoolRecord {
     id: string;
     name: string;
     nextNumber: number | null;
+    updatedAt: string;
 }
 
 export interface StoreItemRecord {

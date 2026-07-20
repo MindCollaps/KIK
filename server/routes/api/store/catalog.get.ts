@@ -12,7 +12,7 @@ export default defineEventHandler(async event => {
         include: {
             items: {
                 where: includeArchived ? {} : { archived: false },
-                include: { numberPool: { select: { id: true, name: true, nextNumber: true } } },
+                include: { numberPool: { select: { id: true, name: true, nextNumber: true, updatedAt: true } } },
                 orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
             },
         },

@@ -238,7 +238,7 @@ usePageSeo(() => ({ title: 'Kassen-Verwaltung', noindex: true }));
 await requireStorePermission(Permission.KasseManage);
 
 interface ApiError {
-    data?: { statusMessage?: string };
+    data?: { statusMessage?: string; statusCode?: number };
 }
 
 interface NewItemForm {
@@ -501,12 +501,26 @@ async function savePool(pool: PoolEntry) {
     }
 
     await runAction(async () => {
-        await $fetch(`/api/store/pools/${pool.id}`, {
-            method: 'PUT',
-            body: { name: poolEditName.value, nextNumber },
-        });
-        editingPoolId.value = null;
-        await Promise.all([reloadPools(), reloadCatalog()]);
+        try {
+            await $fetch(`/api/store/pools/${pool.id}`, {
+                method: 'PUT',
+                body: { name: poolEditName.value, nextNumber, expectedUpdatedAt: pool.updatedAt },
+            });
+            editingPoolId.value = null;
+            await Promise.all([reloadPools(), reloadCatalog()]);
+        }
+        catch (error: unknown) {
+            // Bei einem Konflikt (409) den Editor schließen und die Liste
+            // aktualisieren, damit der aktuelle Stand sichtbar ist statt ihn
+            // still zu überschreiben – der Admin muss bewusst neu bearbeiten.
+            if ((error as ApiError).data?.statusCode === 409) {
+                editingPoolId.value = null;
+                await reloadPools();
+                showMessage('Der Nummernpool wurde inzwischen von einer anderen Sitzung geändert. Bitte den aktuellen Stand prüfen und ggf. erneut bearbeiten.', true);
+                return;
+            }
+            throw error;
+        }
     }, 'Der Nummernpool konnte nicht gespeichert werden.');
 }
 

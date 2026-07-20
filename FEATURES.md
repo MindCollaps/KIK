@@ -51,7 +51,7 @@ Diese Punkte sind Release-Blocker fuer `v1.0`.
 - Rechtepruefung und Revocation sind getestet.
 
 ### 2) Kassen-/Store-Konsistenz bei paralleler Nutzung
-`Status: In Arbeit`
+`Status: Erledigt`
 
 **Ziel**
 - Nummernkreise und Bons bleiben bei mehreren offenen Kassen-Sessions konsistent.
@@ -66,7 +66,7 @@ Diese Punkte sind Release-Blocker fuer `v1.0`.
 - Kein doppelter Bon und kein verlorener Nummernsprung.
 
 ### 3) Footer-Editor: Reihenfolge veraenderbar
-`Status: Geplant`
+`Status: Erledigt`
 
 **Ziel**
 - Footer-Eintraege im Admin sortierbar machen (Drag-and-drop oder Move-Buttons).

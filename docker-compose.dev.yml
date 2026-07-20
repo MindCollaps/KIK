@@ -22,6 +22,18 @@ services:
         condition: service_healthy
 
   db:
-    image: postgres:15-alpine
+    image: 'postgres:18.1-alpine'
+    container_name: kik-db
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    env_file:
+      - .env
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'
+      interval: 5s
+      timeout: 20s
+      retries: 10
     volumes:
-      - ./db/:/var/lib/postgresql/data:rw
+      - db_data:/var/lib/postgresql/data
