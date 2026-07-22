@@ -165,9 +165,17 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
 
     background: $darkgray900;
 
+    transition: border-color 180ms ease-out;
+
     &:focus-visible {
         outline: 2px solid $primary400;
         outline-offset: 3px;
+    }
+
+    @include hover {
+        &:hover {
+            border-color: $darkgray700;
+        }
     }
 
     &_media {
@@ -421,6 +429,17 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
             aspect-ratio: auto;
             height: 100%;
         }
+
+        // The list variant pairs a portrait poster against running text in
+        // the same row; unlike the grid/feature variants there's no sibling
+        // card to align the footer against, so pinning it to the bottom via
+        // margin-top: auto just chases the poster's height instead and
+        // leaves a dead gap above it whenever the description is short.
+        // Let it sit naturally after the content — its own padding-top
+        // already provides the breathing room.
+        .program-card_footer {
+            margin-top: 0;
+        }
     }
 
     &--style-special {
@@ -474,6 +493,19 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
 
     &--framed {
         border-color: color-mix(in srgb, var(--program-highlight) 60%, $darkgray800);
+    }
+
+    // The generic hover rule above would otherwise win the specificity
+    // fight against these two variants' own border-color and flatten their
+    // accent border to plain gray on hover. Intensify the existing accent
+    // instead of replacing it.
+    &--style-highlighted,
+    &--framed {
+        @include hover {
+            &:hover {
+                border-color: color-mix(in srgb, var(--program-highlight) 85%, $darkgray700);
+            }
+        }
     }
 }
 

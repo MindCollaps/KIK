@@ -40,7 +40,7 @@ defineProps<{
     title: string;
 }>();
 
-const { can, canAny } = usePermissions();
+const { can } = usePermissions();
 </script>
 
 <style scoped lang="scss">

@@ -430,8 +430,8 @@ function submit() {
 }
 
 .icon-button--danger:hover {
-        color: $error300;
-        background: rgb(194 37 105 / 8%);
+    color: $error300;
+    background: rgb(194 37 105 / 8%);
 }
 
 .add-block {

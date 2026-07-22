@@ -5,7 +5,7 @@
                 <p>{{ film ? 'Film bearbeiten' : 'Neuer Film' }}</p>
                 <h2>{{ film?.title || 'Film anlegen' }}</h2>
             </div>
-            <ui-button tag="button" type="secondary" v-if="film" class="icon-button" aria-label="Editor schließen" @click="$emit('cancel')">
+            <ui-button v-if="film" tag="button" type="secondary" class="icon-button" aria-label="Editor schließen" @click="$emit('cancel')">
                 <Icon name="material-symbols:close-rounded" aria-hidden="true" />
             </ui-button>
         </header>
@@ -47,9 +47,10 @@
 
                 <p v-if="filmSearchError" class="film-search_error" role="alert">{{ filmSearchError }}</p>
                 <div v-if="filmSearchResults.length" class="film-results">
-                    <ui-button tag="button" type="secondary"
-                        v-for="result in filmSearchResults"
-                        :key="result.id"
+                    <ui-button
+v-for="result in filmSearchResults" :key="result.id"
+                        tag="button"
+                        type="secondary"
                         class="film-result"
                         :disabled="selectingFilmId === result.id"
                         @click="selectFilm(result)"

@@ -22,9 +22,10 @@
                     aria-label="Nutzer durchsuchen"
                 />
                 <div class="users-toolbar_sort" role="group" aria-label="Sortierung">
-                    <ui-button tag="button" type="pill"
-                        v-for="option in sortOptions"
-                        :key="option.value"
+                    <ui-button
+v-for="option in sortOptions" :key="option.value"
+                        tag="button"
+                        type="pill"
                         class="users-toolbar_sort-button"
                         :active="sortField === option.value"
                         @click="setSort(option.value)"
@@ -56,7 +57,8 @@
                             <span v-if="!user.emailConfirmedAt" class="user-row_pending">Bestätigung ausstehend</span>
                         </span>
                     </div>
-                    <ui-button tag="button" type="icon-ghost"
+                    <ui-button
+tag="button" type="icon-ghost"
                         class="icon-button--danger"
                         :disabled="user.id === currentUserId || deletingId === user.id || users.length <= 1"
                         :aria-label="`${user.name} entfernen`"
@@ -70,8 +72,9 @@
                             class="user-row_permission-select"
                             @update:model-value="draftPermissions[user.id] = $event"
                         />
-                        <ui-button tag="button" type="secondary"
-                            v-if="isDirty(user)"
+                        <ui-button
+v-if="isDirty(user)" tag="button"
+                            type="secondary"
                             class="save-button save-button--small"
                             :disabled="savingId === user.id"
                             @click="savePermissions(user)"
@@ -82,8 +85,9 @@
                         <ui-button tag="button" type="quiet" @click="startSetPassword(user)">
                             Passwort setzen
                         </ui-button>
-                        <ui-button tag="button" type="quiet"
-                            v-if="user.id !== currentUserId"
+                        <ui-button
+v-if="user.id !== currentUserId" tag="button"
+                            type="quiet"
                             :class="{ 'row-button--danger': user.active }"
                             :disabled="togglingId === user.id"
                             @click="toggleActive(user)"
@@ -101,7 +105,8 @@
                             autocomplete="new-password"
                             @keyup.enter="savePassword(user)"
                         >
-                        <ui-button tag="button" type="secondary"
+                        <ui-button
+tag="button" type="secondary"
                             class="save-button save-button--small"
                             :disabled="passwordSaving"
                             @click="savePassword(user)"
@@ -573,9 +578,9 @@ function formatDateTime(value: string) {
 }
 
 .row-button--danger:hover:not(:disabled) {
-        border-color: $error500;
-        color: $error300;
-    }
+    border-color: $error500;
+    color: $error300;
+}
 
 .users-toolbar {
     display: flex;
@@ -657,9 +662,9 @@ function formatDateTime(value: string) {
 }
 
 .icon-button--danger:hover:not(:disabled) {
-        color: $error300;
-        background: rgb(194 37 105 / 8%);
-    }
+    color: $error300;
+    background: rgb(194 37 105 / 8%);
+}
 
 .save-button {
     cursor: pointer;

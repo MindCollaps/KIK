@@ -14,6 +14,7 @@
         ]"
         :style="{
             '--button-width': width ?? 'auto',
+            '--button-gap': gap,
             '--icon-width': iconWidth,
             '--primary-color': primaryColor ? colorsList[primaryColor] : null,
             '--link-color': linkColor ? colorsList[linkColor] : null,
@@ -68,6 +69,10 @@ const props = defineProps({
         default: 'button',
     },
     width: {
+        type: String,
+        default: null,
+    },
+    gap: {
         type: String,
         default: null,
     },
@@ -177,7 +182,7 @@ const getAttrs = computed(() => {
     user-select: none;
 
     display: flex;
-    gap: 12px;
+    gap: var(--button-gap, 12px);
     align-items: center;
     justify-content: center;
 
@@ -206,6 +211,10 @@ const getAttrs = computed(() => {
     }
 
     &_content {
+        display: inline-flex;
+        gap: var(--button-gap, 8px);
+        align-items: center;
+
         width: 100%;
         min-width: min-content;
     }

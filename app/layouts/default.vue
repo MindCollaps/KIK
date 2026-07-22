@@ -70,8 +70,8 @@ useLayout();
 
         :deep(.button_content) {
             display: inline-flex;
-            align-items: center;
             gap: 8px;
+            align-items: center;
 
             width: auto;
             min-width: 0;

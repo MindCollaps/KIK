@@ -49,8 +49,9 @@
                     </ui-button>
                 </div>
             </div>
-            <ui-button tag="button" type="dashed"
-                v-if="navigation.items.length < 12"
+            <ui-button
+v-if="navigation.items.length < 12" tag="button"
+                type="dashed"
                 @click="navigation.items.push({ label: '', path: '/', icon: null })"
             >
                 <Icon name="material-symbols:add-rounded" aria-hidden="true" />
@@ -123,16 +124,18 @@
                         </ui-button>
                     </div>
                 </div>
-                <ui-button tag="button" type="dashed"
-                    v-if="group.links.length < 10"
+                <ui-button
+v-if="group.links.length < 10" tag="button"
+                    type="dashed"
                     @click="group.links.push({ label: '', to: '/', icon: null })"
                 >
                     <Icon name="material-symbols:add-rounded" aria-hidden="true" />
                     Link hinzufügen
                 </ui-button>
             </div>
-            <ui-button tag="button" type="dashed"
-                v-if="footer.groups.length < 4"
+            <ui-button
+v-if="footer.groups.length < 4" tag="button"
+                type="dashed"
                 @click="footer.groups.push({ title: 'Neue Spalte', links: [] })"
             >
                 <Icon name="material-symbols:add-rounded" aria-hidden="true" />

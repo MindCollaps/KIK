@@ -36,8 +36,7 @@ const hasError = ref(false);
     img {
         display: block;
         width: 100%;
-        border: 1px solid $darkgray800;
-        border-radius: 14px;
+        border-radius: 8px;
     }
 
     &_fallback {

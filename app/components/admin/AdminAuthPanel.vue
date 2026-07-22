@@ -52,10 +52,10 @@
             </ui-button>
 
             <div v-if="!registrationOpen" class="auth-links">
-                <ui-button tag="button" type="secondary" v-if="mode === 'login'" class="auth-link" @click="switchMode('forgot')">
+                <ui-button v-if="mode === 'login'" tag="button" type="secondary" class="auth-link" @click="switchMode('forgot')">
                     Passwort vergessen?
                 </ui-button>
-                <ui-button tag="button" type="secondary" v-else class="auth-link" @click="switchMode('login')">
+                <ui-button v-else tag="button" type="secondary" class="auth-link" @click="switchMode('login')">
                     Zurück zur Anmeldung
                 </ui-button>
             </div>

@@ -197,6 +197,29 @@ const programGroups = computed(() => {
 .hint-list {
     margin: 0;
     padding-left: 18px;
+    list-style: none;
+
+    li {
+        position: relative;
+
+        &::before {
+            content: '';
+
+            position: absolute;
+            top: 0.65em;
+            left: -16px;
+
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+
+            background: $secondary400;
+        }
+
+        & + li {
+            margin-top: 8px;
+        }
+    }
 }
 
 @include mobileOnly {

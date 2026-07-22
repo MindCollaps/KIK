@@ -5,7 +5,7 @@
                 <p>{{ entry ? 'Eintrag bearbeiten' : 'Neue Vorstellung' }}</p>
                 <h2>{{ entry?.film.title || 'Vorstellung planen' }}</h2>
             </div>
-            <ui-button tag="button" type="secondary" v-if="entry" class="icon-button" aria-label="Editor schließen" @click="$emit('cancel')">
+            <ui-button v-if="entry" tag="button" type="secondary" class="icon-button" aria-label="Editor schließen" @click="$emit('cancel')">
                 <Icon name="material-symbols:close-rounded" aria-hidden="true" />
             </ui-button>
         </header>
@@ -34,9 +34,10 @@
                 <template v-else>
                     <ui-input-search v-model="filmSearchTerm" :maxlength="160" placeholder="Film suchen" class="film-picker_control" />
                     <div v-if="matchingFilms.length" class="film-results">
-                        <ui-button tag="button" type="secondary"
-                            v-for="candidate in matchingFilms"
-                            :key="candidate.id"
+                        <ui-button
+v-for="candidate in matchingFilms" :key="candidate.id"
+                            tag="button"
+                            type="secondary"
                             class="film-result"
                             @click="form.filmId = candidate.id"
                         >
@@ -502,11 +503,6 @@ function submit() {
 .film-result {
     cursor: pointer;
 
-    display: grid;
-    grid-template-columns: 48px minmax(0, 1fr);
-    gap: 0.75rem;
-    align-items: center;
-
     min-width: 0;
     padding: 0.55rem;
     border: 1px solid $darkgray800;
@@ -517,7 +513,15 @@ function submit() {
 
     background: $darkgray900;
 
-    > img,
+    :deep(.button_content) {
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr);
+        gap: 0.75rem;
+        align-items: center;
+        width: 100%;
+    }
+
+    img,
     &_placeholder {
         width: 48px;
         height: 68px;

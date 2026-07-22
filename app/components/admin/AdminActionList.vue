@@ -12,8 +12,9 @@
                 <Icon name="material-symbols:delete-outline-rounded" aria-hidden="true" />
             </ui-button>
         </div>
-        <ui-button tag="button" type="dashed"
-            v-if="actions.length < 4"
+        <ui-button
+v-if="actions.length < 4" tag="button"
+            type="dashed"
             @click="actions.push({ label: '', to: '', style: 'secondary' })"
         >
             <Icon name="material-symbols:add-rounded" aria-hidden="true" />

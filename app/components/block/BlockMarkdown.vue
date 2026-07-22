@@ -39,6 +39,35 @@ const rendered = computed(() => renderMarkdown(props.block.content));
         margin: 12px 0 0;
     }
 
+    // Unordered lists get a small marquee-bulb marker instead of the
+    // default disc — the same "lights along the marquee" idea as the
+    // theme's own name, applied at the smallest possible scale.
+    ul {
+        list-style: none;
+    }
+
+    li {
+        position: relative;
+
+        &::before {
+            content: '';
+
+            position: absolute;
+            top: 0.65em;
+            left: -16px;
+
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+
+            background: $secondary400;
+        }
+    }
+
+    ol li::before {
+        content: none;
+    }
+
     strong {
         color: $lightgray0;
     }

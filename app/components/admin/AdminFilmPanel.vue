@@ -13,9 +13,10 @@
             </div>
 
             <div class="sort-row" aria-label="Sortierung">
-                <ui-button tag="button" type="pill"
-                    v-for="option in sortOptions"
-                    :key="option.value"
+                <ui-button
+v-for="option in sortOptions" :key="option.value"
+                    tag="button"
+                    type="pill"
                     :active="sortMode === option.value"
                     @click="sortMode = option.value"
                 >
@@ -339,6 +340,7 @@ function formatCompactDate(value: string) {
             display: grid;
             gap: 0.35rem;
             align-items: baseline;
+
             width: 100%;
             min-width: 0;
         }

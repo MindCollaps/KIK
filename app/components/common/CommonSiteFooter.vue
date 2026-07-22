@@ -27,8 +27,15 @@
             >
                 <h2>{{ group.title }}</h2>
                 <template v-for="link in group.links" :key="link.label">
-                    <ui-button v-if="link.to.startsWith('/')" :to="link.to" type="link">
-                        <Icon :name="link.icon ?? 'material-symbols:link-rounded'" aria-hidden="true" />{{ link.label }}
+                    <ui-button
+                        v-if="link.to.startsWith('/')"
+                        :to="link.to"
+                        type="link"
+                        :icon="link.icon ?? 'material-symbols:link-rounded'"
+                        icon-width="1rem"
+                        gap="0.5rem"
+                    >
+                        {{ link.label }}
                     </ui-button>
                     <a
                         v-else
@@ -115,6 +122,7 @@ const footer = computed(() => site.value.footer);
     &_group {
         display: flex;
         flex-direction: column;
+        gap: 0.35rem;
         align-items: flex-start;
 
         h2 {
@@ -126,25 +134,35 @@ const footer = computed(() => site.value.footer);
             letter-spacing: 0.08em;
         }
 
-        a {
-            display: inline-flex;
-            gap: 0.5rem;
-            align-items: center;
-
+        a,
+        :deep(.button) {
             min-height: 38px;
-
+            font-size: 1rem !important;
             color: $lightgray150;
             text-decoration: none;
-
-            svg {
-                width: 1rem;
-                height: 1rem;
-                color: $secondary400;
-            }
 
             &:hover {
                 color: $lightgray0;
             }
+        }
+
+        a {
+            display: inline-flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        // The plain `<a>` links compose their icon inline in this
+        // component's own template, so `.iconify` already carries its
+        // scope id. The `ui-button` links render their icon inside
+        // `ui-button`'s own `.button_icon` wrapper instead, which needs
+        // `:deep()` to reach — sizing/gap between icon and label there
+        // come from `ui-button`'s `icon-width`/`gap` props, not this CSS.
+        .iconify,
+        :deep(.button_icon .iconify) {
+            width: 1rem;
+            height: 1rem;
+            color: $secondary400;
         }
     }
 

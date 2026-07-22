@@ -24,9 +24,10 @@
             </div>
 
             <div class="filter-row" aria-label="Programm filtern">
-                <ui-button tag="button" type="pill"
-                    v-for="filter in filters"
-                    :key="filter.value"
+                <ui-button
+v-for="filter in filters" :key="filter.value"
+                    tag="button"
+                    type="pill"
                     :active="activeFilter === filter.value"
                     @click="activeFilter = filter.value"
                 >
@@ -36,9 +37,10 @@
             </div>
 
             <div class="sort-row" aria-label="Sortierung">
-                <ui-button tag="button" type="pill"
-                    v-for="option in sortOptions"
-                    :key="option.value"
+                <ui-button
+v-for="option in sortOptions" :key="option.value"
+                    tag="button"
+                    type="pill"
                     :active="sortMode === option.value"
                     @click="sortMode = option.value"
                 >
@@ -438,6 +440,7 @@ function formatCompactDate(value: string) {
             grid-template-columns: minmax(0, 1fr) auto;
             gap: 0.35rem 0.75rem;
             align-items: baseline;
+
             width: 100%;
             min-width: 0;
         }

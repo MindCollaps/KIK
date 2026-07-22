@@ -3,7 +3,8 @@
         <div v-if="$slots.default" class="permission-select_label">
             <slot/>
         </div>
-        <ui-button tag="button" type="secondary"
+        <ui-button
+tag="button" type="secondary"
             class="permission-select_trigger"
             :class="{ 'permission-select_trigger--open': isOpen }"
             :aria-expanded="isOpen"

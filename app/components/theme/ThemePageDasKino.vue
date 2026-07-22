@@ -37,12 +37,4 @@ defineProps<{
             radial-gradient(circle at 50% 8%, rgb(255 223 160 / 12%) 0%, transparent 48%);
     }
 }
-
-.content-page--theme-das-kino .common-info-hero,
-.content-page--theme-das-kino .common-info-section,
-.content-page--theme-das-kino .block-card-grid_card,
-.content-page--theme-das-kino .block-program-overview .program-card {
-    border-color: rgb(112 57 44 / 62%);
-    background: rgb(25 14 14 / 86%);
-}
 </style>

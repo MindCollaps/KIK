@@ -1,18 +1,22 @@
 <template>
     <header class="admin-header">
-        <ui-button class="admin-brand" to="/" type="link">
+        <ui-button class="admin-brand" to="/" type="link" gap="6px">
             <span class="admin-brand_mark"><Icon name="material-symbols:play-arrow-rounded" aria-hidden="true" /></span>
             <span>Kino im Kasten</span>
         </ui-button>
         <div v-if="user" class="admin-user">
             <span>{{ user.name }}</span>
-            <ui-button type="secondary" tag="button" @click="$emit('logout')">
-                <Icon name="material-symbols:logout-rounded" aria-hidden="true" />
+            <ui-button
+                type="secondary"
+                tag="button"
+                icon="material-symbols:logout-rounded"
+                gap="0.55rem"
+                @click="$emit('logout')"
+            >
                 Abmelden
             </ui-button>
         </div>
-        <ui-button v-else class="back-link" to="/" type="link">
-            <Icon name="material-symbols:arrow-back-rounded" aria-hidden="true" />
+        <ui-button v-else class="back-link" to="/" type="link" icon="material-symbols:arrow-back-rounded" gap="0.55rem">
             Zur Website
         </ui-button>
     </header>
@@ -47,12 +51,7 @@ defineEmits<{
 .admin-brand,
 .back-link,
 .admin-user :deep(.button) {
-    display: inline-flex;
-    gap: 0.55rem;
-    align-items: center;
-
     min-height: 44px;
-
     color: $lightgray100;
     text-decoration: none;
 
@@ -63,16 +62,19 @@ defineEmits<{
     }
 }
 
+// admin-brand composes a custom SVG mark (not a named icon), so it can't
+// use `ui-button`'s `icon` prop and still needs its own flex/gap here.
 .admin-brand {
+    display: inline-flex;
+    gap: 0.55rem;
+    align-items: center;
+
     font-family: $displayFont;
     font-size: 1.25rem;
     text-transform: uppercase;
     letter-spacing: 0.03em;
 
     :deep(.button_content) {
-        display: inline-flex;
-        gap: 6px;
-        align-items: center;
         width: auto;
         min-width: 0;
         white-space: nowrap;
@@ -103,6 +105,7 @@ defineEmits<{
 
     :deep(.button) {
         cursor: pointer;
+
         padding: 0 0.7rem;
         border: 1px solid $darkgray700;
         border-radius: 6px;

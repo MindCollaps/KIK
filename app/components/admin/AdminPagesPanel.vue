@@ -389,6 +389,7 @@ async function deletePage(page: PageRecord) {
             grid-template-columns: minmax(0, 1fr) auto;
             gap: 0.35rem 0.75rem;
             align-items: baseline;
+
             width: 100%;
             min-width: 0;
         }
