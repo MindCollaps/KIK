@@ -518,6 +518,7 @@ function submit() {
         grid-template-columns: 48px minmax(0, 1fr);
         gap: 0.75rem;
         align-items: center;
+
         width: 100%;
     }
 

@@ -421,7 +421,6 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
     &_warnings-topics-wrap {
         display: grid;
         grid-template-rows: 0fr;
-
         transition: grid-template-rows 260ms cubic-bezier(0.16, 1, 0.3, 1);
 
         > ul {

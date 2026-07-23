@@ -67,7 +67,6 @@ const emit = defineEmits<{
 const titleId = `confirm-dialog-title-${ Math.random().toString(36).slice(2, 9) }`;
 const messageId = `confirm-dialog-message-${ Math.random().toString(36).slice(2, 9) }`;
 
-const panelRef = useTemplateRef('panelRef');
 const cancelRef = useTemplateRef('cancelRef');
 const confirmRef = useTemplateRef('confirmRef');
 
@@ -153,7 +152,6 @@ watch(() => props.open, async isOpen => {
 
     &_message {
         margin: 0.65rem 0 0;
-
         line-height: 1.6;
         color: $lightgray150;
     }
@@ -162,7 +160,6 @@ watch(() => props.open, async isOpen => {
         display: flex;
         gap: 0.75rem;
         justify-content: flex-end;
-
         margin-top: 1.5rem;
     }
 }
@@ -181,8 +178,8 @@ watch(() => props.open, async isOpen => {
     opacity: 0;
 
     .confirm-dialog_panel {
-        opacity: 0;
         transform: translateY(4px) scale(0.98);
+        opacity: 0;
     }
 }
 
