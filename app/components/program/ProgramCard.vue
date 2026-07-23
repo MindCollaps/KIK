@@ -45,14 +45,22 @@
 
             <p class="program-card_description">{{ entry.film.description }}</p>
 
-            <div v-if="confirmedWarnings.length" class="program-card_warnings">
+            <div v-if="warningGroups.length" class="program-card_warnings">
                 <span class="program-card_warnings-label">
                     <Icon name="material-symbols:warning-rounded" aria-hidden="true" />
-                    {{ confirmedWarnings.length }} {{ confirmedWarnings.length === 1 ? 'Inhaltshinweis' : 'Inhaltshinweise' }}
+                    {{ warningGroups.length === 1 ? 'Inhaltshinweis' : 'Inhaltshinweise' }}
                 </span>
-                <span class="program-card_warnings-topics">
-                    {{ warningPreview }}
-                </span>
+                <ul class="program-card_warnings-groups">
+                    <li v-for="group in warningGroups" :key="group.key">{{ group.label }}</li>
+                </ul>
+                <details class="program-card_warnings-details" @click.stop @keydown.enter.stop>
+                    <summary>Alle Inhaltshinweise anzeigen</summary>
+                    <div class="program-card_warnings-topics-wrap">
+                        <ul class="program-card_warnings-topics">
+                            <li v-for="topic in warningTopics" :key="topic.id">{{ topic.nameDe }}</li>
+                        </ul>
+                    </div>
+                </details>
             </div>
 
             <dl class="program-card_facts">
@@ -90,6 +98,9 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue';
 import type { ProgramEntry } from '~~/types/program';
+import type { DoesTheDogDieWarningGroup } from '~~/server/utils/does-the-dog-die-topics';
+import { doesTheDogDieWarningGroupLabels, getDoesTheDogDieWarningGroup } from '~~/server/utils/does-the-dog-die-topics';
+import { getDoesTheDogDieTopicNameDe } from '~~/types/does-the-dog-die-topics';
 import { formatProgramDate, formatProgramPrice } from '~/composables/program';
 
 const props = withDefaults(defineProps<{
@@ -112,11 +123,21 @@ const confirmedWarnings = computed(() => (props.entry.film.contentWarnings?.stat
     .filter(stat => stat.yesSum > stat.noSum)
     .sort((left, right) => right.yesSum - left.yesSum));
 
-const warningPreview = computed(() => {
-    const names = confirmedWarnings.value.slice(0, 2).map(stat => stat.topicName);
-    const remaining = confirmedWarnings.value.length - names.length;
-    return `${names.join(' · ')}${remaining > 0 ? ` · +${remaining}` : ''}`;
+const warningGroups = computed(() => {
+    const strengthByGroup = new Map<DoesTheDogDieWarningGroup, number>();
+    for (const stat of confirmedWarnings.value) {
+        const group = getDoesTheDogDieWarningGroup(stat.topicId);
+        strengthByGroup.set(group, (strengthByGroup.get(group) ?? 0) + stat.yesSum);
+    }
+    return [...strengthByGroup.entries()]
+        .sort((left, right) => right[1] - left[1])
+        .map(([group]) => ({ key: group, label: doesTheDogDieWarningGroupLabels[group] }));
 });
+
+const warningTopics = computed(() => confirmedWarnings.value.map(stat => ({
+    id: stat.topicId,
+    nameDe: getDoesTheDogDieTopicNameDe(stat.topicId) ?? stat.topicName,
+})));
 
 const badgeMeta = computed<null | { icon: string; label: string; withBorder: boolean }>(() => {
     if (props.entry.style === 'DEFAULT') return null;
@@ -350,11 +371,88 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
         }
     }
 
+    &_warnings-groups {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+
+        margin: 0;
+        padding: 0;
+
+        list-style: none;
+
+        li {
+            padding: 0.2rem 0.55rem;
+            border: 1px solid rgb(215 172 92 / 30%);
+            border-radius: 999px;
+
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: $secondary300;
+
+            background: rgb(215 172 92 / 10%);
+        }
+    }
+
+    &_warnings-details {
+        flex-basis: 100%;
+
+        summary {
+            cursor: pointer;
+
+            min-height: 32px;
+
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: $lightgray200;
+            text-underline-offset: 0.2em;
+
+            &:hover {
+                color: $secondary300;
+            }
+
+            &:focus-visible {
+                outline: 2px solid $primary400;
+                outline-offset: 2px;
+            }
+        }
+    }
+
+    &_warnings-topics-wrap {
+        display: grid;
+        grid-template-rows: 0fr;
+
+        transition: grid-template-rows 260ms cubic-bezier(0.16, 1, 0.3, 1);
+
+        > ul {
+            overflow: hidden;
+        }
+    }
+
+    &_warnings-details[open] &_warnings-topics-wrap {
+        grid-template-rows: 1fr;
+    }
+
     &_warnings-topics {
-        min-width: 0;
-        font-size: 0.7rem;
-        color: $lightgray200;
-        overflow-wrap: anywhere;
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+
+        margin: 0.5rem 0 0;
+        padding: 0;
+
+        list-style: none;
+
+        li {
+            font-size: 0.72rem;
+            line-height: 1.4;
+            color: $lightgray300;
+
+            &::before {
+                content: '– ';
+                color: $lightgray400;
+            }
+        }
     }
 
     &_footer {
@@ -389,6 +487,7 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
         svg {
             width: 1rem;
             height: 1rem;
+            transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         &:focus-visible {
@@ -396,6 +495,16 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
             outline: 2px solid $primary400;
             outline-offset: 3px;
         }
+    }
+
+    @include hover {
+        &:hover &_link svg {
+            transform: translateX(3px);
+        }
+    }
+
+    &:focus-visible &_link svg {
+        transform: translateX(3px);
     }
 
     &_credits {
@@ -522,6 +631,18 @@ function openDetails(event: MouseEvent | KeyboardEvent) {
         &_facts {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .program-card {
+        &_warnings-topics-wrap {
+            transition: none;
+        }
+
+        &_link svg {
+            transition: none;
         }
     }
 }

@@ -42,14 +42,23 @@
                     Die Angaben stammen aus Community-Abstimmungen und können Spoiler enthalten. Sie ersetzen keine redaktionelle Prüfung.
                 </p>
 
-                <div v-if="confirmedWarnings.length" class="warning-list">
-                    <article v-for="warning in confirmedWarnings" :key="warning.topicId" class="warning-row">
+                <div v-if="warningGroups.length" class="warning-list">
+                    <article v-for="group in warningGroups" :key="group.key" class="warning-row">
                         <Icon name="material-symbols:warning-rounded" aria-hidden="true" />
                         <div>
-                            <h3>{{ warning.topicName }}</h3>
-                            <p>{{ warning.yesSum }} Ja · {{ warning.noSum }} Nein<span v-if="warning.numComments"> · {{ warning.numComments }} Kommentare</span></p>
+                            <h3>{{ group.label }}</h3>
+                            <p>{{ group.topics.length }} {{ group.topics.length === 1 ? 'bestätigter Hinweis' : 'bestätigte Hinweise' }}</p>
+                            <details class="warning-row_details">
+                                <summary>Details anzeigen</summary>
+                                <ul>
+                                    <li v-for="topic in group.topics" :key="topic.topicId">
+                                        <span>{{ topic.nameDe }}</span>
+                                        <small>{{ topic.topicName }} · {{ topic.yesSum }} Ja · {{ topic.noSum }} Nein<span v-if="topic.numComments"> · {{ topic.numComments }} Kommentare</span></small>
+                                    </li>
+                                </ul>
+                            </details>
                         </div>
-                        <span class="warning-row_confidence">{{ warningConfidence(warning) }} % Ja</span>
+                        <span class="warning-row_confidence">{{ group.confidence }} % Ja</span>
                     </article>
                 </div>
                 <div v-else class="warning-empty">
@@ -71,7 +80,10 @@
 </template>
 
 <script setup lang="ts">
-import type { ContentWarningStat, ProgramEntry } from '~~/types/program';
+import type { ProgramEntry } from '~~/types/program';
+import type { DoesTheDogDieWarningGroup } from '~~/server/utils/does-the-dog-die-topics';
+import { doesTheDogDieWarningGroupLabels, getDoesTheDogDieWarningGroup } from '~~/server/utils/does-the-dog-die-topics';
+import { getDoesTheDogDieTopicNameDe } from '~~/types/does-the-dog-die-topics';
 import { formatProgramDate } from '~/composables/program';
 import ThemePageSwitcher from '~/components/theme/ThemePageSwitcher.vue';
 import { usePageSeo } from '~/composables/seo';
@@ -91,6 +103,34 @@ const confirmedWarnings = computed(() => (warningSnapshot.value?.stats ?? [])
     .filter(warning => warning.yesSum > warning.noSum)
     .sort((left, right) => right.yesSum - left.yesSum));
 
+const warningGroups = computed(() => {
+    const statsByGroup = new Map<DoesTheDogDieWarningGroup, typeof confirmedWarnings.value>();
+    for (const stat of confirmedWarnings.value) {
+        const group = getDoesTheDogDieWarningGroup(stat.topicId);
+        statsByGroup.set(group, [...(statsByGroup.get(group) ?? []), stat]);
+    }
+    return [...statsByGroup.entries()]
+        .map(([group, stats]) => {
+            const yesTotal = stats.reduce((sum, stat) => sum + stat.yesSum, 0);
+            const votesTotal = stats.reduce((sum, stat) => sum + stat.yesSum + stat.noSum, 0);
+            return {
+                key: group,
+                label: doesTheDogDieWarningGroupLabels[group],
+                confidence: votesTotal ? Math.round((yesTotal / votesTotal) * 100) : 0,
+                strength: yesTotal,
+                topics: stats.map(stat => ({
+                    topicId: stat.topicId,
+                    nameDe: getDoesTheDogDieTopicNameDe(stat.topicId) ?? stat.topicName,
+                    topicName: stat.topicName,
+                    yesSum: stat.yesSum,
+                    noSum: stat.noSum,
+                    numComments: stat.numComments,
+                })),
+            };
+        })
+        .sort((left, right) => right.strength - left.strength);
+});
+
 usePageSeo(() => ({
     title: entry.value?.film.title ?? 'Vorstellung',
     description: entry.value
@@ -100,10 +140,6 @@ usePageSeo(() => ({
     type: 'article',
 }));
 
-function warningConfidence(warning: ContentWarningStat) {
-    const votes = warning.yesSum + warning.noSum;
-    return votes ? Math.round((warning.yesSum / votes) * 100) : 0;
-}
 </script>
 
 <style scoped lang="scss">
@@ -245,7 +281,7 @@ function warningConfidence(warning: ContentWarningStat) {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 0.65rem;
-    align-items: center;
+    align-items: start;
 
     padding: 0.75rem;
     border: 1px solid $darkgray800;
@@ -273,6 +309,54 @@ function warningConfidence(warning: ContentWarningStat) {
         margin-top: 0.25rem;
         font-size: 0.7rem;
         color: $lightgray400;
+    }
+
+    &_details {
+        margin-top: 0.4rem;
+
+        summary {
+            cursor: pointer;
+
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: $secondary300;
+            text-underline-offset: 0.2em;
+
+            &:hover {
+                color: $secondary400;
+            }
+
+            &:focus-visible {
+                outline: 2px solid $primary400;
+                outline-offset: 2px;
+            }
+        }
+
+        ul {
+            display: grid;
+            gap: 0.4rem;
+
+            margin: 0.5rem 0 0;
+            padding: 0;
+
+            list-style: none;
+        }
+
+        li {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+        }
+
+        span {
+            font-size: 0.75rem;
+            color: $lightgray200;
+        }
+
+        small {
+            font-size: 0.65rem;
+            color: $lightgray400;
+        }
     }
 
     &_confidence {

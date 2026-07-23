@@ -242,7 +242,7 @@ const getAttrs = computed(() => {
         background: var(--primary-color, transparent);
     }
 
-    &--type-secondary, &--type-destructive {
+    &--type-secondary {
         @include hover {
             &:hover {
                 background: var(--hover-color, $whiteAlpha4);
@@ -251,6 +251,22 @@ const getAttrs = computed(() => {
             &:active, &:focus {
                 background: var(--focus-color, $primary500);
             }
+        }
+    }
+
+    &--type-destructive {
+        @include hover {
+            &:hover {
+                background: var(--hover-color, rgb(156 27 88 / 10%));
+            }
+
+            &:active, &:focus {
+                background: var(--focus-color, rgb(156 27 88 / 18%));
+            }
+        }
+
+        &:focus-visible {
+            outline-color: $error500;
         }
     }
 

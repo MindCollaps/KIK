@@ -115,6 +115,32 @@ const programGroups = computed(() => {
     display: grid;
     gap: 1rem;
     margin-top: 1.25rem;
+
+    :deep(.program-card) {
+        animation: program-card-ignite 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @for $i from 1 through 6 {
+        :deep(.program-card:nth-child(#{$i})) {
+            animation-delay: #{($i - 1) * 45}ms;
+        }
+    }
+
+    :deep(.program-card:nth-child(n+7)) {
+        animation-delay: 225ms;
+    }
+}
+
+@keyframes program-card-ignite {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .program-month {
@@ -247,6 +273,10 @@ const programGroups = computed(() => {
 
 @media (prefers-reduced-motion: reduce) {
     .program-skeleton {
+        animation: none;
+    }
+
+    .program-list :deep(.program-card) {
         animation: none;
     }
 }

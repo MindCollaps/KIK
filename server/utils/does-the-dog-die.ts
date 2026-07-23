@@ -1,16 +1,10 @@
-import type { ContentWarningSnapshot, DoesTheDogDieSearchResult } from '../../types/program';
+import type { ContentWarningSnapshot, ContentWarningStat, DoesTheDogDieSearchResult } from '../../types/program';
 import { $fetch as ofetch } from 'ofetch';
 
 const apiBaseUrl = 'https://www.doesthedogdie.com/api/v3';
 
 interface DoesTheDogDieItem extends DoesTheDogDieSearchResult {
-    topicItemStats?: Array<{
-        topicId: number;
-        topicName: string;
-        yesSum: number;
-        noSum: number;
-        numComments: number;
-    }>;
+    topicItemStats?: ContentWarningStat[];
 }
 
 interface DoesTheDogDieError {

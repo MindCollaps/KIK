@@ -1,3 +1,5 @@
+import type { DoesTheDogDieTopicId } from './does-the-dog-die-topics';
+
 export const programStatuses = ['DRAFT', 'SCHEDULED', 'PUBLISHED', 'HIDDEN'] as const;
 export const programStyles = ['DEFAULT', 'SPECIAL', 'HIGHLIGHTED', 'CUSTOM'] as const;
 
@@ -5,7 +7,7 @@ export type ProgramStatus = typeof programStatuses[number];
 export type ProgramStyle = typeof programStyles[number];
 
 export type ContentWarningStat = {
-    topicId: number;
+    topicId: DoesTheDogDieTopicId;
     topicName: string;
     yesSum: number;
     noSum: number;

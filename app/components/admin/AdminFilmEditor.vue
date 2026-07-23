@@ -525,11 +525,6 @@ function removeImage() {
 .film-result {
     cursor: pointer;
 
-    display: grid;
-    grid-template-columns: 48px minmax(0, 1fr) auto;
-    gap: 0.75rem;
-    align-items: center;
-
     min-width: 0;
     padding: 0.55rem;
     border: 1px solid $darkgray800;
@@ -540,7 +535,16 @@ function removeImage() {
 
     background: $darkgray900;
 
-    > img,
+    :deep(.button_content) {
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr) auto;
+        gap: 0.75rem;
+        align-items: center;
+
+        width: 100%;
+    }
+
+    img,
     &_placeholder {
         width: 48px;
         height: 68px;
@@ -555,7 +559,7 @@ function removeImage() {
         place-items: center;
     }
 
-    > svg {
+    :deep(.button_content) > svg {
         width: 1.3rem;
         color: $secondary300;
     }
